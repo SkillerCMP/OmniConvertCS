@@ -221,7 +221,8 @@
                     <li>Original <strong>Omniconvert 1.1.1R</strong> PS2 converter.</li>
                     <li>GS3 / XP4+ crypt implementations.</li>
                     <li>Major reverse-engineering work for device formats and crypto routines.</li>
-                    <li>Original repo:
+                    <li>
+                        Original repo:
                         <a href="https://github.com/pyriell/omniconvert" target="_blank" rel="noopener noreferrer">
                             https://github.com/pyriell/omniconvert
                         </a>
@@ -232,7 +233,8 @@
                 <strong>a-n-t-i-b-a-r-y-o-n</strong>
                 <ul>
                     <li>Omniconvert fork with additional references and tweaks.</li>
-                    <li>Fork:
+                    <li>
+                        Fork:
                         <a href="https://github.com/a-n-t-i-b-a-r-y-o-n/omniconvert" target="_blank" rel="noopener noreferrer">
                             https://github.com/a-n-t-i-b-a-r-y-o-n/omniconvert
                         </a>
@@ -240,14 +242,14 @@
                 </ul>
             </li>
             <li>
-                <strong>misfire/mlafeldt</strong>
+                <strong>misfire / mlafeldt</strong>
                 <ul>
                     <li><strong>CB2Crypt</strong> source.</li>
                     <li>CodeBreaker v2 crypt.</li>
                     <li>Action Replay 2 crypt.</li>
-                    <ul>
                     <li><strong>CodeBreaker PS2 File Utility (cb2util)</strong>.</li>
-                    <li>Repo:
+                    <li>
+                        Repo:
                         <a href="https://github.com/mlafeldt/cb2util" target="_blank" rel="noopener noreferrer">
                             https://github.com/mlafeldt/cb2util
                         </a>
@@ -257,7 +259,7 @@
             <li>
                 <strong>Parasyte</strong>
                 <ul>
-                    <li>Action Replay MAX (ARMAX) encryption.</li>
+                    <li>Action Replay MAX (ARMAX) encryption implementation.</li>
                 </ul>
             </li>
             <li>
@@ -266,7 +268,6 @@
                     <li><strong>BIG_INT</strong> arbitrary-precision integer library.</li>
                 </ul>
             </li>
-    
         </ul>
         <h2>OmniconvertCS (C → C# Conversion)</h2>
         <p>
