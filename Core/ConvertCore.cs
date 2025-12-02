@@ -104,13 +104,28 @@ namespace OmniconvertCS
                     break;
 
                 case Crypt.CRYPT_ARMAX:
-                    {
-                        // 1:1 with armBatchDecryptFull(cheat, armseeds);
-                        byte ret = Armax.ArmBatchDecryptFull(cheat, armseeds);
-                        if (ret != 0)
-                            return ret;
-                        break;
-                    }
+{
+    // 1:1 with armBatchDecryptFull(cheat, armseeds);
+    byte ret = Armax.ArmBatchDecryptFull(cheat, armseeds);
+    if (ret != 0)
+        return ret;
+
+    // If decrypt succeeded, mirror ARMAX metadata (game ID / region)
+    // into our globals so the UI and later conversions can use them.
+    uint lastGameId = Armax.LastGameId;
+    uint lastRegion = Armax.LastRegion;
+
+    // Only overwrite if the values are sane; 0 means "no ID".
+    if (lastGameId != 0)
+        g_gameid = lastGameId;
+
+    // Regions are 0 = USA, 1 = PAL, 2 = Japan.
+    if (lastRegion <= 2)
+        g_region = lastRegion;
+
+    break;
+}
+
 
                 case Crypt.CRYPT_CB:
                 case Crypt.CRYPT_CB7_COMMON:

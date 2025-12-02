@@ -380,6 +380,19 @@ private static unsafe void DumpWords(string label, uint* pCodes, int count)
 
         private static uint g_gameid;
         private static uint g_region;
+		
+		        /// <summary>
+        /// Last game ID parsed from an ARMAX header during decrypt.
+        /// Raw 13-bit game ID (0..0x1FFF) from the verifier.
+        /// </summary>
+        public static uint LastGameId => g_gameid;
+
+        /// <summary>
+        /// Last region parsed from an ARMAX header during decrypt.
+        /// 0 = USA, 1 = PAL, 2 = Japan (matches ConvertCore.g_region).
+        /// </summary>
+        public static uint LastRegion => g_region;
+		
         // Flags used for folder/organizer and disc-hash entries (from cheat.c / armax.h)
         private const uint EXPANSION_DATA_FOLDER = 0x0800u;
         private const uint FLAGS_FOLDER          = 0x5u << 20;

@@ -15,6 +15,7 @@ namespace OmniconvertCS.Gui
 		private ToolStripMenuItem menuOptionsAr2Key;
 		private ToolStripMenuItem menuOptionsPnachCrc;
 		private ToolStripMenuItem menuOptionsMakeOrganizers;
+		private ToolStripMenuItem menuOptionsArmaxOptions;
 		private ToolStripMenuItem menuOptionsArmaxDiscHash;
 		private ToolStripMenuItem menuOptionsArmaxDiscHashNone;
 		private ToolStripSeparator menuOptionsSeparatorAfterOrganizers;
@@ -54,6 +55,7 @@ namespace OmniconvertCS.Gui
 		private ToolStripMenuItem menuEditCopy;
 		private ToolStripMenuItem menuEditPaste;
 		private ToolStripMenuItem menuEditSelectAll;
+		private ToolStripMenuItem menuEditSwapInputOutput;
 		private ToolStripMenuItem menuEditClearInput;
 		private ToolStripMenuItem menuEditClearOutput;
 
@@ -66,10 +68,18 @@ namespace OmniconvertCS.Gui
         private Button  btnClearOutput;
 		private CheckBox chkPnachCrcActive;   // NEW
         private TextBox txtOutput;
+		
+		// NEW: small read-only box showing the current AR2 key (when CRYPT_AR2 is active)
+        private Label   lblAr2CurrentKey;
+        private TextBox txtAr2CurrentKey;
 
         private Button  btnConvert;
-        private Label   lblGameId;
-        internal TextBox txtGameId;
+        private Label   lblGameId; // Old Bottom GameID
+        internal TextBox txtGameId; // Old Bottom GameID
+		private Label  lblGameIdInput;
+		private TextBox txtGameIdInput;
+		private Label  lblGameIdOutput;
+		private TextBox txtGameIdOutput;
         private Label   lblGameName;
         internal TextBox txtGameName;
 
@@ -108,6 +118,7 @@ namespace OmniconvertCS.Gui
 			//Options Menu
 			this.menuOptionsAr2Key               = new ToolStripMenuItem();
 			this.menuOptionsGs3Key               = new ToolStripMenuItem();
+			this.menuOptionsArmaxOptions = new ToolStripMenuItem();
 			this.menuOptionsMakeOrganizers      = new ToolStripMenuItem();
 			this.menuOptionsArmaxDiscHash       = new ToolStripMenuItem();
 			this.menuOptionsArmaxDiscHashNone   = new ToolStripMenuItem();
@@ -138,10 +149,18 @@ namespace OmniconvertCS.Gui
             this.lblOutputFormat = new Label();
             this.btnClearOutput  = new Button();
             this.txtOutput       = new TextBox();
+			
+			this.lblAr2CurrentKey = new Label();
+            this.txtAr2CurrentKey = new TextBox();
+			
+			this.lblGameIdInput  = new Label();
+			this.txtGameIdInput  = new TextBox();
+			this.lblGameIdOutput = new Label();
+			this.txtGameIdOutput = new TextBox();
 
             this.btnConvert  = new Button();
-            this.lblGameId   = new Label();
-            this.txtGameId   = new TextBox();
+            this.lblGameId   = new Label(); // Old Bottom GameID
+            this.txtGameId   = new TextBox(); // Old Bottom GameID
             this.lblGameName = new Label();
             this.txtGameName = new TextBox();
 
@@ -308,6 +327,15 @@ this.menuEditSelectAll.Text = "Select All";
 this.menuEditSelectAll.ShortcutKeys = ((Keys)((Keys.Control | Keys.A)));
 this.menuEditSelectAll.Click += new System.EventHandler(this.menuEditSelectAll_Click);
 //
+// menuEditSwapInputOutput
+//
+this.menuEditSwapInputOutput = new ToolStripMenuItem();
+this.menuEditSwapInputOutput.Name = "menuEditSwapInputOutput";
+this.menuEditSwapInputOutput.Size = new System.Drawing.Size(180, 22);
+this.menuEditSwapInputOutput.Text = "Swap Input && Output";
+this.menuEditSwapInputOutput.ShortcutKeys = ((Keys)((Keys.Control | Keys.Shift | Keys.S)));
+this.menuEditSwapInputOutput.Click += new System.EventHandler(this.menuEditSwapInputOutput_Click);
+//
 // menuEditClearInput
 //
 this.menuEditClearInput = new ToolStripMenuItem();
@@ -334,6 +362,7 @@ this.menuEdit.DropDownItems.AddRange(new ToolStripItem[] {
     this.menuEditPaste,
     new ToolStripSeparator(),
     this.menuEditSelectAll,
+	this.menuEditSwapInputOutput,
     new ToolStripSeparator(),
     this.menuEditClearInput,
     this.menuEditClearOutput});
@@ -349,25 +378,38 @@ this.menuEdit.DropDownItems.AddRange(new ToolStripItem[] {
             this.menuOptionsPnachCrc.Size = new System.Drawing.Size(220, 22);
             this.menuOptionsPnachCrc.Text = "Set PNACH CRC...";
             this.menuOptionsPnachCrc.Click += new System.EventHandler(this.menuOptionsPnachCrc_Click);
+			
+			// menuOptionsArmaxOptions
+			this.menuOptionsArmaxOptions.Name = "menuOptionsArmaxOptions";
+			this.menuOptionsArmaxOptions.Size = new System.Drawing.Size(220, 22);
+			this.menuOptionsArmaxOptions.Text = "AR MAX Options...";
+			this.menuOptionsArmaxOptions.ShortcutKeys =
+			System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.M;
+			this.menuOptionsArmaxOptions.ShowShortcutKeys = true; // optional, shows "Ctrl+M" in menu
+			this.menuOptionsArmaxOptions.Click += new System.EventHandler(this.menuOptionsArmaxOptions_Click);
 
             // menuOptions
 			this.menuOptions.DropDownItems.AddRange(new ToolStripItem[]
 {
-				// Make Organizers
-				this.menuOptionsMakeOrganizers,
-				this.menuOptionsSeparatorAfterOrganizers,
-				// AR MAX Verifiers / Region (if you already have these, include them here)
-                this.menuOptionsArmaxVerifiers,
-                this.menuOptionsArmaxRegion,
-				// AR MAX Disc Hash submenu
-				this.menuOptionsArmaxDiscHash,
-				this.menuOptionsSeparatorAfterDiscHash,
-				// Keys
-				this.menuOptionsPnachCrc,      // <-- NEW
-				this.menuOptionsAr2Key,
-				this.menuOptionsGs3Key,
-				this.menuOptionsCbcSaveVersion
-            });
+    // Make Organizers
+    this.menuOptionsMakeOrganizers,
+    this.menuOptionsSeparatorAfterOrganizers,
+
+    // Unified ARMAX window
+    this.menuOptionsArmaxOptions,
+
+    // Old Individual Options Using ArmaxOptions Window now
+    // this.menuOptionsArmaxVerifiers,
+    // this.menuOptionsArmaxRegion,
+    // this.menuOptionsArmaxDiscHash,
+    this.menuOptionsSeparatorAfterDiscHash,
+
+    // Keys / misc
+    this.menuOptionsPnachCrc,
+    this.menuOptionsAr2Key,
+    this.menuOptionsGs3Key,
+    this.menuOptionsCbcSaveVersion
+});
 // menuOptionsCbcSaveVersion
 this.menuOptionsCbcSaveVersion.Name = "menuOptionsCbcSaveVersion";
 this.menuOptionsCbcSaveVersion.Size = new System.Drawing.Size(220, 22);
@@ -445,6 +487,7 @@ this.menuOptionsGs3Key4.Click += new System.EventHandler(this.menuOptionsGs3Key4
             this.menuOptionsSeparatorArmax.Size = new System.Drawing.Size(217, 6);
 
             // menuOptionsArmaxVerifiers
+			this.menuOptionsArmaxVerifiers.Visible = false;
             this.menuOptionsArmaxVerifiers.Name = "menuOptionsArmaxVerifiers";
             this.menuOptionsArmaxVerifiers.Size = new System.Drawing.Size(220, 22);
             this.menuOptionsArmaxVerifiers.Text = "AR MAX Verifiers";
@@ -467,6 +510,7 @@ this.menuOptionsGs3Key4.Click += new System.EventHandler(this.menuOptionsGs3Key4
             this.menuOptionsArmaxVerifiersManual.Click += new System.EventHandler(this.menuOptionsArmaxVerifiersManual_Click);
 
             // menuOptionsArmaxRegion
+			this.menuOptionsArmaxRegion.Visible    = false;
             this.menuOptionsArmaxRegion.Name = "menuOptionsArmaxRegion";
             this.menuOptionsArmaxRegion.Size = new System.Drawing.Size(220, 22);
             this.menuOptionsArmaxRegion.Text = "AR MAX Region";
@@ -502,6 +546,7 @@ this.menuOptionsMakeOrganizers.CheckOnClick = false; // we manage Checked oursel
 this.menuOptionsMakeOrganizers.Click += new System.EventHandler(this.menuOptionsMakeOrganizers_Click);
 
 // menuOptionsArmaxDiscHash
+this.menuOptionsArmaxDiscHash.Visible  = false;
 this.menuOptionsArmaxDiscHash.Name = "menuOptionsArmaxDiscHash";
 this.menuOptionsArmaxDiscHash.Size = new System.Drawing.Size(200, 22);
 this.menuOptionsArmaxDiscHash.Text = "AR MAX Disc Hash";
@@ -526,6 +571,61 @@ this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOpti
             this.lblInputFormat.Size     = new Size(93, 13);
             this.lblInputFormat.TabIndex = 1;
             this.lblInputFormat.Text     = "Input: (not set yet)";
+			
+			// lblAr2CurrentKey
+            this.lblAr2CurrentKey.AutoSize = true;
+            this.lblAr2CurrentKey.Location = new Point(120, 32);
+            this.lblAr2CurrentKey.Name     = "lblAr2CurrentKey";
+            this.lblAr2CurrentKey.Size     = new Size(52, 13);
+            this.lblAr2CurrentKey.TabIndex = 2;
+            this.lblAr2CurrentKey.Text     = "AR2 key:";
+            this.lblAr2CurrentKey.Visible  = false;
+
+            // txtAr2CurrentKey
+            this.txtAr2CurrentKey.Location    = new Point(178, 29);
+            this.txtAr2CurrentKey.Name        = "txtAr2CurrentKey";
+            this.txtAr2CurrentKey.Size        = new Size(80, 20);
+            this.txtAr2CurrentKey.TabIndex    = 3;
+            this.txtAr2CurrentKey.ReadOnly    = true;
+            this.txtAr2CurrentKey.BorderStyle = BorderStyle.FixedSingle;
+            this.txtAr2CurrentKey.Visible     = false;// lblAr2CurrentKey
+            this.lblAr2CurrentKey.AutoSize = true;
+            this.lblAr2CurrentKey.Location = new Point(120, 32);
+            this.lblAr2CurrentKey.Name     = "lblAr2CurrentKey";
+            this.lblAr2CurrentKey.Size     = new Size(52, 13);
+            this.lblAr2CurrentKey.TabIndex = 2;
+            this.lblAr2CurrentKey.Text     = "AR2 key:";
+            this.lblAr2CurrentKey.Visible  = false;
+			
+            // txtAr2CurrentKey
+            this.txtAr2CurrentKey.Location    = new Point(178, 29);
+            this.txtAr2CurrentKey.Name        = "txtAr2CurrentKey";
+            this.txtAr2CurrentKey.Size        = new Size(80, 20);
+            this.txtAr2CurrentKey.TabIndex    = 3;
+            this.txtAr2CurrentKey.ReadOnly    = true;
+            this.txtAr2CurrentKey.BorderStyle = BorderStyle.FixedSingle;
+            this.txtAr2CurrentKey.Visible     = false;
+
+// lblGameIdInput
+this.lblGameIdInput.AutoSize = true;
+this.lblGameIdInput.Location = new Point(170, 32);
+this.lblGameIdInput.Name     = "lblGameIdInput";
+this.lblGameIdInput.Size     = new Size(52, 13);
+this.lblGameIdInput.TabIndex = 20;
+this.lblGameIdInput.Text     = "Game ID:";
+this.lblGameIdInput.Visible  = false;
+
+// txtGameIdInput
+this.txtGameIdInput.Location = new Point(228, 29);
+this.txtGameIdInput.Name     = "txtGameIdInput";
+this.txtGameIdInput.Size     = new Size(30, 20);
+this.txtGameIdInput.TabIndex = 21;
+this.txtGameIdInput.MaxLength = 4;
+this.txtGameIdInput.CharacterCasing = CharacterCasing.Upper;
+this.txtGameIdInput.Visible  = false;
+this.txtGameIdInput.KeyPress += new KeyPressEventHandler(this.txtGameId_KeyPress);
+this.txtGameIdInput.TextChanged += new System.EventHandler(this.txtGameId_TextChanged);
+
 
             // btnClearInput
             this.btnClearInput.Location = new Point(270, 27);
@@ -566,6 +666,26 @@ this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOpti
 			this.chkPnachCrcActive.UseVisualStyleBackColor = true;
 			this.chkPnachCrcActive.Visible = false;  // only shown in PNACH mode
 			this.chkPnachCrcActive.CheckedChanged += new System.EventHandler(this.chkPnachCrcActive_CheckedChanged);
+			
+			// lblGameIdOutput
+this.lblGameIdOutput.AutoSize = true;
+this.lblGameIdOutput.Location = new Point(502, 32);
+this.lblGameIdOutput.Name     = "lblGameIdOutput";
+this.lblGameIdOutput.Size     = new Size(52, 13);
+this.lblGameIdOutput.TabIndex = 22;
+this.lblGameIdOutput.Text     = "Game ID:";
+this.lblGameIdOutput.Visible  = false;
+
+// txtGameIdOutput
+this.txtGameIdOutput.Location = new Point(560, 29);
+this.txtGameIdOutput.Name     = "txtGameIdOutput";
+this.txtGameIdOutput.Size     = new Size(30, 20);
+this.txtGameIdOutput.TabIndex = 23;
+this.txtGameIdOutput.MaxLength = 4;
+this.txtGameIdOutput.CharacterCasing = CharacterCasing.Upper;
+this.txtGameIdOutput.Visible  = false;
+this.txtGameIdOutput.KeyPress += new KeyPressEventHandler(this.txtGameId_KeyPress);
+this.txtGameIdOutput.TextChanged += new System.EventHandler(this.txtGameId_TextChanged);
 
             // btnClearOutput
             this.btnClearOutput.Location = new Point(599, 27);
@@ -598,7 +718,7 @@ this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOpti
             this.btnConvert.UseVisualStyleBackColor = true;
             this.btnConvert.Click += new System.EventHandler(this.btnConvert_Click);
 
-            // lblGameId
+            // lblGameId --Hidden
             this.lblGameId.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             this.lblGameId.AutoSize = true;
             this.lblGameId.Location = new Point(120, 391);
@@ -606,13 +726,19 @@ this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOpti
             this.lblGameId.Size     = new Size(51, 13);
             this.lblGameId.TabIndex = 8;
             this.lblGameId.Text     = "Game ID:";
+			this.lblGameId.Visible  = false;   // NEW
 
-            // txtGameId
+            // txtGameId --Hidden
             this.txtGameId.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             this.txtGameId.Location = new Point(177, 388);
             this.txtGameId.Name     = "txtGameId";
             this.txtGameId.Size     = new Size(60, 20);
             this.txtGameId.TabIndex = 9;
+			this.txtGameId.MaxLength = 4;
+			this.txtGameId.CharacterCasing = CharacterCasing.Upper;
+			this.txtGameId.Visible  = false;   // NEW
+			this.txtGameId.TextChanged += new System.EventHandler(this.txtGameId_TextChanged);
+			this.txtGameId.KeyPress   += new KeyPressEventHandler(this.txtGameId_KeyPress);
 
             // lblGameName
             this.lblGameName.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
@@ -634,18 +760,24 @@ this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOpti
             this.AutoScaleMode = AutoScaleMode.Font;
             this.ClientSize = new Size(661, 421);
             this.Controls.Add(this.txtGameName);
-            this.Controls.Add(this.lblGameName);
-            this.Controls.Add(this.txtGameId);
-            this.Controls.Add(this.lblGameId);
-            this.Controls.Add(this.btnConvert);
-            this.Controls.Add(this.txtOutput);
-            this.Controls.Add(this.btnClearOutput);
-			this.Controls.Add(this.chkPnachCrcActive);   // NEW
-            this.Controls.Add(this.lblOutputFormat);
-            this.Controls.Add(this.txtInput);
-            this.Controls.Add(this.btnClearInput);
-            this.Controls.Add(this.lblInputFormat);
-            this.Controls.Add(this.menuStrip);
+			this.Controls.Add(this.lblGameName);
+			this.Controls.Add(this.txtGameId); // bottom “canonical” Game ID (will be hidden)
+			this.Controls.Add(this.lblGameId); // bottom “canonical” Game ID (will be hidden)
+			this.Controls.Add(this.txtGameIdOutput); // top-row ARMAX Game ID controls
+			this.Controls.Add(this.lblGameIdOutput); // top-row ARMAX Game ID controls
+			this.Controls.Add(this.txtGameIdInput); // top-row ARMAX Game ID controls
+			this.Controls.Add(this.lblGameIdInput); // top-row ARMAX Game ID controls
+			this.Controls.Add(this.btnConvert);
+			this.Controls.Add(this.txtOutput);
+			this.Controls.Add(this.btnClearOutput);
+			this.Controls.Add(this.chkPnachCrcActive);
+			this.Controls.Add(this.lblOutputFormat);
+			this.Controls.Add(this.txtInput);
+			this.Controls.Add(this.btnClearInput);
+			this.Controls.Add(this.txtAr2CurrentKey);
+			this.Controls.Add(this.lblAr2CurrentKey);
+			this.Controls.Add(this.lblInputFormat);
+			this.Controls.Add(this.menuStrip);
             this.FormBorderStyle = FormBorderStyle.Sizable;
 			this.MainMenuStrip = this.menuStrip;
 			this.MaximizeBox = false;

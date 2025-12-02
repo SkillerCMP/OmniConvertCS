@@ -11,6 +11,90 @@ namespace OmniconvertCS.Gui
 {
         public partial class MainForm : Form
     {
+		private void SyncGameIdFromGlobals()
+{
+    if (_updatingGameIdFromUi)
+        return;
+
+    string hex = ConvertCore.g_gameid.ToString("X4");
+
+    _updatingGameIdFromUi = true;
+    try
+    {
+        if (txtGameId != null)
+            txtGameId.Text = hex;
+        if (txtGameIdInput != null)
+            txtGameIdInput.Text = hex;
+        if (txtGameIdOutput != null)
+            txtGameIdOutput.Text = hex;
+    }
+    finally
+    {
+        _updatingGameIdFromUi = false;
+    }
+}
+private void txtGameId_KeyPress(object? sender, KeyPressEventArgs e)
+{
+    if (char.IsControl(e.KeyChar))
+        return;
+
+    char c = char.ToUpperInvariant(e.KeyChar);
+    bool isHex = (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F');
+    if (!isHex)
+        e.Handled = true;
+}
+private bool _updatingGameIdFromUi;
+
+private void txtGameId_TextChanged(object? sender, EventArgs e)
+{
+    if (_updatingGameIdFromUi)
+        return;
+
+    var tb = sender as TextBox;
+    if (tb == null)
+        return;
+
+    string text = tb.Text.Trim().ToUpperInvariant();
+    if (text.Length == 0)
+    {
+        // User is clearing / hasn’t typed anything yet.
+        // Don’t spam zeros into everything.
+        return;
+    }
+
+    // Allow partial valid hex – if it parses, use it, otherwise ignore.
+    if (!uint.TryParse(text, System.Globalization.NumberStyles.HexNumber,
+                       System.Globalization.CultureInfo.InvariantCulture,
+                       out uint value) ||
+        value > 0xFFFFu)
+    {
+        // Invalid/partial – ignore this change.
+        return;
+    }
+
+    _updatingGameIdFromUi = true;
+    try
+    {
+        // Update global
+        ConvertCore.g_gameid = value;
+
+        // Propagate the *same raw text* (NOT padded) to the other boxes
+        if (!ReferenceEquals(tb, txtGameId) && txtGameId != null && txtGameId.Text != text)
+            txtGameId.Text = text;
+
+        if (!ReferenceEquals(tb, txtGameIdInput) && txtGameIdInput != null && txtGameIdInput.Text != text)
+            txtGameIdInput.Text = text;
+
+        if (!ReferenceEquals(tb, txtGameIdOutput) && txtGameIdOutput != null && txtGameIdOutput.Text != text)
+            txtGameIdOutput.Text = text;
+    }
+    finally
+    {
+        _updatingGameIdFromUi = false;
+    }
+}
+
+
 		private void chkPnachCrcActive_CheckedChanged(object? sender, EventArgs e)
 {
     // Safety: should never be visible when not PNACH, but guard anyway
@@ -551,7 +635,35 @@ private void menuFileSaveAsP2m_Click(object sender, EventArgs e)
 }
 
 private void menuFileSaveAsSwapBin_Click(object sender, EventArgs e)
+ {   // 1) Require a successful conversion first
+    if (_lastConvertedCheats == null || _lastConvertedCheats.Count == 0)
+    {
+        MessageBox.Show(
+            this,
+            "No converted cheats are available.\r\nPlease click Convert first.",
+            "Swap Magic Export",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
+        return;
+    }
+
+    bool swapMagicCompatible =
+    ConvertCore.g_outdevice == ConvertCore.Device.DEV_AR1 ||
+    ConvertCore.g_outdevice == ConvertCore.Device.DEV_STD;
+
+if (!swapMagicCompatible)
 {
+    MessageBox.Show(
+        this,
+        "Swap Magic export requires the *output* device to be AR1\\SW or STD(RAW).\r\n" +
+        "Please select AR1\\SW or STD(RAW) as the output type, click Convert, then try again.",
+        "Swap Magic Export",
+        MessageBoxButtons.OK,
+        MessageBoxIcon.Warning);
+    return;
+}
+
+    // 3) Let the user pick a .bin file name (historically Swap Magic uses .bin)
     using (var dlg = new SaveFileDialog())
     {
         dlg.Title      = "Save As Swap Magic File";
@@ -561,9 +673,70 @@ private void menuFileSaveAsSwapBin_Click(object sender, EventArgs e)
         if (dlg.ShowDialog(this) != DialogResult.OK)
             return;
 
-        ShowBinaryExportNotImplemented(
-            "Swap Magic Export Not Implemented",
-            "Saving Swap Magic files has not been implemented in the C# port yet.");
+        // 4) Build game_t from the last conversion
+        string gameName = txtGameName.Text?.Trim() ?? string.Empty;
+
+        var game = new game_t
+        {
+            id   = _lastGameId,   // set in btnConvert_Click
+            name = gameName,
+            cnt  = 0              // not used by SCF writer but kept for parity
+        };
+
+        // 5) Call the Swap Magic writer
+        int ret = SwapMagicWriter.CreateFile(_lastConvertedCheats, game, dlg.FileName);
+
+        if (ret != 0)
+        {
+            // SwapMagicWriter already showed specific MsgBox-es for
+            // "no master code", "too many master codes", etc.
+            // This is just a generic "something went wrong" wrapper.
+            MessageBox.Show(
+                this,
+                "An error occurred while creating the Swap Magic file.",
+                "Swap Magic Export",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
+}
+
+private void menuOptionsArmaxOptions_Click(object? sender, EventArgs e)
+{
+    // Prefer the UI textbox if it parses, otherwise fall back to ConvertCore.g_gameid
+    uint gameId = ConvertCore.g_gameid;
+    if (uint.TryParse(txtGameId.Text.Trim(),
+                      NumberStyles.HexNumber,
+                      CultureInfo.InvariantCulture,
+                      out uint parsed) &&
+        parsed <= 0xFFFFu)
+    {
+        gameId = parsed;
+    }
+
+    uint region = ConvertCore.g_region;
+    var verifierMode = ConvertCore.g_verifiermode;
+    char hashDrive = ConvertCore.g_hashdrive;
+
+    using (var dlg = new Gui.ArmaxOptionsForm(gameId, region, verifierMode, hashDrive))
+    {
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+        {
+            ConvertCore.g_gameid       = dlg.SelectedGameId;
+            ConvertCore.g_region       = dlg.SelectedRegion;
+            ConvertCore.g_verifiermode = dlg.SelectedVerifierMode;
+            ConvertCore.g_hashdrive    = dlg.SelectedHashDrive;
+
+            // Update main Game ID box
+            SyncGameIdFromGlobals();
+
+            // Make sure the old menu items stay in sync
+            UpdateVerifierMenuChecks();
+            UpdateRegionMenuChecks();
+            SetArmaxHashDrive(ConvertCore.g_hashdrive);
+
+            SaveAppSettings();
+        }
     }
 }
 		// --- Options > AR MAX Disc Hash -------------------------------------------
@@ -642,13 +815,18 @@ private void menuOptionsArmaxDiscHashDrive_Click(object sender, EventArgs e)
     }
 }
 
-        private void menuOptionsAr2Key_Click(object? sender, EventArgs e)
+                private void menuOptionsAr2Key_Click(object? sender, EventArgs e)
         {
             using (var dlg = new Ar2KeyForm())
             {
-                dlg.ShowDialog(this);
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                {
+                    // Underlying ConvertCore.ar2seeds was updated by the dialog.
+                    RefreshAr2KeyDisplayFromSeed();
+                }
             }
         }
+
 		        private void menuOptionsPnachCrc_Click(object? sender, EventArgs e)
 {
     // Use last-known values as defaults, otherwise use current GameName box
@@ -875,6 +1053,36 @@ private System.Windows.Forms.TextBox GetActiveTextBox()
 
     return null;
 }
+private void SwapInputOutput()
+{
+    // Determine the current crypt options for input and output
+    var defaultOpt      = Options_Unencrypted[0];
+    var currentInputOpt = FindCryptOption(ConvertCore.g_indevice,  ConvertCore.g_incrypt,  defaultOpt);
+    var currentOutOpt   = FindCryptOption(ConvertCore.g_outdevice, ConvertCore.g_outcrypt, defaultOpt);
+
+    // Apply swapped selections
+    SetCryptSelection(true,  currentOutOpt);
+    SetCryptSelection(false, currentInputOpt);
+
+    // If there are codes on the Output side, move them to Input
+    string outputText = txtOutput.Text;
+    if (!string.IsNullOrWhiteSpace(outputText))
+    {
+        txtInput.Text = outputText;
+        txtOutput.Clear();
+
+        // Place caret at the end and keep the view scrolled correctly
+        txtInput.SelectionStart  = txtInput.TextLength;
+        txtInput.SelectionLength = 0;
+        txtInput.ScrollToCaret();
+    }
+
+    // Focus the Input box after swapping
+    txtInput.Focus();
+
+    // Persist the new selection for next launch
+    SaveAppSettings();
+}
  
  private static string CleanCbSiteFormat(string input)
  {
@@ -975,8 +1183,14 @@ if (_outputAsPnachRaw)
             UpdateVerifierMenuChecks();
             UpdateRegionMenuChecks();
 			UpdateGs3MenuChecks();
+			// If settings didn’t provide a Game ID, default to 0x0357
+			if (ConvertCore.g_gameid == 0)
+			{
+			ConvertCore.g_gameid = 0x0357;
+			}
 
-            txtGameId.Text = "0357";
+// Push the current Game ID into all UI boxes
+SyncGameIdFromGlobals();
 			
 			// Show version from OmniconvertCS.csproj in the title bar
     string version = Application.ProductVersion;
@@ -1056,7 +1270,10 @@ private void menuEditSelectAll_Click(object sender, EventArgs e)
         tb.Focus();
     }
 }
-
+private void menuEditSwapInputOutput_Click(object sender, EventArgs e)
+{
+    SwapInputOutput();
+}
 private void menuEditClearInput_Click(object sender, EventArgs e)
 {
     this.txtInput.Clear();
@@ -1254,19 +1471,20 @@ foreach (string rawLine in lines)
     }
 
     // Default: ADDR VALUE hex pairs on a line
-    if (!handledCode && parts.Length >= 2)
-    {
-        string addr = parts[parts.Length - 2];
-        string val  = parts[parts.Length - 1];
+if (!handledCode && parts.Length >= 2)
+{
+    string addr = parts[parts.Length - 2];
+    string val  = parts[parts.Length - 1];
 
-        if (uint.TryParse(addr, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _) &&
-            uint.TryParse(val,  NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _))
-        {
-            var cheatForLine = EnsureCurrentCheat();
-            Cheat.cheatAppendCodeFromText(cheatForLine, addr, val);
-            handledCode = true;
-        }
+    if (uint.TryParse(addr, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _) &&
+        uint.TryParse(val,  NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _))
+    {
+        var cheatForLine = EnsureCurrentCheat();
+        Cheat.cheatAppendCodeFromText(cheatForLine, addr, val);
+        handledCode = true;
     }
+}
+
 
     // If it wasn't recognized as a code line, treat it as a *name* line
     if (!handledCode)
@@ -1313,27 +1531,44 @@ foreach (string rawLine in lines)
     // We *do not* touch g_region, g_verifiermode, g_gs3key here.
     // Those are controlled via the Options menu (ARMAX Verifier Mode, Region, GS3 Key, etc.)
 Cheat.cheatClearFolderId();
-    int resultCode = 0;
-    try
+int resultCode = 0;
+
+try
+{
+    foreach (var cheat in cheats)
     {
-        foreach (var cheat in cheats)
-        {
-            resultCode = ConvertCore.ConvertCode(cheat);
-            if (resultCode != 0)
-                break;
-        }
+        // Auto-pull AR2 key from 0E3C7DF2 XXXXXXXX, and strip that header
+        // out of the cheat before we run ConvertCode.
+        TryApplyAr2KeyFromCheatHeader(cheat);
+
+        resultCode = ConvertCore.ConvertCode(cheat);
+        if (resultCode != 0)
+            break;
     }
-    catch (Exception ex)
-    {
-        txtOutput.Text = "// Error during conversion:\r\n// " + ex.Message;
-        return;
-    }
+}
+catch (Exception ex)
+{
+    txtOutput.Text = "// Error during conversion:\r\n// " + ex.Message;
+    return;
+}
+
 
     if (resultCode != 0)
 {
     txtOutput.Text = "// ConvertCode returned error code: " + resultCode;
     return;
 }
+// Sync UI from current globals after conversion.
+// If ARMAX input was used, DecryptCode may have discovered game ID/region
+// from the verifier header; reflect that here so the user can reuse them.
+
+if (ConvertCore.g_gameid != 0)
+{
+    SyncGameIdFromGlobals();
+}
+
+// Keep the ARMAX Region menu in sync with g_region (0 = USA, 1 = PAL, 2 = Japan)
+UpdateRegionMenuChecks();
 
 // Are we outputting ARMAX encrypted text?
 bool outputAsArmaxEncrypted =
@@ -1380,7 +1615,6 @@ for (int idx = 0; idx < cheats.Count; idx++)
 {
     var cheat = cheats[idx];
     string? label = labels[idx];
-
     // 1) try user label line
     // 2) otherwise auto-detected cheat.name (Enable Code / (M) / Unnamed)
     string? header = !string.IsNullOrWhiteSpace(label)
@@ -1418,12 +1652,12 @@ for (int idx = 0; idx < cheats.Count; idx++)
         sb.AppendLine($"[{finalName}]");
 
         // patch=1,EE,ADDR,extended,VALUE
-        for (int i = 0; i < cheat.codecnt; i += 2)
-        {
-            uint addr = cheat.code[i];
-            uint val  = (i + 1 < cheat.codecnt) ? cheat.code[i + 1] : 0u;
-            sb.AppendLine($"patch=1,EE,{addr:X8},extended,{val:X8}");
-        }
+for (int i = 0; i < cheat.codecnt; i += 2)
+{
+    uint addr = cheat.code[i];
+    uint val  = (i + 1 < cheat.codecnt) ? cheat.code[i + 1] : 0u;
+    sb.AppendLine($"patch=1,EE,{addr:X8},extended,{val:X8}");
+}
 
         sb.AppendLine();  // blank line between sections
         continue;         // skip normal RAW / ARMAX formatting
@@ -1439,24 +1673,26 @@ for (int idx = 0; idx < cheats.Count; idx++)
     }
 
     if (outputAsArmaxEncrypted)
+{
+    // Encrypted ARMAX text output: XXXXX-XXXXX-XXXXX
+    for (int i = 0; i + 1 < cheat.codecnt; i += 2)
     {
-        // Encrypted ARMAX text output: XXXXX-XXXXX-XXXXX
-        for (int i = 0; i + 1 < cheat.codecnt; i += 2)
-        {
-            string armCode = Armax.FormatEncryptedLine(cheat.code[i], cheat.code[i + 1]);
-            sb.AppendLine(armCode);
-        }
+        string armCode = Armax.FormatEncryptedLine(cheat.code[i], cheat.code[i + 1]);
+        sb.AppendLine(armCode);
     }
-    else
+}
+
+else
+{
+    // Default: two octets per line (ADDR VALUE)
+    for (int i = 0; i < cheat.codecnt; i += 2)
     {
-        // Default: two octets per line (ADDR VALUE)
-        for (int i = 0; i < cheat.codecnt; i += 2)
-        {
-            uint addr = cheat.code[i];
-            uint val  = (i + 1 < cheat.codecnt) ? cheat.code[i + 1] : 0u;
-            sb.AppendLine($"{addr:X8} {val:X8}");
-        }
+        uint addr = cheat.code[i];
+        uint val  = (i + 1 < cheat.codecnt) ? cheat.code[i + 1] : 0u;
+        sb.AppendLine($"{addr:X8} {val:X8}");
     }
+}
+
 
     // Blank line between cheats (but not after the last one)
     if (idx + 1 < cheats.Count)
@@ -1480,13 +1716,14 @@ private sealed class AppSettings
     public ConvertCore.Crypt        InputCrypt   { get; set; }
     public ConvertCore.Device       OutputDevice { get; set; }
     public ConvertCore.Crypt        OutputCrypt  { get; set; }
-	public bool                     OutputPnachRaw { get; set; }   // NEW
+	public bool                     OutputPnachRaw { get; set; }
     public ConvertCore.VerifierMode VerifierMode { get; set; }
     public uint                     Region       { get; set; }
     public bool                     MakeFolders  { get; set; }
     public char                     HashDrive    { get; set; }
     public uint                     Gs3Key       { get; set; }
 	public int                      CbcSaveVersion { get; set; }  // 7 or 8
+	public uint                     GameId         { get; set; }
 }
 
 private static string GetSettingsPath()
@@ -1520,12 +1757,16 @@ private void LoadAppSettings()
         ConvertCore.g_outdevice    = settings.OutputDevice;
         ConvertCore.g_outcrypt     = settings.OutputCrypt;
         ConvertCore.g_verifiermode = settings.VerifierMode;
-		_outputAsPnachRaw      = settings.OutputPnachRaw;   // NEW
+		_outputAsPnachRaw      = settings.OutputPnachRaw;
         ConvertCore.g_region       = settings.Region;
         ConvertCore.g_makefolders  = settings.MakeFolders;
         ConvertCore.g_hashdrive    = settings.HashDrive;
         ConvertCore.g_gs3key       = settings.Gs3Key;
 		ConvertCore.g_cbcSaveVersion = settings.CbcSaveVersion == 8 ? 8 : 7;
+		if (settings.GameId != 0)
+{
+    ConvertCore.g_gameid = settings.GameId;
+}
     }
     catch
     {
@@ -1556,13 +1797,14 @@ private void SaveAppSettings()
             InputCrypt   = ConvertCore.g_incrypt,
             OutputDevice = ConvertCore.g_outdevice,
             OutputCrypt  = ConvertCore.g_outcrypt,
-			OutputPnachRaw = _outputAsPnachRaw,     // NEW
+			OutputPnachRaw = _outputAsPnachRaw,
             VerifierMode = ConvertCore.g_verifiermode,
             Region       = ConvertCore.g_region,
             MakeFolders  = ConvertCore.g_makefolders,
             HashDrive    = ConvertCore.g_hashdrive,
             Gs3Key       = ConvertCore.g_gs3key,
-			CbcSaveVersion = ConvertCore.g_cbcSaveVersion
+			CbcSaveVersion = ConvertCore.g_cbcSaveVersion,
+			GameId         = ConvertCore.g_gameid
         };
 
         var options = new JsonSerializerOptions { WriteIndented = true };
@@ -1666,8 +1908,124 @@ private CryptOption FindCryptOption(ConvertCore.Device device,
             mi.Click += CryptMenuItem_Click;
             parent.DropDownItems.Add(mi);
         }
+		/// <summary>
+/// Show/hide the top-row ARMAX Game ID boxes based on the current
+/// input/output device selection (DEV_ARMAX = ARMAX / ARMAX(RAW)).
+/// </summary>
+private void RefreshArmaxGameIdDisplay()
+{
+    if (lblGameIdInput == null || txtGameIdInput == null ||
+        lblGameIdOutput == null || txtGameIdOutput == null)
+        return;
 
-        private void SetCryptSelection(bool isInput, CryptOption opt)
+    bool inputIsArmax  = (ConvertCore.g_indevice == ConvertCore.Device.DEV_ARMAX);
+    bool outputIsArmax = (ConvertCore.g_outdevice == ConvertCore.Device.DEV_ARMAX);
+
+    // Input side
+    lblGameIdInput.Visible = inputIsArmax;
+    txtGameIdInput.Visible = inputIsArmax;
+
+    // Output side
+    lblGameIdOutput.Visible = outputIsArmax;
+    txtGameIdOutput.Visible = outputIsArmax;
+
+    // PNACH CRC checkbox only matters for PNACH RAW output,
+    // so hide it when ARMAX is active on the output side.
+    if (ConvertCore.g_outdevice == ConvertCore.Device.DEV_ARMAX)
+    {
+        chkPnachCrcActive.Visible = false;
+    }
+    else
+    {
+        // Leave PNACH logic alone; it will be toggled by SetCryptSelection
+        // based on _outputAsPnachRaw / _pnachCrcActive.
+    }
+}
+// ---------------------------------------------------------------------
+        // AR2 key helper: small read-only display + auto-detect from header
+        // ---------------------------------------------------------------------
+
+        /// <summary>
+        /// Show/hide and update the small "AR2 key" box based on the current
+        /// input crypt mode and ConvertCore.ar2seeds. Mirrors Ar2KeyForm's
+        /// InitializeFromCurrentSeed logic, but kept on the main form so that
+        /// auto-detected keys (from 0E3C7DF2 XXXXXXXX lines) stay in sync.
+        /// </summary>
+        private void RefreshAr2KeyDisplayFromSeed()
+        {
+            if (txtAr2CurrentKey == null || lblAr2CurrentKey == null)
+                return;
+
+            bool show = (ConvertCore.g_incrypt == ConvertCore.Crypt.CRYPT_AR2);
+
+            lblAr2CurrentKey.Visible = show;
+            txtAr2CurrentKey.Visible = show;
+
+            if (!show)
+            {
+                txtAr2CurrentKey.Text = string.Empty;
+                return;
+            }
+
+            // Mirror Ar2KeyForm.InitializeFromCurrentSeed():
+            //   key = ar2encrypt(ar2seeds, tseed[1], tseed[0]);
+            uint ar1seed = Ar2.AR1_SEED;
+            byte[] tseed = BitConverter.GetBytes(ar1seed); // little-endian
+
+            uint key = Ar2.Ar2Encrypt(ConvertCore.ar2seeds, tseed[1], tseed[0]);
+            txtAr2CurrentKey.Text = key.ToString("X8");
+        }
+
+        /// <summary>
+/// If we're decrypting AR2 input and this cheat starts with a
+/// "0E3C7DF2 XXXXXXXX" header line, treat that XXXXXXXX value as the
+/// encrypted AR2 key code *for this cheat only*, update ConvertCore.ar2seeds,
+/// and then REMOVE that header pair from the cheat so it never gets converted.
+///
+/// This mirrors the original C behaviour:
+/// - seeds come from the AR2 header
+/// - the header line itself is not a "normal" code.
+/// </summary>
+private bool TryApplyAr2KeyFromCheatHeader(cheat_t cheat)
+{
+    if (cheat == null)
+        return false;
+
+    // Only relevant when input crypt is AR2 (Input: AR-V2).
+    if (ConvertCore.g_incrypt != ConvertCore.Crypt.CRYPT_AR2)
+        return false;
+
+    // Need at least one address/value pair.
+    if (cheat.codecnt < 2)
+        return false;
+
+    const uint AR2_HEADER_ADDR = 0x0E3C7DF2u;
+
+    // AR2 master codes put the key in the very first address/value pair.
+    if (cheat.code[0] != AR2_HEADER_ADDR)
+        return false;
+
+    // Encrypted AR2 key code (eight hex digits).
+    uint key = cheat.code[1];
+
+    // Mirror Ar2KeyForm.btnOk_Click:
+    //   ar2seeds = ar2decrypt(key, tseed[1], tseed[0]);
+    uint   ar1seed = Ar2.AR1_SEED;
+    byte[] tseed   = BitConverter.GetBytes(ar1seed); // little-endian
+    ConvertCore.ar2seeds = Ar2.Ar2Decrypt(key, tseed[1], tseed[0]);
+
+    // Remove this header pair from the cheat so ConvertCode never
+    // sees it as a normal "code". cheatRemoveOctets works in 32-bit
+    // words ("octets"), so 2 = [addr,val].
+    Cheat.cheatRemoveOctets(cheat, 1, 2);
+
+    // Keep the small "current AR2 key" box in sync.
+    RefreshAr2KeyDisplayFromSeed();
+
+    return true;
+}
+
+                void SetCryptSelection(bool isInput, CryptOption opt)
         {
             if (isInput)
             {
@@ -1675,6 +2033,10 @@ private CryptOption FindCryptOption(ConvertCore.Device device,
                 ConvertCore.g_incrypt  = opt.Crypt;
                 lblInputFormat.Text    = "Input: " + opt.Text;
 				_inputAsPnachRaw      = opt.UsePnachFormat;    // NEW
+
+                // NEW: keep the AR2 current-key display in sync with
+                // whatever input crypt/seed is active.
+                RefreshAr2KeyDisplayFromSeed();
             }
             else
             {
@@ -1686,6 +2048,8 @@ private CryptOption FindCryptOption(ConvertCore.Device device,
 				chkPnachCrcActive.Visible = _outputAsPnachRaw;
 				chkPnachCrcActive.Checked = _outputAsPnachRaw && _pnachCrcActive && _pnachCrc.HasValue;
             }
+			// NEW: keep ARMAX Game ID boxes in sync with current devices
+    RefreshArmaxGameIdDisplay();
         }
 		protected override void OnFormClosing(FormClosingEventArgs e)
 {

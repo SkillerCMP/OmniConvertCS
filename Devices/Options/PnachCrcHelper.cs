@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace OmniconvertCS
 {
@@ -32,7 +33,40 @@ namespace OmniconvertCS
                 return $"{CrcHex} - {GameName}";
             }
         }
+public static string NormalizeElfName(string? elfName)
+{
+    if (string.IsNullOrWhiteSpace(elfName))
+        return string.Empty;
 
+    string clean = elfName.Trim();
+
+    // Work on just the file name part (no path)
+    try
+    {
+        clean = Path.GetFileName(clean);
+    }
+    catch
+    {
+        // ignore, keep whatever came in
+    }
+
+    // Match standard PS2 ELF pattern: SLUS_123.45 → SLUS-12345
+    var m = Regex.Match(
+        clean,
+        @"^([A-Za-z]{4})_([0-9]{3})\.([0-9]{2})$",
+        RegexOptions.CultureInvariant);
+
+    if (m.Success)
+    {
+        string prefix = m.Groups[1].Value.ToUpperInvariant(); // SLUS
+        string part1  = m.Groups[2].Value;                    // 123
+        string part2  = m.Groups[3].Value;                    // 45
+        return $"{prefix}-{part1}{part2}";                    // SLUS-12345
+    }
+
+    // Anything non-standard is left unchanged
+    return clean;
+}
         /// <summary>
         /// Computes the PCSX2/PNACH "Game CRC" from a PS2 ELF file.
         /// </summary>
@@ -193,19 +227,8 @@ namespace OmniconvertCS
             var entries = LoadEntries();
 
             string cleanName = gameName.Trim();
-            string cleanElf  = (elfName ?? string.Empty).Trim();
+			string cleanElf  = NormalizeElfName(elfName);
 
-            if (!string.IsNullOrEmpty(cleanElf))
-            {
-                try
-                {
-                    cleanElf = Path.GetFileName(cleanElf);
-                }
-                catch
-                {
-                    // ignore, keep whatever came in
-                }
-            }
 
             // Look for an existing entry with same CRC + same ELF name (case-insensitive)
             var existing = entries.FirstOrDefault(e =>

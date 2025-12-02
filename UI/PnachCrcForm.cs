@@ -161,27 +161,31 @@ namespace OmniconvertCS.Gui
     //  2) Otherwise, fall back to the file name from the drop/browse path.
     string elfName = string.Empty;
 
-    if (comboKnown.SelectedItem is PnachCrcHelper.CrcEntry selectedEntry &&
-        !string.IsNullOrWhiteSpace(selectedEntry.ElfName))
-    {
-        elfName = selectedEntry.ElfName;
-    }
-    else if (!string.IsNullOrWhiteSpace(txtElfPath.Text))
-    {
-        try
-        {
-            elfName = Path.GetFileName(txtElfPath.Text);
-        }
-        catch
-        {
-            elfName = txtElfPath.Text.Trim(); // fallback, shouldn't really happen
-        }
-    }
-
+if (comboKnown.SelectedItem is PnachCrcHelper.CrcEntry selectedEntry &&
+    !string.IsNullOrWhiteSpace(selectedEntry.ElfName))
+{
+    elfName = selectedEntry.ElfName;
+}
+else if (!string.IsNullOrWhiteSpace(txtElfPath.Text))
+{
     try
     {
-        PnachCrcHelper.AddOrUpdate(crc, name, elfName);
+        elfName = Path.GetFileName(txtElfPath.Text);
     }
+    catch
+    {
+        elfName = txtElfPath.Text.Trim(); // fallback, shouldn't really happen
+    }
+}
+
+// Normalize to SLES-52641 style if possible
+elfName = PnachCrcHelper.NormalizeElfName(elfName);
+
+try
+{
+    PnachCrcHelper.AddOrUpdate(crc, name, elfName);
+}
+
     catch (Exception ex)
     {
         MessageBox.Show(this,
