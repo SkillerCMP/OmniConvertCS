@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Omniconvert C# v1.01 – Help</title>
+    <style>
+        body {
+            font-family: Segoe UI, Tahoma, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0 0 40px 0;
+            background-color: #f5f5f5;
+            color: #222;
+        }
+        header {
+            background: #29323c;
+            color: #fff;
+            padding: 16px 24px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+        header p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 24px 24px 40px 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+            margin-top: 28px;
+        }
+        h3 {
+            margin-top: 20px;
+        }
+        code {
+            font-family: Consolas, "Courier New", monospace;
+            background: #f0f0f0;
+            padding: 0 3px;
+            border-radius: 3px;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 8px 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 13px;
+        }
+        ul {
+            margin-top: 6px;
+        }
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 2px 0;
+        }
+        .badge-new {
+            display: inline-block;
+            background: #0078d7;
+            color: #fff;
+            font-size: 11px;
+            padding: 0 5px;
+            border-radius: 3px;
+            margin-left: 4px;
+        }
+        .note {
+            border-left: 3px solid #0078d7;
+            padding-left: 8px;
+            margin: 8px 0;
+            font-size: 13px;
+            background: #f7fbff;
+        }
+        .warning {
+            border-left: 3px solid #d9534f;
+            padding-left: 8px;
+            margin: 8px 0;
+            font-size: 13px;
+            background: #fff6f6;
+        }
+        .mono {
+            font-family: Consolas, "Courier New", monospace;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Omniconvert C# v1.01 – Help</h1>
+    <p>PS2 cheat-code format converter – AR / GS / ARMAX / CodeBreaker / XP / Xploder / RAW / PNACH</p>
+</header>
+<main>
+
+    <section class="toc">
+        <h2>Contents</h2>
+        <ul>
+            <li><a href="#overview">1. Overview</a></li>
+            <li><a href="#window-tour">2. Main window tour</a></li>
+            <li><a href="#quick-start">3. Quick start</a></li>
+            <li><a href="#file-menu">4. File menu: loading & saving</a></li>
+            <li><a href="#input-output-formats">5. Input & Output formats</a></li>
+            <li><a href="#inline-mode">6. INLINE input mode <span class="badge-new">NEW</span></a></li>
+            <li><a href="#pnach-support">7. PNACH (RAW) input & output <span class="badge-new">UPDATED</span></a></li>
+            <li><a href="#error-reporting">8. Per-cheat error reporting <span class="badge-new">NEW</span></a></li>
+            <li><a href="#options-menu">9. Options menu: advanced settings</a></li>
+            <li><a href="#tips">10. Tips & notes</a></li>
+        </ul>
+    </section>
+
+    <section id="overview">
+        <h2>1. Overview</h2>
+        <p>
+            Omniconvert C# is a reimplementation of the classic Omniconvert tool,
+            written in C# / WinForms. It converts PlayStation 2 cheat codes between
+            various devices and formats:
+        </p>
+        <ul>
+            <li>Action Replay V1 / V2</li>
+            <li>Action Replay MAX (ARMAX) – encrypted and RAW</li>
+            <li>GameShark (various versions)</li>
+            <li>CodeBreaker (CBC, encrypted & RAW)</li>
+            <li>XP / Xploder</li>
+            <li>Standard RAW</li>
+            <li>PCSX2 PNACH (RAW patch format)</li>
+            <li>Swap Magic Coder</li>
+        </ul>
+        <p>
+            Version <strong>1.01 (C# modular build)</strong> adds:
+        </p>
+        <ul>
+            <li><strong>INLINE input mode</strong> – per-cheat <code>, CRYPT_XXXX</code> tags in one paste.</li>
+            <li><strong>PNACH (RAW) input & output</strong> with CRC support and a dedicated CRC dialog.</li>
+            <li><strong>Per-cheat error reporting</strong> – failed cheats emit clear error comment blocks instead of silently disappearing.</li>
+            <li>UI tweaks such as AR2 key display and PNACH CRC “Add CRC” checkbox integration.</li>
+        </ul>
+    </section>
+
+    <section id="window-tour">
+        <h2>2. Main window tour</h2>
+
+        <h3>2.1 Input panel (left)</h3>
+        <ul>
+            <li><strong>Input text box</strong> – paste or type your source codes here.</li>
+            <li><strong>Clear</strong> – clears the input box.</li>
+            <li><strong>Game ID (Input)</strong> – numeric ID used by some devices (e.g., ARMAX, organizers).</li>
+            <li><strong>Input format label</strong> – shows the current input selection, for example:
+                <span class="mono">Input: Standard(RAW)</span> or
+                <span class="mono">Input: INLINE (from ', CRYPT_XXXX' headers)</span>.
+            </li>
+        </ul>
+
+        <h3>2.2 Output panel (right)</h3>
+        <ul>
+            <li><strong>Output text box</strong> – converted output appears here after pressing <strong>Convert</strong>.</li>
+            <li><strong>Clear</strong> – clears the output box.</li>
+            <li><strong>Game ID (Output)</strong> – tracks the game ID of the converted codes (used when saving certain formats).</li>
+            <li><strong>Game Name</strong> – friendly game name for PNACH and ARMAX data.</li>
+            <li><strong>Output format label</strong> – shows the current output selection, such as:
+                <span class="mono">Output: Pnach(RAW)</span> or
+                <span class="mono">Output: Codebreaker(RAW)</span>.
+            </li>
+            <li><strong>Add CRC</strong> (checkbox – visible when Output is PNACH(RAW)) – toggles whether PNACH output includes a CRC header.</li>
+        </ul>
+
+        <h3>2.3 Convert & status</h3>
+        <ul>
+            <li><strong>Convert</strong> – runs the conversion from the current Input format to the selected Output format.</li>
+            <li><strong>AR2 key display</strong> (label / text box) – shows the current AR2 encryption key when AR-V2 mode is in use. It updates from the AR2 key dialog and AR2 seeds.</li>
+            <li><strong>Status / errors</strong> – some errors appear as message boxes; detailed per-cheat errors are written into the Output as comment blocks (see section 8).</li>
+        </ul>
+    </section>
+
+    <section id="quick-start">
+        <h2>3. Quick start</h2>
+
+        <h3>3.1 Basic RAW → PNACH example</h3>
+        <ol>
+            <li>Choose <strong>Input → Unencrypted → Standard(RAW)</strong>.</li>
+            <li>Choose <strong>Output → Unencrypted → Pnach(RAW)</strong>.</li>
+            <li>Paste RAW codes into the Input box, for example:
+                <pre>90000000 00000000</pre>
+            </li>
+            <li>Ensure <strong>Game Name</strong> is filled in appropriately.</li>
+            <li>Optionally click <strong>Options → Set PNACH CRC...</strong> to configure CRC and game name for PNACH.</li>
+            <li>Click <strong>Convert</strong>.</li>
+            <li>The Output box now shows PNACH-style lines:
+                <pre>// Converted by Omniconvert C#
+// CRC: XXXXXXXX, Game: Your Game Name
+
+[Enable Code (Must Be On)]
+patch=1,EE,90000000,extended,00000000
+</pre>
+            </li>
+            <li>Use <strong>File → Save As → .pnach</strong> to save.</li>
+        </ol>
+
+        <h3>3.2 Converting between consoles/devices</h3>
+        <ol>
+            <li>Select the correct <strong>Input</strong> device/crypt from the Input menu (e.g. ARMAX, CodeBreaker, GS, etc).</li>
+            <li>Select the desired <strong>Output</strong> device/crypt in the Output menu.</li>
+            <li>Paste your codes in the Input box.</li>
+            <li>Click <strong>Convert</strong>, then review the Output.</li>
+            <li>Use <strong>File → Save As</strong> to export a text file, CBC, ARMAX BIN, P2M, PNACH, or Swap Magic file as needed.</li>
+        </ol>
+    </section>
+
+    <section id="file-menu">
+        <h2>4. File menu: loading & saving</h2>
+
+        <h3>4.1 Loading</h3>
+        <p><strong>File → Load</strong> supports:</p>
+        <ul>
+            <li><strong>Text File...</strong> – loads a plain text file into the Input box.</li>
+            <li><strong>AR MAX .bin...</strong> – parses an ARMAX save file and imports its cheats into the Input box.</li>
+            <li><strong>CodeBreaker CBC...</strong> – reads a CBC file, extracts cheats, and loads them into the Input box as RAW codes (with labels).</li>
+            <li><strong>XP/GS P2M...</strong> – reads an XP/GS file, populates the Game Name box, and loads its cheats as RAW codes.</li>
+        </ul>
+        <p class="note">
+            After loading a binary format (ARMAX, CBC, P2M) the tool converts those codes to RAW internally
+            so you can freely convert them to other formats.
+        </p>
+
+        <h3>4.2 Saving</h3>
+        <p><strong>File → Save As</strong> supports:</p>
+        <ul>
+            <li><strong>Text...</strong> – saves the Output box content as a .txt file.</li>
+            <li><strong>.pnach...</strong> – saves the Output box as a PNACH file (for PCSX2).
+                If the Output is empty you’ll be asked to confirm.
+            </li>
+            <li><strong>AR MAX File (.bin)</strong> – creates an ARMAX binary file using the last converted cheats and Game ID.</li>
+            <li><strong>CBC File (.cbc)</strong> – writes a CodeBreaker CBC file (you can choose Save Version 7 or 8 under Options).</li>
+            <li><strong>XP/GS File (.P2M)</strong> – saves cheats in P2M format for XP / GS.</li>
+            <li><strong>Swap Magic File (.bin)</strong> – creates a small Swap Magic Coder file.</li>
+        </ul>
+        <p class="warning">
+            ARMAX, CBC, P2M and Swap Magic saving require that a conversion has run successfully
+            (the tool uses the last converted cheats and Game ID). If nothing has been converted yet,
+            those options may show warnings or produce empty data.
+        </p>
+    </section>
+
+    <section id="input-output-formats">
+        <h2>5. Input & Output formats</h2>
+
+        <h3>5.1 Unencrypted group</h3>
+        <p>Under <strong>Unencrypted</strong> you’ll find RAW-style formats:</p>
+        <ul>
+            <li><strong>Standard(RAW)</strong> – generic address/value pairs like:
+                <pre>XXXXXXXX YYYYYYYY</pre>
+            </li>
+            <li><strong>INLINE (from ', CRYPT_XXXX' headers)</strong> <span class="badge-new">NEW</span> – special input-only mode, see section 6.</li>
+            <li><strong>Pnach(RAW)</strong> – PNACH-compatible patch lines (input or output) with
+                <code>patch=1,EE,ADDR,extended,VALUE</code> syntax.
+            </li>
+            <li><strong>ARMAX(RAW)</strong> – ARMAX RAW codes (not encrypted text).</li>
+            <li><strong>AR/GS V1-2(RAW)</strong> – Action Replay / GameShark v1–2 RAW.</li>
+            <li><strong>Codebreaker(RAW)</strong> – CodeBreaker RAW format.</li>
+            <li><strong>XP/GS V3(RAW)</strong> – XP / GameShark v3-style RAW format.</li>
+        </ul>
+
+        <h3>5.2 Action Replay group</h3>
+        <p>Under <strong>Action Replay</strong> you’ll find the AR crypted formats:</p>
+        <ul>
+            <li><strong>AR-V1</strong></li>
+            <li><strong>AR-V2</strong> (AR2 – uses the AR2 key and seeds; see Options → Set AR2 Key Code)</li>
+            <li><strong>ARMAX</strong> (encrypted ARMAX text codes, e.g. <code>VF78-9CQT-6TRXX</code>)</li>
+        </ul>
+
+        <h3>5.3 CodeBreaker group</h3>
+        <ul>
+            <li><strong>CodeBreaker</strong> – standard CodeBreaker encrypted format.</li>
+            <li><strong>CodeBreaker (Day1 / v7)</strong> – variant for v7 Day1 codes.</li>
+            <li><strong>CodeBreaker (v8 / CFU)</strong> – variant for v8+ CFU format.</li>
+        </ul>
+
+        <h3>5.4 GameShark & Xploder groups</h3>
+        <ul>
+            <li><strong>GameShark → InterAct</strong> – GS v1 / v2.</li>
+            <li><strong>GameShark → MadCatz</strong> – GS v3–4 and GS v5+.</li>
+            <li><strong>Swap Magic → Coder V3.x</strong> – simple Swap Magic Coder format.</li>
+            <li><strong>Xploder (XP)</strong> – XP v1–3, v4, and v5+ modes.</li>
+        </ul>
+
+        <p class="note">
+            When you choose a device+crypt from the Input menu, Omniconvert expects codes in
+            that exact format. The Output menu controls how those codes will be re-emitted.
+        </p>
+    </section>
+
+    <section id="inline-mode">
+        <h2>6. INLINE input mode <span class="badge-new">NEW</span></h2>
+
+        <p>
+            <strong>INLINE</strong> is an input-only mode that lets you mix different crypt types
+            in a single paste, as long as each cheat block has a header line with a
+            <code>, CRYPT_XXXX</code> tag.
+        </p>
+
+        <h3>6.1 What INLINE does</h3>
+        <ol>
+            <li>You select <strong>Input → Unencrypted → INLINE (from ', CRYPT_XXXX' headers)</strong>.</li>
+            <li>You paste text containing multiple cheats, each starting with a label line.</li>
+            <li>Each label line includes <code>, CRYPT_XXXX</code>, for example <code>, CRYPT_ARMAX</code>.</li>
+            <li>Omniconvert reads each label, identifies the crypt, and sets that crypt/device for that cheat only.</li>
+            <li>All cheats are then converted into the single Output format you selected (e.g. PNACH, CodeBreaker, RAW, etc.).</li>
+        </ol>
+
+        <h3>6.2 Supported CRYPT tags</h3>
+        <p>INLINE recognises the following identifiers in headers:</p>
+        <ul>
+            <li><code>CRYPT_AR1</code></li>
+            <li><code>CRYPT_AR2</code></li>
+            <li><code>CRYPT_ARMAX</code></li>
+            <li><code>CRYPT_CB</code></li>
+            <li><code>CRYPT_CB7_COMMON</code></li>
+            <li><code>CRYPT_GS3</code></li>
+            <li><code>CRYPT_GS5</code></li>
+            <li><code>CRYPT_MAXRAW</code></li>
+            <li><code>CRYPT_RAW</code></li>
+        </ul>
+        <p>
+            The tag is case-insensitive, but using the exact uppercase form (e.g. <code>CRYPT_ARMAX</code>)
+            is recommended for clarity.
+        </p>
+
+        <h3>6.3 Required formatting</h3>
+        <p>Each cheat (or cheat block) should look like:</p>
+        <pre>&lt;Label line with , CRYPT_XXXX&gt;
+&lt;code line 1&gt;
+&lt;code line 2&gt;
+...
+
+&lt;Next label line with , CRYPT_YYYY&gt;
+&lt;code line 1&gt;
+&lt;code line 2&gt;
+...</pre>
+
+        <h4>Example: ARMAX + AR2 + CodeBreaker in one paste</h4>
+        <pre>(M) by Codejunkies , CRYPT_ARMAX
+VF78-9CQT-6TRXX
+9Y3Z-DHNW-3QXAJ
+UW8R-MMUW-X8P31
+
+(M) Must Be On by InterAct , CRYPT_AR2
+0E3C7DF2 1853E59E
+EE85F492 BCC65302
+
+Enable Code (Must Be On) by Code Master , CRYPT_CB
+FA7A006E 32B24109
+</pre>
+
+        <ul>
+            <li>The first block is treated as ARMAX input.</li>
+            <li>The second block is treated as AR2 input.</li>
+            <li>The third block is treated as CodeBreaker input.</li>
+        </ul>
+
+        <p class="note">
+            INLINE also supports ARMAX <em>text</em> codes like
+            <code>VF78-9CQT-6TRXX</code>. These are auto-detected and decoded just
+            as they are in plain ARMAX input mode.
+        </p>
+
+        <h3>6.4 Output behaviour of the <code>, CRYPT_XXXX</code> tag</h3>
+
+        <h4>Non-PNACH outputs</h4>
+        <ul>
+            <li>The label’s <code>, CRYPT_XXXX</code> is updated to match the <strong>output</strong> crypt.</li>
+            <li>If there was no CRYPT tag, one is added at the end of the label.</li>
+        </ul>
+
+        <p>Example (Output = CodeBreaker RAW):</p>
+        <pre>Input label:  (M) by Codejunkies , CRYPT_ARMAX
+Output label: (M) by Codejunkies , CRYPT_CB</pre>
+
+        <h4>PNACH (RAW) output</h4>
+        <ul>
+            <li>When Output is <strong>Pnach(RAW)</strong>, the <code>, CRYPT_XXXX</code> part is <strong>removed</strong> from section names.</li>
+        </ul>
+        <p>Example PNACH output section:</p>
+        <pre>[Enable Code (Must Be On)]
+patch=1,EE,90000000,extended,00000000
+</pre>
+
+        <h3>6.5 Fallbacks</h3>
+        <ul>
+            <li>If a label doesn’t contain <code>, CRYPT_XXXX</code>, the cheat uses the current input device/crypt from the menu.</li>
+            <li>If the tag uses an unknown crypt name, it is treated conservatively (RAW) and converted as far as possible.</li>
+        </ul>
+    </section>
+
+    <section id="pnach-support">
+        <h2>7. PNACH (RAW) input & output <span class="badge-new">UPDATED</span></h2>
+
+        <h3>7.1 PNACH as output</h3>
+        <p>
+            When you select <strong>Output → Unencrypted → Pnach(RAW)</strong>, Omniconvert
+            emits PCSX2-friendly patch lines:
+        </p>
+        <pre>// Converted by Omniconvert C#
+// CRC: XXXXXXXX, Game: Your Game Name
+
+[Group\Code Name]
+patch=1,EE,ADDR,extended,VALUE
+</pre>
+
+        <ul>
+            <li>Each cheat becomes a PNACH-style section.</li>
+            <li>Group / code names come from your labels or auto-generated names.</li>
+            <li>Section headers never include <code>, CRYPT_XXXX</code> (even in INLINE mode).</li>
+        </ul>
+
+        <h3>7.2 PNACH as input</h3>
+        <p>
+            Selecting <strong>Input → Unencrypted → Pnach(RAW)</strong> tells Omniconvert to
+            parse <code>patch=1,EE,ADDR,extended,VALUE</code> lines as codes. You can then
+            convert PNACH codes back to RAW or other devices.
+        </p>
+
+        <h3>7.3 PNACH CRC dialog <span class="badge-new">NEW</span></h3>
+        <p>
+            <strong>Options → Set PNACH CRC...</strong> opens a helper dialog that lets you:
+        </p>
+        <ul>
+            <li>Type or paste an 8-digit CRC (hex).</li>
+            <li>Type or adjust the Game Name string used in PNACH headers.</li>
+            <li>Pick a known CRC / name from a built-in list (loaded from <code>PnachCRC.json</code>).</li>
+            <li>Browse for a PS2 <code>.ELF</code> or main executable (e.g. <code>SLUS_205.88</code>) to compute the CRC automatically.</li>
+            <li>Drag & drop an ELF file onto the dialog to compute CRC quickly.</li>
+        </ul>
+
+        <p class="note">
+            The <strong>Add CRC</strong> checkbox on the main form controls whether this CRC
+            and game name are included in the PNACH output header. Unchecking it will output
+            PNACH patches without CRC / name comments.
+        </p>
+    </section>
+
+    <section id="error-reporting">
+        <h2>8. Per-cheat error reporting <span class="badge-new">NEW</span></h2>
+
+        <p>
+            Older builds could silently drop cheats if they failed mid-conversion. In v1.01
+            this has been changed:
+        </p>
+        <ul>
+            <li>Each cheat is converted independently.</li>
+            <li>If a cheat fails, an <strong>error comment block</strong> is added to the Output instead of silently vanishing.</li>
+        </ul>
+
+        <h3>8.1 Error comment format</h3>
+        <p>For a failing cheat, you’ll see something like:</p>
+        <pre>// [ERROR] Enable Code (Must Be On)
+// Error code: 3
+// Failed to decrypt AR2 code – key mismatch, invalid seeds, or corrupted line.</pre>
+
+        <ul>
+            <li>The first line names the logical cheat (group / code name).</li>
+            <li>The numeric error code is printed for advanced debugging.</li>
+            <li>A friendly description is appended (from <code>Translate.TransGetErrorText()</code>).</li>
+            <li>A blank line follows, then conversion continues with the next cheat.</li>
+        </ul>
+
+        <p class="note">
+            This applies to both PNACH and non-PNACH outputs. In PNACH mode the error block
+            is written instead of the code’s patch lines; in other outputs it appears where
+            the cheat’s codes would normally be.
+        </p>
+    </section>
+
+    <section id="options-menu">
+        <h2>9. Options menu: advanced settings</h2>
+
+        <h3>9.1 ARMAX Options...</h3>
+        <p>
+            <strong>Options → AR MAX Options...</strong> opens a dialog where you can set:
+        </p>
+        <ul>
+            <li><strong>Game ID</strong> used by ARMAX exports and organizers.</li>
+            <li><strong>Region</strong> – USA / PAL / Japan (affects internal ARMAX metadata).</li>
+            <li><strong>Verifiers</strong> – Automatic or Manual mode (influences ARMAX disc verification behaviour).</li>
+            <li><strong>Disc Hash Drive</strong> – which optical drive letter to use for ARMAX disc-hash calculation, or “Do Not Create”.</li>
+        </ul>
+        <p>
+            These settings sync with the main Game ID box and the ARMAX “Disc Hash” menu.
+        </p>
+
+        <h3>9.2 ARMAX Disc Hash</h3>
+        <p>
+            <strong>Options → AR MAX Disc Hash</strong> lets you choose:
+        </p>
+        <ul>
+            <li><strong>Do Not Create</strong> – disables disc-hash generation.</li>
+            <li><strong>Use Drive X:\</strong> entries – pick which CD/DVD drive to use to read disc data for hash generation.</li>
+        </ul>
+
+        <h3>9.3 AR2 Key Code...</h3>
+        <p>
+            <strong>Options → Set AR2 Key Code...</strong> opens the AR2 key dialog:
+        </p>
+        <ul>
+            <li>Shows the current AR2 encrypted key derived from the seeds.</li>
+            <li>Lets you enter a new 8-hex-digit AR2 key manually.</li>
+            <li>Provides a list of common keys to pick from.</li>
+            <li>Updates the main window’s AR2 key display when you click OK.</li>
+        </ul>
+
+        <h3>9.4 ARMAX Verifiers (Automatic / Manual)</h3>
+        <p>
+            Under <strong>Options → AR MAX Verifiers</strong> you can choose whether ARMAX
+            disc verification is managed automatically by the tool or left in manual mode.
+        </p>
+
+        <h3>9.5 ARMAX Region</h3>
+        <p>
+            <strong>Options → AR MAX Region</strong> toggles the region flag used in ARMAX data:
+        </p>
+        <ul>
+            <li>USA</li>
+            <li>PAL</li>
+            <li>Japan</li>
+        </ul>
+
+        <h3>9.6 CBC Save Version</h3>
+        <p>
+            <strong>Options → CBC Save Version</strong> selects how CBC files are written:</p>
+        <ul>
+            <li><strong>Version 7 (Day1)</strong> – for older Day1-style CBC files.</li>
+            <li><strong>Version 8 (CFU)</strong> – for newer CFU-style CBC files.</li>
+        </ul>
+
+        <h3>9.7 GS3 Key</h3>
+        <p>
+            <strong>Options → GS3 Key</strong> sets the internal key index for GameShark v3+ conversions.
+            Keys 0–4 are available; which one you need depends on your GS build.
+        </p>
+
+        <h3>9.8 Make Organizers</h3>
+        <p>
+            <strong>Options → Make Organizers</strong> controls whether “organizer” entries are
+            generated for ARMAX / CodeBreaker (special codes that structure how cheats appear in
+            device menus). When enabled, extra codes may be added to help devices display groups
+            and folders more cleanly.
+        </p>
+
+        <h3>9.9 PNACH CRC...</h3>
+        <p>
+            Covered in detail in section 7.3. In short, this dialog centralizes CRC, game name and
+            ELF-based CRC calculation for PNACH output.
+        </p>
+    </section>
+
+    <section id="tips">
+        <h2>10. Tips & notes</h2>
+
+        <ul>
+            <li><strong>Always verify on hardware / emulator.</strong>
+                Conversion success doesn’t guarantee a cheat is logically correct; test everything.
+            </li>
+            <li><strong>Use INLINE to clean messy mixed lists.</strong>
+                If you have big dumps from forums or legacy tools where different crypt formats
+                are intermixed, adding <code>, CRYPT_XXXX</code> tags lets you convert the whole
+                thing in one go.
+            </li>
+            <li><strong>Watch the error blocks.</strong>
+                If any cheat fails to convert, an <code>// [ERROR]</code> block explains why –
+                usually misformatted lines, wrong key, or unsupported code type.
+            </li>
+            <li><strong>Game ID vs CRC.</strong>
+                Game ID is used for ARMAX / organizers / some save formats; CRC is used for
+                PNACH / PCSX2. They’re separate values and can both be set.
+            </li>
+            <li><strong>Back up codes.</strong>
+                Before batch-converting or saving over existing files, keep a copy of your
+                original codes and save files.
+            </li>
+        </ul>
+
+        <p>
+            This help file describes the C# modular build of Omniconvert C# v1.01, including
+            INLINE mode, PNACH enhancements, AR2 key display, and per-cheat error reporting.
+        </p>
+    </section>
+
+</main>
+</body>
+</html>

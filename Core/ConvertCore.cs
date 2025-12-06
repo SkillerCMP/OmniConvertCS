@@ -293,13 +293,29 @@ namespace OmniconvertCS
 {
     if (cheat == null) throw new ArgumentNullException(nameof(cheat));
 
+    // Start assuming the cheat is valid; mark as failed only if something goes wrong.
+    cheat.state = 0;
+
     // Mirror original Omniconvert's ProcessText(): reset GS3/GS5
     // encryption tables using the default halfword seeds for each run.
     Gs3.Init();
 
     int ret;
-    if ((ret = DecryptCode(cheat))   != 0) return ret;
-    if ((ret = TranslateCode(cheat)) != 0) return ret;
+
+    // Decryption step (ARMAX encrypted input, GS3, etc.)
+    if ((ret = DecryptCode(cheat)) != 0)
+    {
+        // mark this cheat as bad and bail out
+        cheat.state = 1;
+        return ret;
+    }
+
+    // Opcode/device translation step (AR/GS/CB/etc logic)
+    if ((ret = TranslateCode(cheat)) != 0)
+    {
+        cheat.state = 1;
+        return ret;
+    }
 
     // In the Win32 UI, "Make Folders" runs AFTER translate and BEFORE encrypt.
     bool makeFoldersFlag =
@@ -321,12 +337,19 @@ namespace OmniconvertCS
         discHash = Armax.ComputeDiscHash(g_hashdrive);
     }
 
+    // Final ARMAX/GS3/CBC housekeeping (folder bits, etc.)
     Cheat.cheatFinalizeData(cheat, g_outdevice, discHash, makeFoldersFlag);
 
-    if ((ret = EncryptCode(cheat)) != 0) return ret;
+    // Encryption step (ARMAX encrypted output, GS3, etc.)
+    if ((ret = EncryptCode(cheat)) != 0)
+    {
+        cheat.state = 1;
+        return ret;
+    }
 
     return 0;
 }
+
 
     }
 }
