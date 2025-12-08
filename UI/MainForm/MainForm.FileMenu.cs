@@ -11,6 +11,113 @@ namespace OmniconvertCS.Gui
 {
     public partial class MainForm
     {
+        // === Shared helpers for File→Load and drag & drop ===
+
+        private void LoadCbcFromPath(string path)
+        {
+            var result = CbcReader.Load(path);
+
+            // Set the game name textbox from the file.
+            txtGameName.Text = result.GameName;
+
+            var sb = new StringBuilder();
+
+            foreach (var cheat in result.Cheats)
+            {
+                string name = cheat.name ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(name))
+                    sb.AppendLine(name);
+
+                if (cheat.codecnt > 0)
+                {
+                    for (int i = 0; i + 1 < cheat.codecnt; i += 2)
+                    {
+                        uint addr = cheat.code[i];
+                        uint val  = cheat.code[i + 1];
+                        sb.AppendLine($"{addr:X8} {val:X8}");
+                    }
+                }
+
+                // Blank line between cheats
+                sb.AppendLine();
+            }
+
+            txtInput.Text = sb.ToString().TrimEnd();
+            txtOutput.Clear();
+
+            // Fresh input – user will hit Convert to target a device.
+            _lastConvertedCheats = null;
+        }
+
+        private void LoadArmaxBinFromPath(string path)
+        {
+            var textResult = ArmaxBinReader.LoadAsArmaxEncryptedTextWithGames(path);
+
+            // If the list only has a single game, put that into the Game Name box
+            // and do NOT print "Game Name: ..." inside the text area.
+            if (textResult.GameCount == 1)
+            {
+                txtGameName.Text = textResult.GameName ?? string.Empty;
+            }
+            else
+            {
+                // Multi-game codelist: leave the Game Name box empty so the user
+                // sees the per-game headings instead.
+                txtGameName.Clear();
+            }
+
+            // Show the ARMAX encrypted codes (with optional "Game Name: ..." headings)
+            txtInput.Text = string.Join(Environment.NewLine, textResult.Lines);
+            txtOutput.Clear();
+
+            // Fresh input – user will hit Convert to target a device.
+            _lastConvertedCheats = null;
+        }
+
+        private void LoadP2mFromPath(string path)
+        {
+            var result = P2mReader.Load(path);
+
+            // Populate the Game Name textbox from user.dat.
+            txtGameName.Text = result.GameName;
+
+            var sb = new StringBuilder();
+            foreach (var cheat in result.Cheats)
+            {
+                string name = cheat.name ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(name))
+                    sb.AppendLine(name);
+
+                if (cheat.codecnt > 0)
+                {
+                    for (int i = 0; i + 1 < cheat.codecnt; i += 2)
+                    {
+                        uint addr = cheat.code[i];
+                        uint val  = cheat.code[i + 1];
+                        sb.AppendLine($"{addr:X8} {val:X8}");
+                    }
+                }
+
+                sb.AppendLine();
+            }
+
+            txtInput.Text = sb.ToString().TrimEnd();
+            txtOutput.Clear();
+            _lastConvertedCheats = null;
+        }
+
+        private void LoadTextFromPath(string path)
+        {
+            // Read as UTF-8; adjust if you prefer ANSI/other encodings.
+            string text = File.ReadAllText(path, Encoding.UTF8);
+            txtInput.Text = CleanCbSiteFormat(text);
+            txtOutput.Clear();
+            _lastConvertedCheats = null;
+        }
+
+        // === File → Load menu handlers now just pick a file and call helpers ===
+
         private void menuFileLoadCbc_Click(object sender, EventArgs e)
         {
             using (var dlg = new OpenFileDialog())
@@ -23,41 +130,7 @@ namespace OmniconvertCS.Gui
 
                 try
                 {
-                    var result = CbcReader.Load(dlg.FileName);
-
-                    // Set the game name textbox from the file.
-                    txtGameName.Text = result.GameName;
-
-                    // For now, we just dump everything as plain ADDR VALUE lines +
-                    // headings into the *input* box, so you can re-convert.
-                    var sb = new StringBuilder();
-
-                    foreach (var cheat in result.Cheats)
-                    {
-                        string name = cheat.name ?? string.Empty;
-
-                        if (!string.IsNullOrWhiteSpace(name))
-                            sb.AppendLine(name);
-
-                        if (cheat.codecnt > 0)
-                        {
-                            for (int i = 0; i + 1 < cheat.codecnt; i += 2)
-                            {
-                                uint addr = cheat.code[i];
-                                uint val  = cheat.code[i + 1];
-                                sb.AppendLine($"{addr:X8} {val:X8}");
-                            }
-                        }
-
-                        // Blank line between cheats
-                        sb.AppendLine();
-                    }
-
-                    txtInput.Text = sb.ToString().TrimEnd();
-                    txtOutput.Clear();
-
-                    // Because we just loaded raw codes, treat this as "fresh input".
-                    _lastConvertedCheats = null;
+                    LoadCbcFromPath(dlg.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -82,27 +155,7 @@ namespace OmniconvertCS.Gui
 
                 try
                 {
-                    var textResult = ArmaxBinReader.LoadAsArmaxEncryptedTextWithGames(dlg.FileName);
-
-                    // If the list only has a single game, put that into the Game Name box
-                    // and do NOT print "Game Name: ..." inside the text area.
-                    if (textResult.GameCount == 1)
-                    {
-                        txtGameName.Text = textResult.GameName ?? string.Empty;
-                    }
-                    else
-                    {
-                        // Multi-game codelist: leave the Game Name box empty so the user
-                        // sees the per-game headings instead.
-                        txtGameName.Clear();
-                    }
-
-                    // Show the ARMAX encrypted codes (with optional "Game Name: ..." headings)
-                    txtInput.Text = string.Join(Environment.NewLine, textResult.Lines);
-                    txtOutput.Clear();
-
-                    // Fresh input – user will hit Convert to target a device.
-                    _lastConvertedCheats = null;
+                    LoadArmaxBinFromPath(dlg.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -128,34 +181,7 @@ namespace OmniconvertCS.Gui
 
                 try
                 {
-                    var result = P2mReader.Load(dlg.FileName);
-
-                    // Populate the Game Name textbox from user.dat.
-                    txtGameName.Text = result.GameName;
-
-                    var sb = new StringBuilder();
-                    foreach (var cheat in result.Cheats)
-                    {
-                        string name = cheat.name ?? string.Empty;
-                        if (!string.IsNullOrWhiteSpace(name))
-                            sb.AppendLine(name);
-
-                        if (cheat.codecnt > 0)
-                        {
-                            for (int i = 0; i + 1 < cheat.codecnt; i += 2)
-                            {
-                                uint addr = cheat.code[i];
-                                uint val  = cheat.code[i + 1];
-                                sb.AppendLine($"{addr:X8} {val:X8}");
-                            }
-                        }
-
-                        sb.AppendLine();
-                    }
-
-                    txtInput.Text = sb.ToString().TrimEnd();
-                    txtOutput.Clear();
-                    _lastConvertedCheats = null;
+                    LoadP2mFromPath(dlg.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -181,9 +207,7 @@ namespace OmniconvertCS.Gui
 
                 try
                 {
-                    // Read as UTF-8; adjust if you prefer ANSI/other encodings.
-                    string text = File.ReadAllText(dlg.FileName, Encoding.UTF8);
-                     txtInput.Text = CleanCbSiteFormat(text);
+                    LoadTextFromPath(dlg.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -195,6 +219,8 @@ namespace OmniconvertCS.Gui
                 }
             }
         }
+
+        // === Save / Export handlers unchanged below ===
 
         private void menuFileSaveAsText_Click(object sender, EventArgs e)
         {
@@ -273,17 +299,17 @@ namespace OmniconvertCS.Gui
                 dlg.DefaultExt = "pnach";
 
                 // Default filename: if Add CRC is active AND we have ELF + CRC, use ELF_CRC.pnach
-        // otherwise fall back to PUTNAME.pnach so the user can fill it in.
-        string suggestedName = "PUTNAME.pnach";
+                // otherwise fall back to PUTNAME.pnach so the user can fill it in.
+                string suggestedName = "PUTNAME.pnach";
 
-        if (_pnachCrcActive &&                      // Add CRC checkbox is checked
-            _pnachCrc.HasValue &&                   // we actually have a CRC
-            !string.IsNullOrWhiteSpace(_pnachElfName))   // and an ELF name
-        {
-            suggestedName = $"{_pnachElfName}_{_pnachCrc.Value:X8}.pnach";
-        }
+                if (_pnachCrcActive &&                      // Add CRC checkbox is checked
+                    _pnachCrc.HasValue &&                   // we actually have a CRC
+                    !string.IsNullOrWhiteSpace(_pnachElfName))   // and an ELF name
+                {
+                    suggestedName = $"{_pnachElfName}_{_pnachCrc.Value:X8}.pnach";
+                }
 
-        dlg.FileName = suggestedName;
+                dlg.FileName = suggestedName;
 
                 if (dlg.ShowDialog(this) != DialogResult.OK)
                     return;
@@ -351,7 +377,8 @@ namespace OmniconvertCS.Gui
 
                 if (dlg.ShowDialog(this) != DialogResult.OK)
                     return;
-        // Use the Game Name textbox value here
+
+                // Use the Game Name textbox value here
                 string gameName = txtGameName.Text?.Trim() ?? string.Empty;
                 // Build game_t for the writer. Name can be blank; the writer will
                 // substitute "Unnamed Game" if needed (matching the original C code).
@@ -523,7 +550,8 @@ namespace OmniconvertCS.Gui
         }
 
         private void menuFileSaveAsSwapBin_Click(object sender, EventArgs e)
-         {   // 1) Require a successful conversion first
+        {
+            // 1) Require a successful conversion first
             if (_lastConvertedCheats == null || _lastConvertedCheats.Count == 0)
             {
                 MessageBox.Show(
@@ -536,20 +564,20 @@ namespace OmniconvertCS.Gui
             }
 
             bool swapMagicCompatible =
-            ConvertCore.g_outdevice == ConvertCore.Device.DEV_AR1 ||
-            ConvertCore.g_outdevice == ConvertCore.Device.DEV_STD;
+                ConvertCore.g_outdevice == ConvertCore.Device.DEV_AR1 ||
+                ConvertCore.g_outdevice == ConvertCore.Device.DEV_STD;
 
-        if (!swapMagicCompatible)
-        {
-            MessageBox.Show(
-                this,
-                "Swap Magic export requires the *output* device to be AR1\\SW or STD(RAW).\r\n" +
-                "Please select AR1\\SW or STD(RAW) as the output type, click Convert, then try again.",
-                "Swap Magic Export",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
-            return;
-        }
+            if (!swapMagicCompatible)
+            {
+                MessageBox.Show(
+                    this,
+                    "Swap Magic export requires the *output* device to be AR1\\SW or STD(RAW).\r\n" +
+                    "Please select AR1\\SW or STD(RAW) as the output type, click Convert, then try again.",
+                    "Swap Magic Export",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
 
             // 3) Let the user pick a .bin file name (historically Swap Magic uses .bin)
             using (var dlg = new SaveFileDialog())

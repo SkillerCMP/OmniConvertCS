@@ -56,6 +56,15 @@ namespace OmniconvertCS
                 case "RAW":
                     crypt = ConvertCore.Crypt.CRYPT_RAW;
                     return true;
+				case "ARAW":
+					crypt = ConvertCore.Crypt.CRYPT_ARAW;
+					return true;
+				case "CRAW":
+					crypt = ConvertCore.Crypt.CRYPT_CRAW;
+					return true;
+				case "GRAW":
+					crypt = ConvertCore.Crypt.CRYPT_GRAW;
+					return true;
                 default:
                     // Unknown tag: treat as RAW but report false so callers can fallback.
                     crypt = ConvertCore.Crypt.CRYPT_RAW;
@@ -74,6 +83,7 @@ namespace OmniconvertCS
                     return ConvertCore.Device.DEV_AR1;
 
                 case ConvertCore.Crypt.CRYPT_AR2:
+				case ConvertCore.Crypt.CRYPT_ARAW:
                     return ConvertCore.Device.DEV_AR2;
 
                 case ConvertCore.Crypt.CRYPT_ARMAX:
@@ -82,10 +92,12 @@ namespace OmniconvertCS
 
                 case ConvertCore.Crypt.CRYPT_CB:
                 case ConvertCore.Crypt.CRYPT_CB7_COMMON:
+				case ConvertCore.Crypt.CRYPT_CRAW:
                     return ConvertCore.Device.DEV_CB;
 
                 case ConvertCore.Crypt.CRYPT_GS3:
                 case ConvertCore.Crypt.CRYPT_GS5:
+				case ConvertCore.Crypt.CRYPT_GRAW:
                     return ConvertCore.Device.DEV_GS3;
 
                 case ConvertCore.Crypt.CRYPT_RAW:
@@ -115,28 +127,32 @@ namespace OmniconvertCS
         /// Used for non-PNACH output when INLINE input is active.
         /// </summary>
         public static string UpdateCryptTagForOutput(string? label, ConvertCore.Crypt outCrypt)
-        {
-            if (string.IsNullOrWhiteSpace(label))
-                return label ?? string.Empty;
+{
+    if (string.IsNullOrWhiteSpace(label))
+        return label ?? string.Empty;
 
-            string token = GetCryptTokenForOutput(outCrypt);
-            // If we don't have a meaningful token, just strip any existing tag.
-            if (string.IsNullOrEmpty(token))
-                return StripCryptTag(label);
+    // Work on a trimmed copy so we don't keep adding trailing spaces
+    string trimmed = label.TrimEnd();
 
-            string replacement = ", " + token;
+    string token = GetCryptTokenForOutput(outCrypt);
+    // If we don't have a meaningful token, just strip any existing tag.
+    if (string.IsNullOrEmpty(token))
+        return StripCryptTag(trimmed);
 
-            var m = CryptTagRegex.Match(label);
-            if (!m.Success)
-            {
-                // No existing CRYPT_ tag; append one.
-                return label.TrimEnd() + " " + replacement;
-            }
+    var m = CryptTagRegex.Match(trimmed);
+    if (!m.Success)
+    {
+        // No existing CRYPT_ tag in the original label; DO NOT add a new one.
+        // Only lines that already had ", CRYPT_XXXX" should be touched.
+        return trimmed;
+    }
 
-            // Replace the first existing CRYPT_ tag.
-            string result = CryptTagRegex.Replace(label, replacement, 1);
-            return result.TrimEnd();
-        }
+    string replacement = ", " + token;
+
+    // Replace the first existing CRYPT_ tag.
+    string result = CryptTagRegex.Replace(trimmed, replacement, 1);
+    return result.TrimEnd();
+}
 
         /// <summary>
         /// Map an output crypt to its CRYPT_XXXX token string.
@@ -154,6 +170,10 @@ namespace OmniconvertCS
                 case ConvertCore.Crypt.CRYPT_GS5:         return "CRYPT_GS5";
                 case ConvertCore.Crypt.CRYPT_MAXRAW:      return "CRYPT_MAXRAW";
                 case ConvertCore.Crypt.CRYPT_RAW:         return "CRYPT_RAW";
+				case ConvertCore.Crypt.CRYPT_ARAW:        return "CRYPT_ARAW";
+				case ConvertCore.Crypt.CRYPT_CRAW:        return "CRYPT_CRAW";
+				case ConvertCore.Crypt.CRYPT_GRAW:        return "CRYPT_GRAW";
+				
                 default:
                     return string.Empty;
             }

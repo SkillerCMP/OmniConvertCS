@@ -1,7 +1,7 @@
-# OmniConvertCS v1.02 – Function Map
+# OmniConvertCS v1.03 – Function Map
 
-This is a **high-level map of where things live** in the v1.02 baseline.  
-It focuses on core pipelines, device logic, and UI wiring (not every tiny helper).
+This is a **high-level map of where things live** in the v1.02 baseline,  
+updated with features **as of v1.03** (drag & drop, ARMAX button glyphs/notes, PNACH filename tweaks).
 
 ---
 
@@ -110,7 +110,7 @@ Implements the internal **opcode translation engine** (port of `translate.c`).
     Returns the last human-readable translation error for UI display.
 
 ### Core/InlineCryptParser.cs
-New in v1.02 – powers **INLINE crypt mode**.
+Powers **INLINE crypt mode**.
 
 - `TryGetCryptFromLabel(string label, out ConvertCore.Crypt crypt)`  
   - Scans a label for `", CRYPT_XXXX"` and maps it to a `ConvertCore.Crypt`.
@@ -199,6 +199,12 @@ Reader for **ARMAX `.bin` codelist** files (`PS2_CODELIST` layout).
 - Public surface:
   - `Result` class – holds `List<cheat_t> Cheats` + game name/ID metadata.
   - `Load(string path)` (via public static entry) – read file, decode ARMAX payload using `Devices.Armax`, populate cheats.
+- **As of v1.03:**
+  - Wide-string reader (`ReadWideStringZeroTerminated`) now maps embedded ARMAX **button glyph code units**
+    (e.g. `0x0010`–`0x001D`) into readable tokens like `{X}`, `{Square}`, `{Triangle}`, `{Circle}`,
+    `{L1}`, `{L2}`, `{R1}`, `{R2}`, `{Up}`, `{Right}`, `{Down}`, `{Left}` in both names and notes.
+  - When non-empty game or cheat notes are present, they are appended in braces to the label text, e.g.  
+    `Infinite Time {Press {L1}+{L2}+{X} to activate.}`.
 
 ### Devices/Load/CbcReader.cs
 Reader for **CodeBreaker `.cbc`** Day1/CFU files.
@@ -228,29 +234,31 @@ Reader for **GameShark v5 / XP `.p2m`** archives.
 Writer for **ARMAX `.bin` codelist** files (C# port of `armlist.c`).
 
 - `CreateList(List<cheat_t> cheats, game_t game, string fileName)`  
-  - Mirros `alCreateList`:
+  - Mirrors `alCreateList`:
     - Computes space for names/comments/flags.
     - Builds ARMAX list header and cheat blocks.
     - Writes out the `PS2_CODELIST` file.
+- Uses `game.name` from the **Game Name** textbox in `MainForm` for the list’s internal game title.
 
 ### Devices/SaveAs/CbcWriter.cs
 Writer for **CodeBreaker `.cbc`** files.
 
-- `CreateFile(List<cheat_t> cheats, string fileName, bool useV7Header, string title, ...)`  
+- `CreateFile(List<cheat_t> cheats, game_t game, string fileName, bool doHeadings)`  
   - C# port of `cbcCreateFile`.
   - Can emit:
     - v7 Day1 header + encrypted payload.
     - v8 CFU header + encrypted payload.
   - Uses `Cb2Crypto` for encryption and CRC.
+  - Uses `game.name` as the file’s game title.
 
 ### Devices/SaveAs/P2m.cs
 Writer for **GameShark v5+ `.p2m`** archives.
 
 - Contains C# versions of `p2mheader_t`, `p2mfd_t`, `p2mdate_t`, constants, etc.
-- `CreateFile(List<cheat_t> cheats, game_t game, string path, ...)`  
+- `CreateFile(List<cheat_t> cheats, game_t game, string path, bool doHeadings)`  
   - Builds a P2M archive with code list / user data.
   - Uses `Gs3` crypto for the embedded `user.dat`.
-- Several private helpers to write headers, file descriptors, and timestamps.
+  - Uses `game.name` as the internal game name.
 
 ### Devices/SaveAs/SwapMagicBinWriter.cs
 Writer for **Swap Magic Coder `.bin`** files.
@@ -309,6 +317,10 @@ Designer-generated layout for the main window.
   - PNACH CRC checkbox and related labels.
   - AR2 key textbox & label.
   - Status text labels for input/output format.
+  - Game ID / Game Name fields.
+- **As of v1.03:**
+  - Enables drag-and-drop on the Input textbox (`AllowDrop = true`) and wires
+    `DragEnter` / `DragDrop` to `MainForm.DragDrop` handlers for file loading.
 
 ### UI/MainForm/MainForm.cs
 Main behavior for the form; **core event handlers and convert pipeline entry**.
@@ -368,18 +380,43 @@ Edit menu and associated shortcuts.
 ### UI/MainForm/MainForm.FileMenu.cs
 File load/save behaviour for all supported formats.
 
-- Load:
-  - `menuFileLoadText_Click(...)` – load plain text to Input.
-  - `menuFileLoadArmaxBin_Click(...)` – ARMAX `.bin` using `ArmaxBinReader`.
-  - `menuFileLoadCbc_Click(...)` – CBC `.cbc` via `CbcReader`.
-  - `menuFileLoadP2m_Click(...)` – P2M files via `P2mReader`.
-- Save:
+- **Shared load helpers (new in v1.03):**
+  - `LoadTextFromPath(string path)` – central text-file load logic (used by menu + drag & drop).
+  - `LoadCbcFromPath(string path)` – wraps `CbcReader.Load` and pushes result into Input/Game Name.
+  - `LoadArmaxBinFromPath(string path)` – wraps `ArmaxBinReader.LoadAsArmaxEncryptedTextWithGames`, handles single vs multi-game lists.
+  - `LoadP2mFromPath(string path)` – wraps `P2mReader.Load`, fills Game Name and Input.
+- Load menu handlers:
+  - `menuFileLoadText_Click(...)` – show `OpenFileDialog` then call `LoadTextFromPath`.
+  - `menuFileLoadArmaxBin_Click(...)` – show dialog then call `LoadArmaxBinFromPath`.
+  - `menuFileLoadCbc_Click(...)` – show dialog then call `LoadCbcFromPath`.
+  - `menuFileLoadP2m_Click(...)` – show dialog then call `LoadP2mFromPath`.
+- Save menu handlers:
   - `menuFileSaveAsText_Click(...)` – save Output as plain text.
-  - `menuFileSaveAsPnach_Click(...)` – PNACH text via `PnachWriter`.
-  - `menuFileSaveAsArmaxBin_Click(...)` – ARMAX `.bin` via `ArmaxBinWriter`.
-  - `menuFileSaveAsCbc_Click(...)` – CBC `.cbc` via `CbcWriter`.
-  - `menuFileSaveAsP2m_Click(...)` – P2M archive via `P2m`.
-  - `menuFileSaveAsSwapBin_Click(...)` – Swap Magic `.bin` via `SwapMagicWriter`.
+  - `menuFileSaveAsPnach_Click(...)` – PNACH text via `PnachWriter`:
+    - Warns if Output format is not Pnach(RAW).
+    - **As of v1.03**, when PNACH CRC is active and ELF/CRC are known,
+      pre-fills the filename as `ELFNAME_CRC.pnach`; otherwise falls back to `PUTNAME.pnach`.
+  - `menuFileSaveAsArmaxBin_Click(...)` – ARMAX `.bin` via `ArmaxBinWriter`, using last converted cheats and `txtGameName`.
+  - `menuFileSaveAsCbc_Click(...)` – CBC `.cbc` via `CbcWriter` (Day1/CFU depending on options).
+  - `menuFileSaveAsP2m_Click(...)` – P2M archive via `P2m.CreateFile` (XP/GS).
+  - `menuFileSaveAsSwapBin_Click(...)` – Swap Magic `.bin` via `SwapMagicBinWriter`.
+
+### UI/MainForm/MainForm.DragDrop.cs
+Implements drag-and-drop loading into the Input text box. **(new in v1.03)**
+
+- `IsSupportedLoadExtension(string? ext)`  
+  - Returns `true` for `.txt`, `.cbc`, `.bin`, `.p2m` (files that can be loaded into Input).
+- `txtInput_DragEnter(object sender, DragEventArgs e)`  
+  - Checks for file-drop data and sets `DragDropEffects.Copy` only if at least one supported file is present.
+- `txtInput_DragDrop(object sender, DragEventArgs e)`  
+  - Extracts the first supported file from the drop and calls `LoadFileIntoInput(path)`.
+- `LoadFileIntoInput(string path)`  
+  - Switches on file extension and delegates to the shared load helpers in `MainForm.FileMenu`:
+    - `.cbc` → `LoadCbcFromPath`
+    - `.bin` → `LoadArmaxBinFromPath`
+    - `.p2m` → `LoadP2mFromPath`
+    - `.txt` / default → `LoadTextFromPath`
+  - Ensures drag & drop loading behaves identically to the File → Load menu.
 
 ### UI/MainForm/MainForm.GameIdAndPnachUi.cs
 Helpers for Game ID fields and PNACH CRC UI.
@@ -462,10 +499,15 @@ Dialog for PNACH CRC / Game Name / ELF mapping.
 ### INFO/OmniconvertCS_Help.html
 - HTML help for end-users; linked from README and/or future Help menu.
 - Describes formats, usage, and examples.
+- **Updated for v1.03** to cover:
+  - Drag & drop loading into Input.
+  - ARMAX button glyph decoding & notes appended to labels.
+  - PNACH filename defaults based on ELF + CRC.
 
 ### README.md
 - Full project overview, supported devices/crypts, and usage notes.
 - Mentions INLINE mode, PNACH support, and PNACH CRC helper.
+- Should be kept in sync with v1.03 features as they settle.
 
 ### CREDITS.md
 - Attribution for original Omniconvert, research, and contributors.
@@ -486,4 +528,5 @@ Dialog for PNACH CRC / Game Name / ELF mapping.
 This map is intentionally **not exhaustive** – it’s meant as a quick guide
 so you can jump to the right file when you’re working on a feature.
 
-When we add new features (e.g. more INLINE helpers, additional loaders/writers, or organizer export), we can append new bullets under the relevant sections.
+As new v1.03+ features land (e.g. INLINE enhancements, extra loaders/writers, organizer export),
+we can keep adding bullets marked “new in v1.03+” under the relevant sections.

@@ -180,192 +180,192 @@ namespace OmniconvertCS.Gui
             this.menuStrip.Text     = "menuStrip";
 
             // menuFile
-this.menuFile.Text = "&File";
-this.menuFile.DropDownItems.AddRange(new ToolStripItem[]
-{
-    this.menuFileLoad,
-    this.menuFileSeparator,
-    this.menuFileSaveAs
-});
+            this.menuFile.Text = "&File";
+            this.menuFile.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                this.menuFileLoad,
+                this.menuFileSeparator,
+                this.menuFileSaveAs
+            });
 
 
-// menuFileLoad
-this.menuFileLoad.Name = "menuFileLoad";
-this.menuFileLoad.Size = new System.Drawing.Size(180, 22);
-this.menuFileLoad.Text = "Load";
-this.menuFileLoad.DropDownItems.AddRange(new ToolStripItem[] {
-    this.menuFileLoadText,
-    this.menuFileLoadCbc,
-    this.menuFileLoadArmaxBin,
-    this.menuFileLoadP2m
-});
+            // menuFileLoad
+            this.menuFileLoad.Name = "menuFileLoad";
+            this.menuFileLoad.Size = new System.Drawing.Size(180, 22);
+            this.menuFileLoad.Text = "Load";
+            this.menuFileLoad.DropDownItems.AddRange(new ToolStripItem[] {
+                this.menuFileLoadText,
+                this.menuFileLoadCbc,
+                this.menuFileLoadArmaxBin,
+                this.menuFileLoadP2m
+            });
 
-// menuFileSaveAs (parent submenu)
-this.menuFileSaveAs.Name = "menuFileSaveAs";
-this.menuFileSaveAs.Size = new System.Drawing.Size(210, 22);
-this.menuFileSaveAs.Text = "Save &As";
+            // menuFileSaveAs (parent submenu)
+            this.menuFileSaveAs.Name = "menuFileSaveAs";
+            this.menuFileSaveAs.Size = new System.Drawing.Size(210, 22);
+            this.menuFileSaveAs.Text = "Save &As";
 
-this.menuFileSaveAs.DropDownItems.AddRange(new ToolStripItem[]
-{
-    this.menuFileSaveAsText,
-	this.menuFileSaveAsPnach,      // NEW
-    this.menuFileSaveAsArmaxBin,
-    this.menuFileSaveAsCbc,
-    this.menuFileSaveAsP2m,
-    this.menuFileSaveAsSwapBin
-});
+            this.menuFileSaveAs.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                this.menuFileSaveAsText,
+	            this.menuFileSaveAsPnach,      // NEW
+                this.menuFileSaveAsArmaxBin,
+                this.menuFileSaveAsCbc,
+                this.menuFileSaveAsP2m,
+                this.menuFileSaveAsSwapBin
+            });
 
-// menuFileLoadText
-this.menuFileLoadText.Name = "menuFileLoadText";
-this.menuFileLoadText.Size = new System.Drawing.Size(210, 22);
-this.menuFileLoadText.Text = "Text File...";
-this.menuFileLoadText.Click += new System.EventHandler(this.menuFileLoadText_Click);
+            // menuFileLoadText
+            this.menuFileLoadText.Name = "menuFileLoadText";
+            this.menuFileLoadText.Size = new System.Drawing.Size(210, 22);
+            this.menuFileLoadText.Text = "Text File...";
+            this.menuFileLoadText.Click += new System.EventHandler(this.menuFileLoadText_Click);
 
-// menuFileLoadCbc
-this.menuFileLoadCbc.Name = "menuFileLoadCbc";
-this.menuFileLoadCbc.Size = new System.Drawing.Size(210, 22);
-this.menuFileLoadCbc.Text = "CodeBreaker CBC...";
-this.menuFileLoadCbc.Click += new System.EventHandler(this.menuFileLoadCbc_Click);
+            // menuFileLoadCbc
+            this.menuFileLoadCbc.Name = "menuFileLoadCbc";
+            this.menuFileLoadCbc.Size = new System.Drawing.Size(210, 22);
+            this.menuFileLoadCbc.Text = "CodeBreaker CBC...";
+            this.menuFileLoadCbc.Click += new System.EventHandler(this.menuFileLoadCbc_Click);
 
-// menuFileLoadArmaxBin
-this.menuFileLoadArmaxBin.Name = "menuFileLoadArmaxBin";
-this.menuFileLoadArmaxBin.Size = new System.Drawing.Size(210, 22);
-this.menuFileLoadArmaxBin.Text = "AR MAX .bin...";
-this.menuFileLoadArmaxBin.Click += new System.EventHandler(this.menuFileLoadArmaxBin_Click);
+            // menuFileLoadArmaxBin
+            this.menuFileLoadArmaxBin.Name = "menuFileLoadArmaxBin";
+            this.menuFileLoadArmaxBin.Size = new System.Drawing.Size(210, 22);
+            this.menuFileLoadArmaxBin.Text = "AR MAX .bin...";
+            this.menuFileLoadArmaxBin.Click += new System.EventHandler(this.menuFileLoadArmaxBin_Click);
 
-// menuFileLoadP2m
-this.menuFileLoadP2m.Name = "menuFileLoadP2m";
-this.menuFileLoadP2m.Size = new System.Drawing.Size(210, 22);
-this.menuFileLoadP2m.Text = "XP/GS P2M...";
-this.menuFileLoadP2m.Click += new System.EventHandler(this.menuFileLoadP2m_Click);
+            // menuFileLoadP2m
+            this.menuFileLoadP2m.Name = "menuFileLoadP2m";
+            this.menuFileLoadP2m.Size = new System.Drawing.Size(210, 22);
+            this.menuFileLoadP2m.Text = "XP/GS P2M...";
+            this.menuFileLoadP2m.Click += new System.EventHandler(this.menuFileLoadP2m_Click);
 
-// menuFileSeparator
-this.menuFileSeparator.Name = "menuFileSeparator";
-this.menuFileSeparator.Size = new System.Drawing.Size(207, 6);
+            // menuFileSeparator
+            this.menuFileSeparator.Name = "menuFileSeparator";
+            this.menuFileSeparator.Size = new System.Drawing.Size(207, 6);
 
-// menuFileSaveAsText
-this.menuFileSaveAsText.Name = "menuFileSaveAsText";
-this.menuFileSaveAsText.Size = new System.Drawing.Size(210, 22);
-this.menuFileSaveAsText.Text = "Save As Text...";
-this.menuFileSaveAsText.Click += new System.EventHandler(this.menuFileSaveAsText_Click);
+            // menuFileSaveAsText
+            this.menuFileSaveAsText.Name = "menuFileSaveAsText";
+            this.menuFileSaveAsText.Size = new System.Drawing.Size(210, 22);
+            this.menuFileSaveAsText.Text = "Save As Text...";
+            this.menuFileSaveAsText.Click += new System.EventHandler(this.menuFileSaveAsText_Click);
 
-// menuFileSaveAsPnach   <-- NEW
-this.menuFileSaveAsPnach.Name = "menuFileSaveAsPnach";
-this.menuFileSaveAsPnach.Size = new System.Drawing.Size(210, 22);
-this.menuFileSaveAsPnach.Text = "Save As PNACH File (.pnach)";
-this.menuFileSaveAsPnach.Click += new System.EventHandler(this.menuFileSaveAsPnach_Click);
+            // menuFileSaveAsPnach   <-- NEW
+            this.menuFileSaveAsPnach.Name = "menuFileSaveAsPnach";
+            this.menuFileSaveAsPnach.Size = new System.Drawing.Size(210, 22);
+            this.menuFileSaveAsPnach.Text = "Save As PNACH File (.pnach)";
+            this.menuFileSaveAsPnach.Click += new System.EventHandler(this.menuFileSaveAsPnach_Click);
 
-// menuFileSaveAsArmaxBin
-this.menuFileSaveAsArmaxBin.Name = "menuFileSaveAsArmaxBin";
-this.menuFileSaveAsArmaxBin.Size = new System.Drawing.Size(210, 22);
-this.menuFileSaveAsArmaxBin.Text = "Save As AR MAX File (.bin)";
-this.menuFileSaveAsArmaxBin.Click += new System.EventHandler(this.menuFileSaveAsArmaxBin_Click);
+            // menuFileSaveAsArmaxBin
+            this.menuFileSaveAsArmaxBin.Name = "menuFileSaveAsArmaxBin";
+            this.menuFileSaveAsArmaxBin.Size = new System.Drawing.Size(210, 22);
+            this.menuFileSaveAsArmaxBin.Text = "Save As AR MAX File (.bin)";
+            this.menuFileSaveAsArmaxBin.Click += new System.EventHandler(this.menuFileSaveAsArmaxBin_Click);
 
-// menuFileSaveAsCbc
-this.menuFileSaveAsCbc.Name = "menuFileSaveAsCbc";
-this.menuFileSaveAsCbc.Size = new System.Drawing.Size(210, 22);
-this.menuFileSaveAsCbc.Text = "Save As CBC File (.cbc)";
-this.menuFileSaveAsCbc.Click += new System.EventHandler(this.menuFileSaveAsCbc_Click);
+            // menuFileSaveAsCbc
+            this.menuFileSaveAsCbc.Name = "menuFileSaveAsCbc";
+            this.menuFileSaveAsCbc.Size = new System.Drawing.Size(210, 22);
+            this.menuFileSaveAsCbc.Text = "Save As CBC File (.cbc)";
+            this.menuFileSaveAsCbc.Click += new System.EventHandler(this.menuFileSaveAsCbc_Click);
 
-// menuFileSaveAsP2m
-this.menuFileSaveAsP2m.Name = "menuFileSaveAsP2m";
-this.menuFileSaveAsP2m.Size = new System.Drawing.Size(210, 22);
-this.menuFileSaveAsP2m.Text = "Save As XP/GS File (.P2M)";
-this.menuFileSaveAsP2m.Click += new System.EventHandler(this.menuFileSaveAsP2m_Click);
+            // menuFileSaveAsP2m
+            this.menuFileSaveAsP2m.Name = "menuFileSaveAsP2m";
+            this.menuFileSaveAsP2m.Size = new System.Drawing.Size(210, 22);
+            this.menuFileSaveAsP2m.Text = "Save As XP/GS File (.P2M)";
+            this.menuFileSaveAsP2m.Click += new System.EventHandler(this.menuFileSaveAsP2m_Click);
 
-// menuFileSaveAsSwapBin
-this.menuFileSaveAsSwapBin.Name = "menuFileSaveAsSwapBin";
-this.menuFileSaveAsSwapBin.Size = new System.Drawing.Size(210, 22);
-this.menuFileSaveAsSwapBin.Text = "Save As Swap Magic File (.bin)";
-this.menuFileSaveAsSwapBin.Click += new System.EventHandler(this.menuFileSaveAsSwapBin_Click);
+            // menuFileSaveAsSwapBin
+            this.menuFileSaveAsSwapBin.Name = "menuFileSaveAsSwapBin";
+            this.menuFileSaveAsSwapBin.Size = new System.Drawing.Size(210, 22);
+            this.menuFileSaveAsSwapBin.Text = "Save As Swap Magic File (.bin)";
+            this.menuFileSaveAsSwapBin.Click += new System.EventHandler(this.menuFileSaveAsSwapBin_Click);
 
             this.menuEdit.Text    = "&Edit";
             // menuEdit
-// 
-// menuEditUndo
-// 
-this.menuEditUndo = new ToolStripMenuItem();
-this.menuEditUndo.Name = "menuEditUndo";
-this.menuEditUndo.Size = new System.Drawing.Size(180, 22);
-this.menuEditUndo.Text = "Undo";
-this.menuEditUndo.ShortcutKeys = ((Keys)((Keys.Control | Keys.Z)));
-this.menuEditUndo.Click += new System.EventHandler(this.menuEditUndo_Click);
-//
-// menuEditCut
-//
-this.menuEditCut = new ToolStripMenuItem();
-this.menuEditCut.Name = "menuEditCut";
-this.menuEditCut.Size = new System.Drawing.Size(180, 22);
-this.menuEditCut.Text = "Cut";
-this.menuEditCut.ShortcutKeys = ((Keys)((Keys.Control | Keys.X)));
-this.menuEditCut.Click += new System.EventHandler(this.menuEditCut_Click);
-//
-// menuEditCopy
-//
-this.menuEditCopy = new ToolStripMenuItem();
-this.menuEditCopy.Name = "menuEditCopy";
-this.menuEditCopy.Size = new System.Drawing.Size(180, 22);
-this.menuEditCopy.Text = "Copy";
-this.menuEditCopy.ShortcutKeys = ((Keys)((Keys.Control | Keys.C)));
-this.menuEditCopy.Click += new System.EventHandler(this.menuEditCopy_Click);
-//
-// menuEditPaste
-//
-this.menuEditPaste = new ToolStripMenuItem();
-this.menuEditPaste.Name = "menuEditPaste";
-this.menuEditPaste.Size = new System.Drawing.Size(180, 22);
-this.menuEditPaste.Text = "Paste";
-this.menuEditPaste.ShortcutKeys = ((Keys)((Keys.Control | Keys.V)));
-this.menuEditPaste.Click += new System.EventHandler(this.menuEditPaste_Click);
-//
-// menuEditSelectAll
-//
-this.menuEditSelectAll = new ToolStripMenuItem();
-this.menuEditSelectAll.Name = "menuEditSelectAll";
-this.menuEditSelectAll.Size = new System.Drawing.Size(180, 22);
-this.menuEditSelectAll.Text = "Select All";
-this.menuEditSelectAll.ShortcutKeys = ((Keys)((Keys.Control | Keys.A)));
-this.menuEditSelectAll.Click += new System.EventHandler(this.menuEditSelectAll_Click);
-//
-// menuEditSwapInputOutput
-//
-this.menuEditSwapInputOutput = new ToolStripMenuItem();
-this.menuEditSwapInputOutput.Name = "menuEditSwapInputOutput";
-this.menuEditSwapInputOutput.Size = new System.Drawing.Size(180, 22);
-this.menuEditSwapInputOutput.Text = "Swap Input && Output";
-this.menuEditSwapInputOutput.ShortcutKeys = ((Keys)((Keys.Control | Keys.Shift | Keys.S)));
-this.menuEditSwapInputOutput.Click += new System.EventHandler(this.menuEditSwapInputOutput_Click);
-//
-// menuEditClearInput
-//
-this.menuEditClearInput = new ToolStripMenuItem();
-this.menuEditClearInput.Name = "menuEditClearInput";
-this.menuEditClearInput.Size = new System.Drawing.Size(180, 22);
-this.menuEditClearInput.Text = "Clear Input";
-this.menuEditClearInput.Click += new System.EventHandler(this.menuEditClearInput_Click);
-//
-// menuEditClearOutput
-//
-this.menuEditClearOutput = new ToolStripMenuItem();
-this.menuEditClearOutput.Name = "menuEditClearOutput";
-this.menuEditClearOutput.Size = new System.Drawing.Size(180, 22);
-this.menuEditClearOutput.Text = "Clear Output";
-this.menuEditClearOutput.Click += new System.EventHandler(this.menuEditClearOutput_Click);
-//
-// Add items to the Edit menu
-//
-this.menuEdit.DropDownItems.AddRange(new ToolStripItem[] {
-    this.menuEditUndo,
-    new ToolStripSeparator(),
-    this.menuEditCut,
-    this.menuEditCopy,
-    this.menuEditPaste,
-    new ToolStripSeparator(),
-    this.menuEditSelectAll,
-	this.menuEditSwapInputOutput,
-    new ToolStripSeparator(),
-    this.menuEditClearInput,
-    this.menuEditClearOutput});
+            // 
+            // menuEditUndo
+            // 
+            this.menuEditUndo = new ToolStripMenuItem();
+            this.menuEditUndo.Name = "menuEditUndo";
+            this.menuEditUndo.Size = new System.Drawing.Size(180, 22);
+            this.menuEditUndo.Text = "Undo";
+            this.menuEditUndo.ShortcutKeys = ((Keys)((Keys.Control | Keys.Z)));
+            this.menuEditUndo.Click += new System.EventHandler(this.menuEditUndo_Click);
+            //
+            // menuEditCut
+            //
+            this.menuEditCut = new ToolStripMenuItem();
+            this.menuEditCut.Name = "menuEditCut";
+            this.menuEditCut.Size = new System.Drawing.Size(180, 22);
+            this.menuEditCut.Text = "Cut";
+            this.menuEditCut.ShortcutKeys = ((Keys)((Keys.Control | Keys.X)));
+            this.menuEditCut.Click += new System.EventHandler(this.menuEditCut_Click);
+            //
+            // menuEditCopy
+            //
+            this.menuEditCopy = new ToolStripMenuItem();
+            this.menuEditCopy.Name = "menuEditCopy";
+            this.menuEditCopy.Size = new System.Drawing.Size(180, 22);
+            this.menuEditCopy.Text = "Copy";
+            this.menuEditCopy.ShortcutKeys = ((Keys)((Keys.Control | Keys.C)));
+            this.menuEditCopy.Click += new System.EventHandler(this.menuEditCopy_Click);
+            //
+            // menuEditPaste
+            //
+            this.menuEditPaste = new ToolStripMenuItem();
+            this.menuEditPaste.Name = "menuEditPaste";
+            this.menuEditPaste.Size = new System.Drawing.Size(180, 22);
+            this.menuEditPaste.Text = "Paste";
+            this.menuEditPaste.ShortcutKeys = ((Keys)((Keys.Control | Keys.V)));
+            this.menuEditPaste.Click += new System.EventHandler(this.menuEditPaste_Click);
+            //
+            // menuEditSelectAll
+            //
+            this.menuEditSelectAll = new ToolStripMenuItem();
+            this.menuEditSelectAll.Name = "menuEditSelectAll";
+            this.menuEditSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.menuEditSelectAll.Text = "Select All";
+            this.menuEditSelectAll.ShortcutKeys = ((Keys)((Keys.Control | Keys.A)));
+            this.menuEditSelectAll.Click += new System.EventHandler(this.menuEditSelectAll_Click);
+            //
+            // menuEditSwapInputOutput
+            //
+            this.menuEditSwapInputOutput = new ToolStripMenuItem();
+            this.menuEditSwapInputOutput.Name = "menuEditSwapInputOutput";
+            this.menuEditSwapInputOutput.Size = new System.Drawing.Size(180, 22);
+            this.menuEditSwapInputOutput.Text = "Swap Input && Output";
+            this.menuEditSwapInputOutput.ShortcutKeys = ((Keys)((Keys.Control | Keys.Shift | Keys.S)));
+            this.menuEditSwapInputOutput.Click += new System.EventHandler(this.menuEditSwapInputOutput_Click);
+            //
+            // menuEditClearInput
+            //
+            this.menuEditClearInput = new ToolStripMenuItem();
+            this.menuEditClearInput.Name = "menuEditClearInput";
+            this.menuEditClearInput.Size = new System.Drawing.Size(180, 22);
+            this.menuEditClearInput.Text = "Clear Input";
+            this.menuEditClearInput.Click += new System.EventHandler(this.menuEditClearInput_Click);
+            //
+            // menuEditClearOutput
+            //
+            this.menuEditClearOutput = new ToolStripMenuItem();
+            this.menuEditClearOutput.Name = "menuEditClearOutput";
+            this.menuEditClearOutput.Size = new System.Drawing.Size(180, 22);
+            this.menuEditClearOutput.Text = "Clear Output";
+            this.menuEditClearOutput.Click += new System.EventHandler(this.menuEditClearOutput_Click);
+            //
+            // Add items to the Edit menu
+            //
+            this.menuEdit.DropDownItems.AddRange(new ToolStripItem[] {
+                this.menuEditUndo,
+                new ToolStripSeparator(),
+                this.menuEditCut,
+                this.menuEditCopy,
+                this.menuEditPaste,
+                new ToolStripSeparator(),
+                this.menuEditSelectAll,
+	            this.menuEditSwapInputOutput,
+                new ToolStripSeparator(),
+                this.menuEditClearInput,
+                this.menuEditClearOutput});
 
 			
             this.menuInput.Text   = "&Input";
@@ -390,47 +390,48 @@ this.menuEdit.DropDownItems.AddRange(new ToolStripItem[] {
 
             // menuOptions
 			this.menuOptions.DropDownItems.AddRange(new ToolStripItem[]
-{
-    // Make Organizers
-    this.menuOptionsMakeOrganizers,
-    this.menuOptionsSeparatorAfterOrganizers,
+            {
+                // Make Organizers
+                this.menuOptionsMakeOrganizers,
+                this.menuOptionsSeparatorAfterOrganizers,
 
-    // Unified ARMAX window
-    this.menuOptionsArmaxOptions,
+                // Unified ARMAX window
+                this.menuOptionsArmaxOptions,
 
-    // Old Individual Options Using ArmaxOptions Window now
-    // this.menuOptionsArmaxVerifiers,
-    // this.menuOptionsArmaxRegion,
-    // this.menuOptionsArmaxDiscHash,
-    this.menuOptionsSeparatorAfterDiscHash,
+                // Old Individual Options Using ArmaxOptions Window now
+                // this.menuOptionsArmaxVerifiers,
+                // this.menuOptionsArmaxRegion,
+                // this.menuOptionsArmaxDiscHash,
+                this.menuOptionsSeparatorAfterDiscHash,
 
-    // Keys / misc
-    this.menuOptionsPnachCrc,
-    this.menuOptionsAr2Key,
-    this.menuOptionsGs3Key,
-    this.menuOptionsCbcSaveVersion
-});
-// menuOptionsCbcSaveVersion
-this.menuOptionsCbcSaveVersion.Name = "menuOptionsCbcSaveVersion";
-this.menuOptionsCbcSaveVersion.Size = new System.Drawing.Size(220, 22);
-this.menuOptionsCbcSaveVersion.Text = "CBC Save Version";
-this.menuOptionsCbcSaveVersion.DropDownItems.AddRange(new ToolStripItem[]
-{
-    this.menuOptionsCbcVersion7,
-    this.menuOptionsCbcVersion8
-});
+                // Keys / misc
+                this.menuOptionsPnachCrc,
+                this.menuOptionsAr2Key,
+                this.menuOptionsGs3Key,
+                this.menuOptionsCbcSaveVersion
+            });
+            
+            // menuOptionsCbcSaveVersion
+            this.menuOptionsCbcSaveVersion.Name = "menuOptionsCbcSaveVersion";
+            this.menuOptionsCbcSaveVersion.Size = new System.Drawing.Size(220, 22);
+            this.menuOptionsCbcSaveVersion.Text = "CBC Save Version";
+            this.menuOptionsCbcSaveVersion.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                this.menuOptionsCbcVersion7,
+                this.menuOptionsCbcVersion8
+            });
 
-// menuOptionsCbcVersion7
-this.menuOptionsCbcVersion7.Name = "menuOptionsCbcVersion7";
-this.menuOptionsCbcVersion7.Size = new System.Drawing.Size(140, 22);
-this.menuOptionsCbcVersion7.Text = "Version 7 (Day1)";
-this.menuOptionsCbcVersion7.Click += new System.EventHandler(this.menuOptionsCbcVersion7_Click);
+            // menuOptionsCbcVersion7
+            this.menuOptionsCbcVersion7.Name = "menuOptionsCbcVersion7";
+            this.menuOptionsCbcVersion7.Size = new System.Drawing.Size(140, 22);
+            this.menuOptionsCbcVersion7.Text = "Version 7 (Day1)";
+            this.menuOptionsCbcVersion7.Click += new System.EventHandler(this.menuOptionsCbcVersion7_Click);
 
-// menuOptionsCbcVersion8
-this.menuOptionsCbcVersion8.Name = "menuOptionsCbcVersion8";
-this.menuOptionsCbcVersion8.Size = new System.Drawing.Size(140, 22);
-this.menuOptionsCbcVersion8.Text = "Version 8 (CFU)";
-this.menuOptionsCbcVersion8.Click += new System.EventHandler(this.menuOptionsCbcVersion8_Click);
+            // menuOptionsCbcVersion8
+            this.menuOptionsCbcVersion8.Name = "menuOptionsCbcVersion8";
+            this.menuOptionsCbcVersion8.Size = new System.Drawing.Size(140, 22);
+            this.menuOptionsCbcVersion8.Text = "Version 8 (CFU)";
+            this.menuOptionsCbcVersion8.Click += new System.EventHandler(this.menuOptionsCbcVersion8_Click);
 
             // menuOptionsAr2Key
             this.menuOptionsAr2Key.Name = "menuOptionsAr2Key";
@@ -439,48 +440,49 @@ this.menuOptionsCbcVersion8.Click += new System.EventHandler(this.menuOptionsCbc
 			this.menuOptionsAr2Key.ShortcutKeys = ((Keys)
 			((Keys.Control | Keys.K)));
             this.menuOptionsAr2Key.Click += new System.EventHandler(this.menuOptionsAr2Key_Click);
+			
 			// menuOptionsGs3Key
-this.menuOptionsGs3Key.Name = "menuOptionsGs3Key";
-this.menuOptionsGs3Key.Size = new System.Drawing.Size(220, 22);
-this.menuOptionsGs3Key.Text = "GS3 Key";
-this.menuOptionsGs3Key.DropDownItems.AddRange(new ToolStripItem[]
-{
-    this.menuOptionsGs3Key0,
-    this.menuOptionsGs3Key1,
-    this.menuOptionsGs3Key2,
-    this.menuOptionsGs3Key3,
-    this.menuOptionsGs3Key4
-});
+            this.menuOptionsGs3Key.Name = "menuOptionsGs3Key";
+            this.menuOptionsGs3Key.Size = new System.Drawing.Size(220, 22);
+            this.menuOptionsGs3Key.Text = "GS3 Key";
+            this.menuOptionsGs3Key.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                this.menuOptionsGs3Key0,
+                this.menuOptionsGs3Key1,
+                this.menuOptionsGs3Key2,
+                this.menuOptionsGs3Key3,
+                this.menuOptionsGs3Key4
+            });
 
-// menuOptionsGs3Key0
-this.menuOptionsGs3Key0.Name = "menuOptionsGs3Key0";
-this.menuOptionsGs3Key0.Size = new System.Drawing.Size(90, 22);
-this.menuOptionsGs3Key0.Text = "0";
-this.menuOptionsGs3Key0.Click += new System.EventHandler(this.menuOptionsGs3Key0_Click);
+            // menuOptionsGs3Key0
+            this.menuOptionsGs3Key0.Name = "menuOptionsGs3Key0";
+            this.menuOptionsGs3Key0.Size = new System.Drawing.Size(90, 22);
+            this.menuOptionsGs3Key0.Text = "0";
+            this.menuOptionsGs3Key0.Click += new System.EventHandler(this.menuOptionsGs3Key0_Click);
 
-// menuOptionsGs3Key1
-this.menuOptionsGs3Key1.Name = "menuOptionsGs3Key1";
-this.menuOptionsGs3Key1.Size = new System.Drawing.Size(90, 22);
-this.menuOptionsGs3Key1.Text = "1";
-this.menuOptionsGs3Key1.Click += new System.EventHandler(this.menuOptionsGs3Key1_Click);
+            // menuOptionsGs3Key1
+            this.menuOptionsGs3Key1.Name = "menuOptionsGs3Key1";
+            this.menuOptionsGs3Key1.Size = new System.Drawing.Size(90, 22);
+            this.menuOptionsGs3Key1.Text = "1";
+            this.menuOptionsGs3Key1.Click += new System.EventHandler(this.menuOptionsGs3Key1_Click);
 
-// menuOptionsGs3Key2
-this.menuOptionsGs3Key2.Name = "menuOptionsGs3Key2";
-this.menuOptionsGs3Key2.Size = new System.Drawing.Size(90, 22);
-this.menuOptionsGs3Key2.Text = "2";
-this.menuOptionsGs3Key2.Click += new System.EventHandler(this.menuOptionsGs3Key2_Click);
+            // menuOptionsGs3Key2
+            this.menuOptionsGs3Key2.Name = "menuOptionsGs3Key2";
+            this.menuOptionsGs3Key2.Size = new System.Drawing.Size(90, 22);
+            this.menuOptionsGs3Key2.Text = "2";
+            this.menuOptionsGs3Key2.Click += new System.EventHandler(this.menuOptionsGs3Key2_Click);
 
-// menuOptionsGs3Key3
-this.menuOptionsGs3Key3.Name = "menuOptionsGs3Key3";
-this.menuOptionsGs3Key3.Size = new System.Drawing.Size(90, 22);
-this.menuOptionsGs3Key3.Text = "3";
-this.menuOptionsGs3Key3.Click += new System.EventHandler(this.menuOptionsGs3Key3_Click);
+            // menuOptionsGs3Key3
+            this.menuOptionsGs3Key3.Name = "menuOptionsGs3Key3";
+            this.menuOptionsGs3Key3.Size = new System.Drawing.Size(90, 22);
+            this.menuOptionsGs3Key3.Text = "3";
+            this.menuOptionsGs3Key3.Click += new System.EventHandler(this.menuOptionsGs3Key3_Click);
 
-// menuOptionsGs3Key4
-this.menuOptionsGs3Key4.Name = "menuOptionsGs3Key4";
-this.menuOptionsGs3Key4.Size = new System.Drawing.Size(90, 22);
-this.menuOptionsGs3Key4.Text = "4";
-this.menuOptionsGs3Key4.Click += new System.EventHandler(this.menuOptionsGs3Key4_Click);
+            // menuOptionsGs3Key4
+            this.menuOptionsGs3Key4.Name = "menuOptionsGs3Key4";
+            this.menuOptionsGs3Key4.Size = new System.Drawing.Size(90, 22);
+            this.menuOptionsGs3Key4.Text = "4";
+            this.menuOptionsGs3Key4.Click += new System.EventHandler(this.menuOptionsGs3Key4_Click);
 
             // menuOptionsSeparatorArmax
             this.menuOptionsSeparatorArmax.Name = "menuOptionsSeparatorArmax";
@@ -538,31 +540,32 @@ this.menuOptionsGs3Key4.Click += new System.EventHandler(this.menuOptionsGs3Key4
             this.menuOptionsArmaxRegionJapan.Size = new System.Drawing.Size(120, 22);
             this.menuOptionsArmaxRegionJapan.Text = "Japan";
             this.menuOptionsArmaxRegionJapan.Click += new System.EventHandler(this.menuOptionsArmaxRegionJapan_Click);
-// menuOptionsMakeOrganizers
-this.menuOptionsMakeOrganizers.Name   = "menuOptionsMakeOrganizers";
-this.menuOptionsMakeOrganizers.Size   = new System.Drawing.Size(200, 22);
-this.menuOptionsMakeOrganizers.Text   = "Make Organizers";
-this.menuOptionsMakeOrganizers.CheckOnClick = false; // we manage Checked ourselves
-this.menuOptionsMakeOrganizers.Click += new System.EventHandler(this.menuOptionsMakeOrganizers_Click);
+            
+            // menuOptionsMakeOrganizers
+            this.menuOptionsMakeOrganizers.Name   = "menuOptionsMakeOrganizers";
+            this.menuOptionsMakeOrganizers.Size   = new System.Drawing.Size(200, 22);
+            this.menuOptionsMakeOrganizers.Text   = "Make Organizers";
+            this.menuOptionsMakeOrganizers.CheckOnClick = false; // we manage Checked ourselves
+            this.menuOptionsMakeOrganizers.Click += new System.EventHandler(this.menuOptionsMakeOrganizers_Click);
 
-// menuOptionsArmaxDiscHash
-this.menuOptionsArmaxDiscHash.Visible  = false;
-this.menuOptionsArmaxDiscHash.Name = "menuOptionsArmaxDiscHash";
-this.menuOptionsArmaxDiscHash.Size = new System.Drawing.Size(200, 22);
-this.menuOptionsArmaxDiscHash.Text = "AR MAX Disc Hash";
+            // menuOptionsArmaxDiscHash
+            this.menuOptionsArmaxDiscHash.Visible  = false;
+            this.menuOptionsArmaxDiscHash.Name = "menuOptionsArmaxDiscHash";
+            this.menuOptionsArmaxDiscHash.Size = new System.Drawing.Size(200, 22);
+            this.menuOptionsArmaxDiscHash.Text = "AR MAX Disc Hash";
 
-// Root item has a dropdown; start with only "Do Not Create"
-this.menuOptionsArmaxDiscHash.DropDownItems.AddRange(new ToolStripItem[]
-{
-    this.menuOptionsArmaxDiscHashNone
-});
+            // Root item has a dropdown; start with only "Do Not Create"
+            this.menuOptionsArmaxDiscHash.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                this.menuOptionsArmaxDiscHashNone
+            });
 
-// menuOptionsArmaxDiscHashNone
-this.menuOptionsArmaxDiscHashNone.Name = "menuOptionsArmaxDiscHashNone";
-this.menuOptionsArmaxDiscHashNone.Size = new System.Drawing.Size(180, 22);
-this.menuOptionsArmaxDiscHashNone.Text = "Do Not Create";
-this.menuOptionsArmaxDiscHashNone.Tag  = '\0'; // special marker = no hash
-this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOptionsArmaxDiscHashNone_Click);
+            // menuOptionsArmaxDiscHashNone
+            this.menuOptionsArmaxDiscHashNone.Name = "menuOptionsArmaxDiscHashNone";
+            this.menuOptionsArmaxDiscHashNone.Size = new System.Drawing.Size(180, 22);
+            this.menuOptionsArmaxDiscHashNone.Text = "Do Not Create";
+            this.menuOptionsArmaxDiscHashNone.Tag  = '\0'; // special marker = no hash
+            this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOptionsArmaxDiscHashNone_Click);
 
             // lblInputFormat
             this.lblInputFormat.AutoSize = true;
@@ -588,16 +591,17 @@ this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOpti
             this.txtAr2CurrentKey.TabIndex    = 3;
             this.txtAr2CurrentKey.ReadOnly    = true;
             this.txtAr2CurrentKey.BorderStyle = BorderStyle.FixedSingle;
-            this.txtAr2CurrentKey.Visible     = false;// lblAr2CurrentKey
+            this.txtAr2CurrentKey.Visible     = false;
+            // lblAr2CurrentKey (duplicated block, keep as-is)
             this.lblAr2CurrentKey.AutoSize = true;
             this.lblAr2CurrentKey.Location = new Point(120, 32);
             this.lblAr2CurrentKey.Name     = "lblAr2CurrentKey";
-            this.lblAr2CurrentKey.Size     = new Size(52, 13);
+            this.lblAr2CurrentKey.Size     = new System.Drawing.Size(52, 13);
             this.lblAr2CurrentKey.TabIndex = 2;
             this.lblAr2CurrentKey.Text     = "AR2 key:";
             this.lblAr2CurrentKey.Visible  = false;
 			
-            // txtAr2CurrentKey
+            // txtAr2CurrentKey (duplicated block, keep as-is)
             this.txtAr2CurrentKey.Location    = new Point(178, 29);
             this.txtAr2CurrentKey.Name        = "txtAr2CurrentKey";
             this.txtAr2CurrentKey.Size        = new Size(80, 20);
@@ -606,25 +610,25 @@ this.menuOptionsArmaxDiscHashNone.Click += new System.EventHandler(this.menuOpti
             this.txtAr2CurrentKey.BorderStyle = BorderStyle.FixedSingle;
             this.txtAr2CurrentKey.Visible     = false;
 
-// lblGameIdInput
-this.lblGameIdInput.AutoSize = true;
-this.lblGameIdInput.Location = new Point(170, 32);
-this.lblGameIdInput.Name     = "lblGameIdInput";
-this.lblGameIdInput.Size     = new Size(52, 13);
-this.lblGameIdInput.TabIndex = 20;
-this.lblGameIdInput.Text     = "Game ID:";
-this.lblGameIdInput.Visible  = false;
+            // lblGameIdInput
+            this.lblGameIdInput.AutoSize = true;
+            this.lblGameIdInput.Location = new Point(170, 32);
+            this.lblGameIdInput.Name     = "lblGameIdInput";
+            this.lblGameIdInput.Size     = new Size(52, 13);
+            this.lblGameIdInput.TabIndex = 20;
+            this.lblGameIdInput.Text     = "Game ID:";
+            this.lblGameIdInput.Visible  = false;
 
-// txtGameIdInput
-this.txtGameIdInput.Location = new Point(228, 29);
-this.txtGameIdInput.Name     = "txtGameIdInput";
-this.txtGameIdInput.Size     = new Size(30, 20);
-this.txtGameIdInput.TabIndex = 21;
-this.txtGameIdInput.MaxLength = 4;
-this.txtGameIdInput.CharacterCasing = CharacterCasing.Upper;
-this.txtGameIdInput.Visible  = false;
-this.txtGameIdInput.KeyPress += new KeyPressEventHandler(this.txtGameId_KeyPress);
-this.txtGameIdInput.TextChanged += new System.EventHandler(this.txtGameId_TextChanged);
+            // txtGameIdInput
+            this.txtGameIdInput.Location = new Point(228, 29);
+            this.txtGameIdInput.Name     = "txtGameIdInput";
+            this.txtGameIdInput.Size     = new Size(30, 20);
+            this.txtGameIdInput.TabIndex = 21;
+            this.txtGameIdInput.MaxLength = 4;
+            this.txtGameIdInput.CharacterCasing = CharacterCasing.Upper;
+            this.txtGameIdInput.Visible  = false;
+            this.txtGameIdInput.KeyPress += new KeyPressEventHandler(this.txtGameId_KeyPress);
+            this.txtGameIdInput.TextChanged += new System.EventHandler(this.txtGameId_TextChanged);
 
 
             // btnClearInput
@@ -646,6 +650,11 @@ this.txtGameIdInput.TextChanged += new System.EventHandler(this.txtGameId_TextCh
             this.txtInput.Size = new Size(308, 320);
             this.txtInput.TabIndex = 3;
             this.txtInput.WordWrap = false;
+			
+			// NEW: drag-and-drop support
+			this.txtInput.AllowDrop = true;
+			this.txtInput.DragEnter += new DragEventHandler(this.txtInput_DragEnter);
+			this.txtInput.DragDrop  += new DragEventHandler(this.txtInput_DragDrop);
 
             // lblOutputFormat
             this.lblOutputFormat.AutoSize = true;
@@ -668,24 +677,24 @@ this.txtGameIdInput.TextChanged += new System.EventHandler(this.txtGameId_TextCh
 			this.chkPnachCrcActive.CheckedChanged += new System.EventHandler(this.chkPnachCrcActive_CheckedChanged);
 			
 			// lblGameIdOutput
-this.lblGameIdOutput.AutoSize = true;
-this.lblGameIdOutput.Location = new Point(502, 32);
-this.lblGameIdOutput.Name     = "lblGameIdOutput";
-this.lblGameIdOutput.Size     = new Size(52, 13);
-this.lblGameIdOutput.TabIndex = 22;
-this.lblGameIdOutput.Text     = "Game ID:";
-this.lblGameIdOutput.Visible  = false;
+            this.lblGameIdOutput.AutoSize = true;
+            this.lblGameIdOutput.Location = new Point(502, 32);
+            this.lblGameIdOutput.Name     = "lblGameIdOutput";
+            this.lblGameIdOutput.Size     = new System.Drawing.Size(52, 13);
+            this.lblGameIdOutput.TabIndex = 22;
+            this.lblGameIdOutput.Text     = "Game ID:";
+            this.lblGameIdOutput.Visible  = false;
 
-// txtGameIdOutput
-this.txtGameIdOutput.Location = new Point(560, 29);
-this.txtGameIdOutput.Name     = "txtGameIdOutput";
-this.txtGameIdOutput.Size     = new Size(30, 20);
-this.txtGameIdOutput.TabIndex = 23;
-this.txtGameIdOutput.MaxLength = 4;
-this.txtGameIdOutput.CharacterCasing = CharacterCasing.Upper;
-this.txtGameIdOutput.Visible  = false;
-this.txtGameIdOutput.KeyPress += new KeyPressEventHandler(this.txtGameId_KeyPress);
-this.txtGameIdOutput.TextChanged += new System.EventHandler(this.txtGameId_TextChanged);
+            // txtGameIdOutput
+            this.txtGameIdOutput.Location = new Point(560, 29);
+            this.txtGameIdOutput.Name     = "txtGameIdOutput";
+            this.txtGameIdOutput.Size     = new Size(30, 20);
+            this.txtGameIdOutput.TabIndex = 23;
+            this.txtGameIdOutput.MaxLength = 4;
+            this.txtGameIdOutput.CharacterCasing = CharacterCasing.Upper;
+            this.txtGameIdOutput.Visible  = false;
+            this.txtGameIdOutput.KeyPress += new KeyPressEventHandler(this.txtGameId_KeyPress);
+            this.txtGameIdOutput.TextChanged += new System.EventHandler(this.txtGameId_TextChanged);
 
             // btnClearOutput
             this.btnClearOutput.Location = new Point(599, 27);
@@ -723,7 +732,7 @@ this.txtGameIdOutput.TextChanged += new System.EventHandler(this.txtGameId_TextC
             this.lblGameId.AutoSize = true;
             this.lblGameId.Location = new Point(120, 391);
             this.lblGameId.Name     = "lblGameId";
-            this.lblGameId.Size     = new Size(51, 13);
+            this.lblGameId.Size     = new System.Drawing.Size(51, 13);
             this.lblGameId.TabIndex = 8;
             this.lblGameId.Text     = "Game ID:";
 			this.lblGameId.Visible  = false;   // NEW
@@ -745,7 +754,7 @@ this.txtGameIdOutput.TextChanged += new System.EventHandler(this.txtGameId_TextC
             this.lblGameName.AutoSize = true;
             this.lblGameName.Location = new Point(255, 391);
             this.lblGameName.Name     = "lblGameName";
-            this.lblGameName.Size     = new Size(69, 13);
+            this.lblGameName.Size     = new System.Drawing.Size(69, 13);
             this.lblGameName.TabIndex = 10;
             this.lblGameName.Text     = "Game Name:";
 

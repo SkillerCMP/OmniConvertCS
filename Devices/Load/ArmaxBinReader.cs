@@ -14,7 +14,36 @@ namespace OmniconvertCS
         private const string LIST_IDENT = "PS2_CODELIST";
         private const int    LIST_HEADER_SIZE = 36; // 12-byte ident + 6 * 4-byte fields
 
-  
+  /// <summary>
+        /// Map AR MAX internal button glyph codes (in UTF-16 code units)
+        /// to human-readable tokens we can display in text output.
+        /// These come from 16-bit values embedded in the wide strings.
+        /// </summary>
+        private static string? MapArmaxButtonGlyph(ushort ch)
+        {
+            // NOTE: In the .bin the bytes are little-endian (e.g. 1A 00),
+            // so the code unit we see is 0x001A, 0x001B, etc.
+            switch (ch)
+            {
+                case 0x0003: return "L3";
+                case 0x0004: return "R3";
+                case 0x0010: return "X";
+                case 0x0011: return "Square";
+                case 0x0012: return "Triangle";
+                case 0x0013: return "Circle";
+                case 0x0014: return "Select";
+                case 0x0015: return "Start";
+                case 0x0016: return "Up";
+                case 0x0017: return "Right";
+                case 0x0018: return "Down";
+                case 0x0019: return "Left";
+                case 0x001A: return "L1";
+                case 0x001B: return "L2";
+                case 0x001C: return "R1";
+                case 0x001D: return "R2";
+                default:     return null;
+            }
+        }
         public sealed class Result
         {
             public string GameName { get; set; } = string.Empty;
@@ -66,99 +95,88 @@ namespace OmniconvertCS
         }
 
         /// <summary>
-        /// After we've read gameId and gameName, AR MAX uses at least two
-        /// slightly different layouts for the rest of the game header.
-        ///
-        /// Layout A (what ArmaxBinWriter emits):
-        ///   [extra:ushort][cheatCount:uint]
-        ///
-        /// Layout B (seen in some official lists):
-        ///   [warning:wchar*][cheatCount:uint][ignored:uint]
-        ///
-        /// On success this method advances <paramref name="pos"/> so that it
-        /// points at the first cheat entry for this game.
-        /// </summary>
-        private static bool TryReadGameCheatHeader(
-            byte[] buf,
-            ref int pos,
-            int end,
-            out ushort extra,
-            out uint cheatCount,
-            out int cheatDataPos)
-        {
-            int afterNamePos = pos;
+/// After gameId and gameName, AR MAX effectively has a single game
+/// header layout:
+///
+///   [gameNameNote:wchar*][cheatCount:uint][optional extra:uint]
+///
+/// where:
+///   - gameNameNote may be an empty UTF-16 string (encoded as 0x0000),
+///     which matches the old [extra:ushort == 0] layout.
+///   - some lists include an extra uint32 after the count; many (including
+///     Codelist_US/EU) do not.
+///
+/// On success this advances <paramref name="pos"/> so it points at the
+/// first cheat entry for this game.
+/// </summary>
+private static bool TryReadGameCheatHeader(
+    byte[] buf,
+    ref int pos,
+    int end,
+    out string gameNameNote,
+    out uint cheatCount,
+    out int cheatDataPos)
+{
+    int afterNamePos = pos;
 
-            // -----------------------
-            // Try layout A first.
-            // -----------------------
-            if (afterNamePos + 2 + 4 <= end)
-            {
-                int tmpPos = afterNamePos;
+    // 1) Read the "note" / warning string after the game name.
+    int notePos = afterNamePos;
+    gameNameNote = string.Empty;
 
-                ushort extraA = ReadUInt16LE(buf, ref tmpPos);
-                uint cheatCountA = ReadUInt32LE(buf, ref tmpPos);
+    try
+    {
+        gameNameNote = ReadWideStringZeroTerminated(buf, ref notePos);
+    }
+    catch (InvalidDataException)
+    {
+        cheatCount = 0;
+        cheatDataPos = afterNamePos;
+        pos = afterNamePos;
+        return false;
+    }
 
-                if (IsReasonableCheatCount(cheatCountA, tmpPos, end))
-                {
-                    extra = extraA;
-                    cheatCount = cheatCountA;
-                    cheatDataPos = tmpPos;
-                    pos = tmpPos;
-                    return true;
-                }
-            }
+    // 2) Need at least 4 bytes for cheatCount.
+    if (notePos + 4 > end)
+    {
+        cheatCount = 0;
+        cheatDataPos = afterNamePos;
+        pos = afterNamePos;
+        return false;
+    }
 
-            // -----------------------
-            // Layout B: warning string, then cheatCount and an ignored uint.
-            // -----------------------
-            int commentPos = afterNamePos;
-            string warning;
+    uint count = ReadUInt32LE(buf, ref notePos);
 
-            try
-            {
-                warning = ReadWideStringZeroTerminated(buf, ref commentPos);
-            }
-            catch (InvalidDataException)
-            {
-                extra = 0;
-                cheatCount = 0;
-                cheatDataPos = afterNamePos;
-                pos = afterNamePos;
-                return false;
-            }
+    // Candidate 1: NO extra uint32 after the count.
+    int cheatDataPosNoExtra = notePos;
+    bool okNoExtra = IsReasonableCheatCount(count, cheatDataPosNoExtra, end);
 
-            if (commentPos + 4 > end)
-            {
-                extra = 0;
-                cheatCount = 0;
-                cheatDataPos = afterNamePos;
-                pos = afterNamePos;
-                return false;
-            }
+    // Candidate 2: assume there *is* an extra uint32 after the count.
+    bool okWithExtra = false;
+    int cheatDataPosWithExtra = cheatDataPosNoExtra;
 
-            uint cheatCountB = ReadUInt32LE(buf, ref commentPos);
+    if (notePos + 4 <= end)
+    {
+        int tmpPos = notePos;
+        ReadUInt32LE(buf, ref tmpPos); // skip potential extra uint32
 
-            // Many lists store an extra uint32 after the count; we just skip it.
-            if (commentPos + 4 <= end)
-            {
-                ReadUInt32LE(buf, ref commentPos); // ignored
-            }
+        cheatDataPosWithExtra = tmpPos;
+        okWithExtra = IsReasonableCheatCount(count, cheatDataPosWithExtra, end);
+    }
 
-            if (IsReasonableCheatCount(cheatCountB, commentPos, end))
-            {
-                extra = 0;
-                cheatCount = cheatCountB;
-                cheatDataPos = commentPos;
-                pos = commentPos;
-                return true;
-            }
+    if (!okNoExtra && !okWithExtra)
+    {
+        cheatCount = 0;
+        cheatDataPos = afterNamePos;
+        pos = afterNamePos;
+        return false;
+    }
 
-            extra = 0;
-            cheatCount = 0;
-            cheatDataPos = afterNamePos;
-            pos = afterNamePos;
-            return false;
-        }
+    cheatCount  = count;
+    cheatDataPos = okNoExtra ? cheatDataPosNoExtra : cheatDataPosWithExtra;
+    pos = cheatDataPos;
+    return true;
+}
+
 
         /// <summary>
         /// Load an AR MAX .bin file and return text lines ready to drop into
@@ -218,28 +236,42 @@ namespace OmniconvertCS
                 // game->name (UTF-16LE, 0-terminated)
                 string gameName = ReadWideStringZeroTerminated(buf, ref pos);
 
-                ushort extra;
-                uint cheatCount;
-                int cheatDataPos;
+                string gameNameNote;
+				uint cheatCount;
+				int cheatDataPos;
 
-                if (!TryReadGameCheatHeader(buf, ref pos, end, out extra, out cheatCount, out cheatDataPos))
-                    throw new InvalidDataException("Unsupported or corrupt AR MAX game header.");
+				if (!TryReadGameCheatHeader(buf, ref pos, end, out gameNameNote, out cheatCount, out cheatDataPos))
+					throw new InvalidDataException("Unsupported or corrupt AR MAX game header.");
 
-                // Single-game case: remember the name for the Game Name textbox.
-                if (gamecnt == 1 && g == 0)
-                {
-                    result.GameName = gameName;
-                }
 
-                // Multi-game: show a heading in the text.
-                if (includeGameHeadings)
-                {
-                    // Blank line between game sections (but not before the first).
-                    if (result.Lines.Count > 0 && result.Lines[result.Lines.Count - 1].Length != 0)
-                        result.Lines.Add(string.Empty);
+                // Build game name + optional note: "Game Name {Note...}"
+string fullGameName = gameName;
+if (!string.IsNullOrWhiteSpace(gameNameNote))
+{
+    // Collapse any newlines in the note so it stays on one line.
+    string noteInline = gameNameNote
+        .Replace("\r\n", " ")
+        .Replace('\r', ' ')
+        .Replace('\n', ' ');
+    fullGameName += " {" + noteInline + "}";
+}
 
-                    result.Lines.Add("Game Name: " + gameName);
-                }
+// Single-game case: remember the (possibly annotated) name.
+if (gamecnt == 1 && g == 0)
+{
+    result.GameName = fullGameName;
+}
+
+// Multi-game: show a heading in the text.
+if (includeGameHeadings)
+{
+    // Blank line between game sections (but not before the first).
+    if (result.Lines.Count > 0 && result.Lines[result.Lines.Count - 1].Length != 0)
+        result.Lines.Add(string.Empty);
+
+    result.Lines.Add("Game Name: " + fullGameName);
+}
+
 
                 for (uint c = 0; c < cheatCount; c++)
                 {
@@ -249,14 +281,28 @@ namespace OmniconvertCS
 
                     uint cheatId = ReadUInt32LE(buf, ref pos);
 
-                    // cheat->name
                     string cheatName = ReadWideStringZeroTerminated(buf, ref pos);
+string comment   = ReadWideStringZeroTerminated(buf, ref pos);
 
-                    // cheat->comment (can be empty string)
-                    string comment = ReadWideStringZeroTerminated(buf, ref pos);
+// Build "Cheat Name {Comment...}" if comment not blank.
+string printedName = cheatName ?? string.Empty;
 
-                    if (!string.IsNullOrWhiteSpace(cheatName))
-                        result.Lines.Add(cheatName);
+if (!string.IsNullOrWhiteSpace(comment))
+{
+    string noteInline = comment
+        .Replace("\r\n", " ")
+        .Replace('\r', ' ')
+        .Replace('\n', ' ');
+
+    if (string.IsNullOrWhiteSpace(printedName))
+        printedName = "{" + noteInline + "}";
+    else
+        printedName += " {" + noteInline + "}";
+}
+
+if (!string.IsNullOrWhiteSpace(printedName))
+    result.Lines.Add(printedName);
+
 
                     // Flags
                     if (pos + 3 > end)
@@ -334,9 +380,24 @@ namespace OmniconvertCS
             if (cheat == null)
                 continue;
 
-            // Cheat name
-            if (!string.IsNullOrWhiteSpace(cheat.name))
-                lines.Add(cheat.name);
+            string printedName = cheat.name ?? string.Empty;
+
+if (!string.IsNullOrWhiteSpace(cheat.comment))
+{
+    string noteInline = cheat.comment
+        .Replace("\r\n", " ")
+        .Replace('\r', ' ')
+        .Replace('\n', ' ');
+
+    if (string.IsNullOrWhiteSpace(printedName))
+        printedName = "{" + noteInline + "}";
+    else
+        printedName += " {" + noteInline + "}";
+}
+
+if (!string.IsNullOrWhiteSpace(printedName))
+    lines.Add(printedName);
+
 
             // Raw encrypted words from the .bin (2 words per ARMAX code)
             var words = cheat.code;
@@ -415,15 +476,16 @@ namespace OmniconvertCS
     // Try our "simple" layout first (what ArmaxBinWriter emits). If that would
     // imply an impossible cheat count, fall back to the layout that contains
     // an extra warning string before the count.
-    ushort extra;
-    uint cheatCount;
-    int cheatDataPos;
+    string gameNameNote;
+uint cheatCount;
+int cheatDataPos;
 
-    if (!TryReadGameCheatHeader(buf, ref pos, end, out extra, out cheatCount, out cheatDataPos))
-    {
-        throw new InvalidDataException(
-            $"Unsupported or corrupt AR MAX game header at index {g}.");
-    }
+if (!TryReadGameCheatHeader(buf, ref pos, end, out gameNameNote, out cheatCount, out cheatDataPos))
+{
+    throw new InvalidDataException(
+        $"Unsupported or corrupt AR MAX game header at index {g}.");
+}
+
 
                 // We only surface the first game in the UI – same as writer behaviour.
                 if (g == 0)
@@ -515,27 +577,37 @@ namespace OmniconvertCS
         }
 
         private static string ReadWideStringZeroTerminated(byte[] buffer, ref int offset)
+{
+    int len = buffer.Length;
+    var sb  = new StringBuilder();
+
+    while (true)
+    {
+        if (offset + 2 > len)
+            throw new InvalidDataException("Unterminated UTF-16 string in AR MAX file.");
+
+        ushort ch = (ushort)(buffer[offset] | (buffer[offset + 1] << 8));
+        offset += 2;
+
+        if (ch == 0)
         {
-            int start = offset;
-            int len   = buffer.Length;
-
-            while (true)
-            {
-                if (offset + 2 > len)
-                    throw new InvalidDataException("Unterminated UTF-16 string in AR MAX file.");
-
-                ushort ch = (ushort)(buffer[offset] | (buffer[offset + 1] << 8));
-                offset += 2;
-
-                if (ch == 0)
-                {
-                    int byteCount = offset - start - 2;
-                    if (byteCount <= 0)
-                        return string.Empty;
-
-                    return Encoding.Unicode.GetString(buffer, start, byteCount);
-                }
-            }
+            // End of string
+            return sb.ToString();
         }
+
+        // Map known AR MAX button glyphs to readable tokens like {L1}, {X}, etc.
+        string? mapped = MapArmaxButtonGlyph(ch);
+        if (mapped != null)
+        {
+            sb.Append(mapped);
+        }
+        else
+        {
+            sb.Append((char)ch);
+        }
+    }
+}
+
+
     }
 }

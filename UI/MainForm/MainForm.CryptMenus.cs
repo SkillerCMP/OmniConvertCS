@@ -47,10 +47,10 @@ namespace OmniconvertCS.Gui
 					
 					new CryptOption(ConvertCore.Crypt.CRYPT_RAW,    ConvertCore.Device.DEV_STD,   "Pnach(RAW)", usePnachFormat: true),  // NEW
                     new CryptOption(ConvertCore.Crypt.CRYPT_MAXRAW, ConvertCore.Device.DEV_ARMAX, "ARMAX(RAW)"),
-                    new CryptOption(ConvertCore.Crypt.CRYPT_RAW,    ConvertCore.Device.DEV_AR2,   "AR/GS V1-2(RAW)"),
-                    new CryptOption(ConvertCore.Crypt.CRYPT_RAW,    ConvertCore.Device.DEV_CB,    "Codebreaker(RAW)"),
+                    new CryptOption(ConvertCore.Crypt.CRYPT_ARAW,    ConvertCore.Device.DEV_AR2,   "AR/GS V1-2(RAW)"),
+                    new CryptOption(ConvertCore.Crypt.CRYPT_CRAW,    ConvertCore.Device.DEV_CB,    "Codebreaker(RAW)"),
                     // new CryptOption(ConvertCore.Crypt.CRYPT_RAW,    ConvertCore.Device.DEV_AR2,   "GS V1-2(RAW)"),
-                    new CryptOption(ConvertCore.Crypt.CRYPT_RAW,    ConvertCore.Device.DEV_GS3,   "XP/GS V3(RAW)"),
+                    new CryptOption(ConvertCore.Crypt.CRYPT_GRAW,    ConvertCore.Device.DEV_GS3,   "XP/GS V3(RAW)"),
                 };
 
                 // Action Replay >

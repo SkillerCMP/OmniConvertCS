@@ -35,7 +35,11 @@ namespace OmniconvertCS
             CRYPT_GS3,
             CRYPT_GS5,
             CRYPT_MAXRAW,
-            CRYPT_RAW
+            CRYPT_RAW,
+			// New: device-specific RAW aliases
+			CRYPT_ARAW,  // AR2 RAW
+			CRYPT_CRAW,  // CodeBreaker RAW
+			CRYPT_GRAW   // GS3 RAW
         }
 
         public enum VerifierMode
@@ -104,6 +108,7 @@ namespace OmniconvertCS
                     break;
 
                 case Crypt.CRYPT_ARMAX:
+				
 {
     // 1:1 with armBatchDecryptFull(cheat, armseeds);
     byte ret = Armax.ArmBatchDecryptFull(cheat, armseeds);
@@ -143,6 +148,9 @@ namespace OmniconvertCS
 
                 case Crypt.CRYPT_MAXRAW:
                 case Crypt.CRYPT_RAW:
+				case Crypt.CRYPT_ARAW:
+				case Crypt.CRYPT_CRAW:
+				case Crypt.CRYPT_GRAW:
                 default:
                     // raw/uncrypted — no-op
                     break;
@@ -277,6 +285,9 @@ namespace OmniconvertCS
 
                 case Crypt.CRYPT_MAXRAW:
                 case Crypt.CRYPT_RAW:
+				case Crypt.CRYPT_ARAW:
+				case Crypt.CRYPT_CRAW:
+				case Crypt.CRYPT_GRAW:
                 default:
                     // raw/uncrypted — no-op
                     break;
