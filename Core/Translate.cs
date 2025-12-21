@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using static OmniconvertCS.ConvertCore;
 
 namespace OmniconvertCS
@@ -16,7 +17,12 @@ namespace OmniconvertCS
     /// </summary>
     internal static class Translate
     {
-        // --- Standard-format command IDs (upper nibble of the address) ---
+        
+        [Conditional("DEBUG")]
+        private static void Trace(string message)
+            => Debug.WriteLine(message);
+
+// --- Standard-format command IDs (upper nibble of the address) ---
 
         private const byte STD_WRITE_BYTE         = 0; // 8-bit write
         private const byte STD_WRITE_HALF         = 1; // 16-bit write
@@ -895,14 +901,27 @@ private static int TransStdToMax(cheat_t dest, cheat_t src, ref int idx)
             }
             }
             else {  //test commands
-            if(type == ARM_LESS_SIGNED || type == ARM_GREATER_SIGNED || subtype == ARM_SKIP_ALL_INV || (subtype == ARM_AND && g_outdevice != Device.DEV_CB)) {
+            // ARMAX has signed and unsigned compares; STD RAW only supports unsigned.
+            // Treat signed < / > as unsigned < / > for translation.
+            if(type == ARM_LESS_SIGNED) type = ARM_LESS_UNSIGNED;
+            else if(type == ARM_GREATER_SIGNED) type = ARM_GREATER_UNSIGNED;
+
+            // AND tests are CodeBreaker-only in STD RAW.
+            if(type == ARM_AND && g_outdevice != Device.DEV_CB) {
             ret = ERR_TEST_TYPE;
             }
-            if(size == SIZE_BYTE && g_outdevice != Device.DEV_CB) ret = ERR_TEST_SIZE;
+if (size == SIZE_BYTE && g_outdevice != Device.DEV_CB)
+            {
+                uint a0 = code[idx];
+                uint a1 = (idx + 1) < src.codecnt ? code[idx + 1] : 0;
+                Trace($"[TransMaxToStd] ERR_TEST_SIZE: byte test not supported for out={g_outdevice} idx={idx} arm0={a0:X8} arm1={a1:X8} cmd=0x{command:X2} type={type} subtype={subtype} size={size}");
+                ret = ERR_TEST_SIZE;
+            }
             trans = 0;
             if(size == SIZE_WORD) {
-            if(type == ARM_EQUAL) {
-            if((idx + 2) < src.codecnt) {
+            bool didCondHook = false;
+            // Preserve the special ARMAX conditional-hook pattern (word == value, followed by a hook write).
+            if(type == ARM_EQUAL && (idx + 2) < src.codecnt) {
             type2        = GET_ARM_TYPE(code[idx + 2]);
             subtype2    = GET_ARM_SUBTYPE(code[idx + 2]);
             if(type2 == ARM_WRITE && subtype2 == ARM_HOOK) {
@@ -917,10 +936,65 @@ private static int TransStdToMax(cheat_t dest, cheat_t src, ref int idx)
             }
             trans = 1;
             idx+=4;
-            } else ret = ERR_TEST_SIZE;
-            } else ret = ERR_INVALID_CODE;
-            } else ret = ERR_TEST_SIZE;
+            didCondHook = true;
             }
+            // Not a conditional-hook pattern; fall through to generic word-test splitting.
+            }
+
+            // General word-sized tests: split into two 16-bit (E0) tests (low then high) and nest counts.
+            if (ret == 0 && didCondHook == false) {
+            uint address32 = ADDR(code[idx]);
+            uint value32   = code[idx + 1];
+            uint loVal     = LOHALF(value32);
+            uint hiVal     = HIHALF(value32);
+            uint addrLo    = address32;
+            uint addrHi    = address32 + 2;
+
+            // Map ARM compare type -> STD compare nibble (0..5) like the generic path does.
+            byte stdType = type;
+            if(stdType == ARM_AND) stdType-=2;
+            else if(stdType <= ARM_NOT_EQUAL) stdType--;
+            else stdType-=3;
+
+            // Determine how far the test body runs.
+            uint bodyEnd;
+            if(subtype == ARM_SKIP_1) bodyEnd = (uint)(idx + 2 + 2);
+            else if(subtype == ARM_SKIP_2) bodyEnd = (uint)(idx + 2 + 4);
+            else bodyEnd = (uint)src.codecnt;            // until SPECIAL/RESUME
+
+            // Emit placeholders for two E0 tests (outer then inner).
+            int tmpOuter = dest.codecnt;
+            Cheat.cheatAppendOctet(dest, 0);
+            Cheat.cheatAppendOctet(dest, addrLo | ((uint)stdType << 28));
+            int tmpInner = dest.codecnt;
+            Cheat.cheatAppendOctet(dest, 0);
+            Cheat.cheatAppendOctet(dest, addrHi | ((uint)stdType << 28));
+
+            idx += 2; // consume test header (addr/value)
+
+            int bodyStart = dest.codecnt;
+            while(idx < src.codecnt && idx < bodyEnd) {
+            if(idx + 1 < src.codecnt && code[idx] == ARM_CMD_SPECIAL && code[idx + 1] == ARM_CMD_RESUME) {
+            idx+=2;
+            break;
+            }
+            ret = TransMaxToStd(dest, src, ref idx);
+            if (ret != 0) break;
+            }
+            int bodyLines = (dest.codecnt - bodyStart) >> 1;
+
+            // Outer test must cover the inner test line + the body.
+            int outerLines = bodyLines + 1;
+            int innerLines = bodyLines;
+
+            // Patch the placeholders: word tests become 16-bit tests => size=0 (E0)
+            dest.code[tmpOuter] = MAKE_STD_CMD(STD_TEST_MULTI) | ((uint)0 << 24) | ((uint)outerLines << 16) | loVal;
+            dest.code[tmpInner] = MAKE_STD_CMD(STD_TEST_MULTI) | ((uint)0 << 24) | ((uint)innerLines << 16) | hiVal;
+
+            trans = 1;
+            }
+            }
+
             if (ret == 0 && trans == 0) {
             address    = ADDR(code[idx]);
             value    = code[idx + 1] & valmask[size];
@@ -942,7 +1016,7 @@ private static int TransStdToMax(cheat_t dest, cheat_t src, ref int idx)
             int tmpcnt = dest.codecnt;
             skip += (uint)idx;
             while(idx < src.codecnt && idx < skip) {
-            if(code[idx] == ARM_CMD_SPECIAL && code[idx] == ARM_CMD_RESUME) {
+            if(idx + 1 < src.codecnt && code[idx] == ARM_CMD_SPECIAL && code[idx + 1] == ARM_CMD_RESUME) {
             idx+=2;
             break;
             }
@@ -951,11 +1025,12 @@ private static int TransStdToMax(cheat_t dest, cheat_t src, ref int idx)
             }
             tmpcnt = (dest.codecnt - tmpcnt) >> 1;
             //fix the code
-            if(tmpcnt == 1) {
-            dest.code[tmpout]    = MAKE_STD_CMD(STD_TEST_SINGLE) | address;
-            dest.code[tmpout+1]    = ((uint)type << 20) | ((uint)size << 16) | value;
-            } else {
+            bool forceMulti = (g_outdevice == Device.DEV_STD || g_outdevice == Device.DEV_GS3 || g_outdevice == Device.DEV_CB);
+            if(forceMulti || tmpcnt != 1) {
             dest.code[tmpout]    = MAKE_STD_CMD(STD_TEST_MULTI) | ((uint)size << 24) | ((uint)tmpcnt << 16) | value;
+            } else {
+            dest.code[tmpout]    = MAKE_STD_CMD(STD_TEST_SINGLE) | address;
+            dest.code[tmpout+1]  = ((uint)type << 20) | ((uint)size << 16) | value;
             }
             }
             }
