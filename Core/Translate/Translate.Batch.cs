@@ -51,9 +51,9 @@ namespace OmniconvertCS
                     // Standard-format -> ARMAX
                     for (int i = 0; i < src.codecnt;)
 {
-    Trace($"  -> TransMaxToStd enter i={i}");
-    ret = TransMaxToStd(dest, src, ref i);
-    Trace($"  <- TransMaxToStd exit  i={i} ret={ret} dest.codecnt={dest.codecnt}");
+    Trace($"  -> TransStdToMax enter i={i}");
+    ret = TransStdToMax(dest, src, ref i);
+    Trace($"  <- TransStdToMax exit  i={i} ret={ret} dest.codecnt={dest.codecnt}");
 
     if (err_suppress == 0 && ret != 0)
         break;
