@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Omniconvert C# v1.03 – Help</title>
+    <title>Omniconvert C# v1.04.01 – Help</title>
     <style>
         body {
             font-family: Segoe UI, Tahoma, Arial, sans-serif;
@@ -116,8 +116,8 @@
 </head>
 <body>
 <header>
-    <h1>Omniconvert C# v1.03 – Help</h1>
-    <p>PS2 cheat-code format converter – AR / GS / ARMAX / CodeBreaker / XP / Xploder / RAW / PNACH</p>
+    <h1>Omniconvert C# v1.04.01 – Help</h1>
+    <p>PS2 cheat-code format converter – AR / GS / ARMAX / CodeBreaker / XP / Xploder / RAW / PNACH<br/><span class=\"mono\">New in v1.04.01:</span> CLI batch mode & RAW/CRAW validation helpers</p>
 </header>
 <main>
 
@@ -134,6 +134,7 @@
             <li><a href="#armax-options">8. ARMAX options window</a></li>
             <li><a href="#errors">9. Errors & per-cheat comments</a></li>
             <li><a href="#tips">10. Tips & notes</a></li>
+            <li><a href="#cli">11. Command line interface (CLI)</a></li>
         </ul>
     </section>
 
@@ -204,6 +205,15 @@
                 <span class="badge-new">v1.03</span>
             </li>
         </ul>
+        <p>
+            Version <strong>1.04.01</strong> adds:
+        </p>
+        <ul>
+            <li><strong>Command line interface (CLI)</strong> – batch convert a single <code>.txt</code> file or a folder of <code>.txt</code> files. <span class="badge-new">v1.04.01</span></li>
+            <li><strong>RAW/CRAW plausibility checks</strong> for CLI analyze/auto-fix workflows (<code>-a</code>/<code>-af</code>) so questionable output can be flagged for manual review. <span class="badge-new">v1.04.01</span></li>
+            <li><strong>CRAW cleanup helper</strong> (<code>-e</code>) – optional post-process that rewrites simple <code>E001</code> test lines to equivalent <code>D</code>-type lines in text output. <span class="badge-new">v1.04.01</span></li>
+        </ul>
+
     </section>
 
     <section id="window-tour">
@@ -463,10 +473,81 @@ F0123456 12345678
         </ul>
     </section>
 
+    <section id="cli">
+        <h2>11. Command line interface (CLI) <span class="badge-new">v1.04.01</span></h2>
+        <p>
+            In addition to the WinForms UI, Omniconvert C# can be run from a terminal (CMD or PowerShell) for
+            batch conversion of <code>.txt</code> files.
+            This is especially useful when you have a large folder of cheats and want a consistent output
+            folder structure.
+        </p>
+
+        <h3>11.1 Usage</h3>
+<pre>
+OmniConvertCS.exe [-a|-af] [-m|-mc] [-e] [-o &lt;outdir&gt;] &lt;Output-Crypt&gt; &lt;input.txt | input_folder&gt;
+OmniConvertCS.exe -h
+</pre>
+
+        <h3>11.2 Options</h3>
+        <ul>
+            <li><code>-a</code> – Analyze mode. If output crypt is a RAW-family target (for example <code>CRYPT_RAW</code>, <code>CRYPT_GRAW</code>, <code>CRYPT_CRAW</code>), checks output for common plausibility problems and writes an analysis report.</li>
+            <li><code>-af</code> – Analyze + Fix. If analysis fails, the CLI tries alternate input crypts per cheat (auto-fix) and re-runs analysis.</li>
+            <li><code>-m</code> – Manual mode. When used with <code>-af</code>, you will be prompted to select the next crypt to try when a cheat fails analysis.</li>
+            <li><code>-mc</code> – 100% manual mode. Prompts you to review <em>every</em> cheat (not only failures). This implies <code>-m</code>.</li>
+            <li><code>-e</code> – (CRAW output only) Post-process output text: rewrites simple <code>E001vvvv 0aaaaaaa</code> lines into equivalent <code>Daaaaaaa 0000vvvv</code> lines. See 11.5.</li>
+            <li><code>-o &lt;dir&gt;</code> – Output root directory (default: current folder).</li>
+            <li><code>-h</code> / <code>--help</code> – Show CLI usage.</li>
+        </ul>
+
+        <h3>11.3 Output folders</h3>
+        <p>
+            The CLI writes results into a folder named after your output crypt, for example:
+        </p>
+<pre>
+.\CRYPT_CRAW\
+.\CRYPT_CRAW\Analysis\
+</pre>
+        <p class="note">
+            If you pass a folder as input, Omniconvert C# processes all <code>.txt</code> files within that folder.
+        </p>
+
+        <h3>11.4 Manual prompt commands (<code>-m</code> / <code>-mc</code>)</h3>
+        <p>
+            When the CLI prompts you during auto-fix/manual review, these commands are available:
+        </p>
+        <ul>
+            <li><strong>Enter</strong> – continue auto order.</li>
+            <li><strong>S</strong> – skip this cheat (use the declared/selected crypt output as-is).</li>
+            <li><strong>D</strong> – delete this cheat (omit it from output).</li>
+            <li><strong>Q</strong> – quit processing.</li>
+            <li><strong>N <code>-y</code></strong> – force accept crypt #N (bypass plausibility checks for that attempt). Example: <code>9 -y</code>.</li>
+            <li><strong>N <code>-kHEX</code></strong> – when selecting AR2, override the AR2 key for that attempt. Example: <code>3 -k1645EBB3</code>.</li>
+        </ul>
+
+        <h3>11.5 E001 &rarr; D rewrite helper (<code>-e</code>)</h3>
+        <p>
+            Some lists contain simple single-test <code>E001</code> lines that are equivalent to a <code>D</code>-type
+            line in RAW-family output.
+            When you enable <code>-e</code> (CRAW output only), Omniconvert C# scans the output text and rewrites:
+        </p>
+<pre>
+E001VVVV 0AAAAAAA
+</pre>
+        <p>
+            into:
+        </p>
+<pre>
+DAAAAAAA 0000VVVV
+</pre>
+        <p class="note">
+            This helper only applies when the second word begins with <code>0</code> (i.e., <code>0AAAAAAA</code>), which matches the common RAW/CRAW address space.
+        </p>
+    </section>
+
 </main>
 
 <footer>
-    Omniconvert C# – help file for the modular C# build. This document describes behaviour as of v1.03.
+    Omniconvert C# – help file for the modular C# build. This document describes behaviour as of v1.04.01.
 </footer>
 </body>
 </html>
