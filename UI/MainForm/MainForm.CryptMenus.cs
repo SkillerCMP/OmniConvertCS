@@ -230,7 +230,7 @@ namespace OmniconvertCS.Gui
 
         lblInputFormat.Text = "Input: " + opt.Text;
         // INLINE never means PNACH input – that is a separate toggle
-        _inputAsPnachRaw = false;
+        _inputAsPnachRaw = (!_inlineInputMode) && opt.UsePnachFormat;  // PNACH input is chosen via Input format dropdown (Pnach(RAW))
 		// 🔑 IMPORTANT: ALWAYS refresh AR2 key box after any input-mode change
         RefreshAr2KeyDisplayFromSeed();
     }

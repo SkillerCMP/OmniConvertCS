@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
@@ -135,7 +136,71 @@ namespace OmniconvertCS.Gui
                 @"[0-9A-Fa-f]{8}\s+[0-9A-Fa-f]{8}",
                 RegexOptions.Compiled);
 
-            var sb = new StringBuilder();
+            static bool IsSingleCodePairLine(Regex codePair, string line)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    return false;
+
+                string t = line.Trim();
+                var m = codePair.Match(t);
+                return m.Success && m.Index == 0 && m.Length == t.Length;
+            }
+
+            // We build a list so we can retroactively edit the previous "label" line
+            // when we encounter %Credits: lines.
+            var outLines = new List<string>();
+            string? pendingCredits = null;
+
+            void ApplyCreditsToLastLabel(string credits)
+            {
+                if (string.IsNullOrWhiteSpace(credits))
+                    return;
+
+                // Find the last non-empty *label* line (not a code pair)
+                for (int i = outLines.Count - 1; i >= 0; i--)
+                {
+                    string s = outLines[i];
+                    if (string.IsNullOrWhiteSpace(s))
+                        continue;
+
+                    if (IsSingleCodePairLine(codePairRegex, s))
+                        continue;
+
+                    // Replace any existing " ... by ..." suffix to keep it clean
+                    string baseLabel = Regex.Replace(s, @"\s+\bby\b\s+.*$", "", RegexOptions.IgnoreCase).TrimEnd();
+
+                    if (string.IsNullOrEmpty(baseLabel))
+                        baseLabel = s.TrimEnd();
+
+                    outLines[i] = $"{baseLabel} by {credits}".TrimEnd();
+                    return;
+                }
+
+                // No label line yet – stash and apply to the next label we emit
+                pendingCredits = credits;
+            }
+
+            void MaybeApplyPendingCreditsToNewLabel()
+            {
+                if (string.IsNullOrWhiteSpace(pendingCredits))
+                    return;
+
+                // Apply to the most recently emitted line if it's a label
+                if (outLines.Count > 0)
+                {
+                    int i = outLines.Count - 1;
+                    string s = outLines[i];
+                    if (!string.IsNullOrWhiteSpace(s) && !IsSingleCodePairLine(codePairRegex, s))
+                    {
+                        string baseLabel = Regex.Replace(s, @"\s+\bby\b\s+.*$", "", RegexOptions.IgnoreCase).TrimEnd();
+                        if (string.IsNullOrEmpty(baseLabel))
+                            baseLabel = s.TrimEnd();
+
+                        outLines[i] = $"{baseLabel} by {pendingCredits}".TrimEnd();
+                        pendingCredits = null;
+                    }
+                }
+            }
 
             using (var reader = new StringReader(input))
             {
@@ -144,28 +209,90 @@ namespace OmniconvertCS.Gui
                 {
                     if (string.IsNullOrWhiteSpace(line))
                     {
-                        sb.AppendLine();
+                        outLines.Add(string.Empty);
                         continue;
+                    }
+
+                    string t = line.Trim();
+
+                    // --- CMPCodeDatabase style markers (display cleanup) ---
+                    // Drop meta lines
+                    if (t.StartsWith("^", StringComparison.Ordinal))
+                        continue;
+
+                    // Drop stand-alone "$" marker lines
+                    if (t == "$")
+                        continue;
+
+                    // Merge "%Credits: ...." into the most recent label as "by ...."
+                    if (t.StartsWith("%Credits:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string credits = t.Substring("%Credits:".Length).Trim();
+                        if (!string.IsNullOrWhiteSpace(credits))
+                            ApplyCreditsToLastLabel(credits);
+
+                        continue;
+                    }
+
+                    // Strip leading label/group markers for nicer display
+                    if (t.StartsWith("+", StringComparison.Ordinal))
+                    {
+                        line = t.Substring(1).TrimStart();
+                        t = line.Trim();
+                    }
+                    else if (t.StartsWith("!", StringComparison.Ordinal) && t != "!!")
+                    {
+                        line = t.Substring(1).TrimStart();
+                        t = line.Trim();
+                    }
+
+                    // Strip '$' from real code-pair lines; ignore $directives like $delete/$insert
+                    if (t.StartsWith("$", StringComparison.Ordinal))
+                    {
+                        string rest = t.Substring(1).TrimStart();
+                        var parts = rest.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (parts.Length >= 2 &&
+                            Regex.IsMatch(parts[0], @"\A[0-9A-Fa-f]{8}\z") &&
+                            Regex.IsMatch(parts[1], @"\A[0-9A-Fa-f]{8}\z"))
+                        {
+                            line = rest;
+                            t = line.Trim();
+                        }
+                        else
+                        {
+                            // Not a code pair – skip directive lines
+                            continue;
+                        }
                     }
 
                     var matches = codePairRegex.Matches(line);
                     if (matches.Count == 0)
                     {
-                        // No code pair on this line → leave as-is.
-                        sb.AppendLine(line.TrimEnd());
+                        // No code pair on this line → leave as-is (trim end only)
+                        outLines.Add(line.TrimEnd());
+                        MaybeApplyPendingCreditsToNewLabel();
                     }
                     else
                     {
                         // 1) Anything before the first code pair is treated as the name.
                         int firstIndex = matches[0].Index;
                         string before = line.Substring(0, firstIndex).TrimEnd();
+
+                        // Ignore a lone "$" before the first code pair
+                        if (before.Trim() == "$")
+                            before = string.Empty;
+
                         if (!string.IsNullOrEmpty(before))
-                            sb.AppendLine(before);
+                        {
+                            outLines.Add(before);
+                            MaybeApplyPendingCreditsToNewLabel();
+                        }
 
                         // 2) Each code pair becomes its own line.
                         foreach (Match m in matches)
                         {
-                            sb.AppendLine(m.Value.Trim());
+                            outLines.Add(m.Value.Trim());
                         }
 
                         // 3) If there is any trailing text after the last pair, keep it.
@@ -175,14 +302,20 @@ namespace OmniconvertCS.Gui
                         {
                             string tail = line.Substring(cursor).Trim();
                             if (!string.IsNullOrEmpty(tail))
-                                sb.AppendLine(tail);
+                            {
+                                outLines.Add(tail);
+                                MaybeApplyPendingCreditsToNewLabel();
+                            }
                         }
                     }
                 }
             }
 
             // Trim trailing blank lines so we don't end with extra newlines
-            return sb.ToString().TrimEnd('\r', '\n');
+            while (outLines.Count > 0 && string.IsNullOrWhiteSpace(outLines[outLines.Count - 1]))
+                outLines.RemoveAt(outLines.Count - 1);
+
+            return string.Join("\r\n", outLines);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -317,23 +450,125 @@ namespace OmniconvertCS.Gui
 
                 if (line.StartsWith("//") || line.StartsWith("#") || line.StartsWith(";"))
                     continue;
+                // -----------------------------------------------------------------
+                /* CMPCodeDatabase-style markers (auto-normalize on input)
+                   ^ meta lines: ignore
+                   !Group:      : group heading (stored as an empty-code cheat label)
+                   !!           : end group (clears PNACH group when exporting)
+                   +Name        : cheat label
+                   $ADDR VALUE  : code line (strip $); other $directives are ignored
+                */
+                // -----------------------------------------------------------------
+                if (!isPnachInput)
+                {
+                    // ^1/^2/^3 metadata lines
+                    if (line.StartsWith("^"))
+                        continue;
 
-                // ----------------------------
+                    // "!!" group end sentinel
+                    if (line == "!!")
+                    {
+                        StartNewCheatWithLabel(string.Empty);
+                        continue;
+                    }
+
+                    // "!Group:" group heading
+                    if (line.StartsWith("!"))
+                    {
+                        string g = line.Substring(1).Trim();
+                        if (g.EndsWith(":", StringComparison.Ordinal))
+                            g = g.Substring(0, g.Length - 1).TrimEnd();
+
+                        StartNewCheatWithLabel(g);
+                        continue;
+                    }
+
+                    // "+Cheat name" label
+                    if (line.StartsWith("+"))
+                    {
+                        StartNewCheatWithLabel(line.Substring(1).Trim());
+                        continue;
+                    }
+
+                    // "%Credits: ..." attaches to the previous label as "by ..."
+                    if (line.StartsWith("%Credits:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string credits = line.Substring("%Credits:".Length).Trim();
+                        if (!string.IsNullOrWhiteSpace(credits) && labels.Count > 0)
+                        {
+                            int last = labels.Count - 1;
+                            string existing = labels[last] ?? string.Empty;
+
+                            if (!string.IsNullOrWhiteSpace(existing))
+                            {
+                                existing = Regex.Replace(existing, @"\s+\bby\b\s+.*$", "", RegexOptions.IgnoreCase).TrimEnd();
+                                labels[last] = $"{existing} by {credits}".TrimEnd();
+                            }
+                            else
+                            {
+                                labels[last] = $"by {credits}";
+                            }
+                        }
+                        continue;
+                    }
+
+                    // "$" lines: strip prefix for real code pairs; ignore directives (delete/insert/etc.)
+                    if (line.StartsWith("$"))
+                    {
+                        string rest = line.Substring(1).TrimStart();
+                        if (rest.Length == 0)
+                            continue;
+
+                        string[] p = rest.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                        if (p.Length >= 2 && TryParseHexAddressToken(p[0], out _))
+                        {
+                            line = rest; // let normal hex-pair parsing handle it
+                        }
+                        else
+                        {
+                            // Not a normal code line (e.g., $delete/$insert) -> ignore
+                            continue;
+                        }
+                    }
+                }
+
+// ----------------------------
                 // PNACH(RAW) input: only [] + patch= lines
                 // ----------------------------
                 if (isPnachInput)
                 {
-                    // Skip PNACH header lines
+                                        // Skip PNACH header lines
                     if (line.StartsWith("gametitle=", StringComparison.OrdinalIgnoreCase) ||
                         line.StartsWith("comment=",   StringComparison.OrdinalIgnoreCase) ||
                         line.StartsWith("crc=",       StringComparison.OrdinalIgnoreCase) ||
-                        line.StartsWith("author=",    StringComparison.OrdinalIgnoreCase) ||
                         line.StartsWith("description=", StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
-                    // Section header: [Group\Name] or [Name]
+// author=...: merge into the current section label as "by ..."
+                    if (line.StartsWith("author=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string authorRaw = line.Substring("author=".Length).Trim();
+                        if (!string.IsNullOrWhiteSpace(authorRaw) && labels.Count > 0)
+                        {
+                            int last = labels.Count - 1;
+                            string existing = labels[last] ?? string.Empty;
+
+                            if (!string.IsNullOrWhiteSpace(existing))
+                            {
+                                existing = Regex.Replace(existing, @"\s+\bby\b\s+.*$", "", RegexOptions.IgnoreCase).TrimEnd();
+                                labels[last] = $"{existing} by {NormalizeAuthorForBy(authorRaw)}".TrimEnd();
+                            }
+                            else
+                            {
+                                labels[last] = $"by {NormalizeAuthorForBy(authorRaw)}";
+                            }
+                        }
+                        continue;
+                    }
+
+// Section header: [Group\Name] or [Name]
                     if (line.Length >= 3 && line[0] == '[' && line[line.Length - 1] == ']')
                     {
                         string inner = line.Substring(1, line.Length - 2).Trim();
@@ -632,6 +867,70 @@ namespace OmniconvertCS.Gui
                 sb.AppendLine();
             }
 
+            
+            static bool TrySplitAuthorFromName(string input, out string nameOnly, out string author)
+            {
+                nameOnly = input ?? string.Empty;
+                author = string.Empty;
+
+                if (string.IsNullOrWhiteSpace(input))
+                    return false;
+
+                // Split on the token "by" as a standalone word (case-insensitive)
+                var m = Regex.Match(
+                    input,
+                    @"^(?<name>.*?)(?:\s+\bby\b\s+)(?<author>.+)$",
+                    RegexOptions.IgnoreCase);
+
+                if (!m.Success)
+                    return false;
+
+                nameOnly = m.Groups["name"].Value.Trim();
+                author = m.Groups["author"].Value.Trim();
+
+                return !string.IsNullOrWhiteSpace(nameOnly) && !string.IsNullOrWhiteSpace(author);
+            }
+
+            static string NormalizeAuthorForBy(string authorRaw)
+            {
+                string a = (authorRaw ?? string.Empty).Trim();
+                if (a.Length == 0)
+                    return a;
+
+                // Trim common trailing punctuation
+                a = a.TrimEnd(',', ';');
+
+                // Collapse whitespace
+                a = Regex.Replace(a, @"\s+", " ").Trim();
+
+                bool hasLetter = false;
+                bool allUpperLetters = true;
+                bool hasDigit = false;
+
+                foreach (char c in a)
+                {
+                    if (char.IsDigit(c))
+                        hasDigit = true;
+
+                    if (char.IsLetter(c))
+                    {
+                        hasLetter = true;
+                        if (!char.IsUpper(c))
+                            allUpperLetters = false;
+                    }
+                }
+
+                // If author is ALL CAPS (common in PNACH), turn it into Title Case:
+                // "CODES" -> "Codes", "CODE JUNKIES" -> "Code Junkies"
+                if (hasLetter && allUpperLetters && !hasDigit)
+                {
+                    a = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(a.ToLowerInvariant());
+                }
+
+                return a;
+            }
+
+
             string currentGroupForPnach = null;   // track current PNACH group
 
             for (int idx = 0; idx < cheats.Count; idx++)
@@ -679,8 +978,14 @@ namespace OmniconvertCS.Gui
                     // A cheat with no codes is treated as a "group" header (Group 1, Group 2, ...)
                     if (cheat.codecnt == 0)
                     {
-                        if (!string.IsNullOrWhiteSpace(effectiveHeader))
-                            currentGroupForPnach = effectiveHeader.Trim();
+                        // Treat an empty label as a "group end" sentinel (used by CMP "!!")
+                        if (string.IsNullOrWhiteSpace(effectiveHeader))
+                        {
+                            currentGroupForPnach = null;
+                            continue;
+                        }
+
+                        currentGroupForPnach = effectiveHeader.Trim();
                         continue;
                     }
 
@@ -688,6 +993,14 @@ namespace OmniconvertCS.Gui
                     string baseName = effectiveHeader;
                     if (string.IsNullOrWhiteSpace(baseName))
                         baseName = $"Code {idx + 1}";
+
+                    // If the label contains "by ...", emit PNACH author=... and remove it from the section name
+                    string? author = null;
+                    if (TrySplitAuthorFromName(baseName, out string nameOnly, out string authorOnly))
+                    {
+                        baseName = nameOnly;
+                        author = authorOnly;
+                    }
 
                     // Combine with current group if any: Group1\Hello world
                     string finalName = currentGroupForPnach != null
@@ -708,6 +1021,9 @@ namespace OmniconvertCS.Gui
 
                     // [Group1\Hello world]
                     sb.AppendLine($"[{finalName}]");
+
+                    if (!string.IsNullOrWhiteSpace(author))
+                        sb.AppendLine($"author={author}");
 
                     // patch=1,EE,ADDR,extended,VALUE
                     for (int i = 0; i < cheat.codecnt; i += 2)
