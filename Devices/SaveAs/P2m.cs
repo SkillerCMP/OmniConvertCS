@@ -258,13 +258,20 @@ private static p2mfd_t InitFd(DateTime now, string name, uint attributes)
     fd.offset = 0xFFFFFFFFu; // -1 in the original C code
     fd.size   = 0xFFFFFFFFu; // -1 in the original C code
 
-    // Created timestamp
-    fd.created.second = (byte)now.Second;
-    fd.created.minute = (byte)now.Minute;
-    fd.created.hour   = (byte)now.Hour;
-    fd.created.day    = (byte)now.Day;
-    fd.created.month  = (byte)now.Month;
-    fd.created.year   = (ushort)now.Year;
+    // Created and modified timestamps.  Unknown/reserved fields are kept
+    // explicit so the managed struct mirrors the zeroed native p2mfd_t layout.
+    fd.created.reserved = 0;
+    fd.created.second   = (byte)now.Second;
+    fd.created.minute   = (byte)now.Minute;
+    fd.created.hour     = (byte)now.Hour;
+    fd.created.day      = (byte)now.Day;
+    fd.created.month    = (byte)now.Month;
+    fd.created.year     = (ushort)now.Year;
+    fd.modified         = fd.created;
+    fd.unknown1         = 0;
+    fd.unknown2_0       = 0;
+    fd.unknown2_1       = 0;
+    fd.unknown3         = 0;
 
     // Name field: in C this is char[P2M_FNAME_SIZE] with strcpy (no bound
     // check, but our callers only use short literals). We store the full
@@ -413,9 +420,6 @@ public static int CreateFile(System.Collections.Generic.List<cheat_t> cheats,
     uint numLines = 0;
     uint size = 0;
     uint fileSize = 0;
-    uint i = 0;
-
-    cheat_t? first = cheats.Count > 0 ? cheats[0] : null;
 
     p2mheader_t header = default;
     p2marcstat_t arcStat = default;
@@ -467,8 +471,10 @@ public static int CreateFile(System.Collections.Generic.List<cheat_t> cheats,
                 if (!string.IsNullOrEmpty(cheat.name) &&
                     cheat.name[0] != GS3_COLOR_IND)
                 {
-                    uint textmax = (uint)(cheat.name.Length + color_prefix[COLOR_PURPLE].Length + 16);
-                    Common.PrependText(ref cheat.name, color_prefix[COLOR_PURPLE], ref textmax);
+                    string cheatName = cheat.name;
+                    uint textmax = (uint)(cheatName.Length + color_prefix[COLOR_PURPLE].Length + 16);
+                    Common.PrependText(ref cheatName, color_prefix[COLOR_PURPLE], ref textmax);
+                    cheat.name = cheatName;
                 }
             }
         }
@@ -492,8 +498,10 @@ public static int CreateFile(System.Collections.Generic.List<cheat_t> cheats,
     if (!string.IsNullOrEmpty(cheat.name) &&
         cheat.name[0] != GS3_COLOR_IND)
     {
-        uint textmax = (uint)((cheat.name?.Length ?? 0) + color_prefix[COLOR_GREEN].Length + 16);
-        Common.PrependText(ref cheat.name, color_prefix[COLOR_GREEN], ref textmax);
+        string cheatName = cheat.name;
+        uint textmax = (uint)(cheatName.Length + color_prefix[COLOR_GREEN].Length + 16);
+        Common.PrependText(ref cheatName, color_prefix[COLOR_GREEN], ref textmax);
+        cheat.name = cheatName;
     }
 }
 

@@ -1,3 +1,4 @@
+#nullable disable
 using System.Drawing;
 using System.Windows.Forms;
 

@@ -712,7 +712,7 @@ private static unsafe void DumpWords(string label, uint* pCodes, int count)
                 parity ^= (byte)(src[index + k] >> (i - (k << 5)));
             }
 
-            int lastIndex = (int)(((src[index + 1] << 1) & 0x1E) | (parity & 1));
+            int lastIndex = (int)(((src[index + 1] << 1) & 0x1Eu) | ((uint)parity & 1u));
             dst[j] = FilterAlphabet[lastIndex];
             dst[j + 1] = '\0';
         }

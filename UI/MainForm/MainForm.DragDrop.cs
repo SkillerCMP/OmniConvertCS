@@ -27,7 +27,7 @@ namespace OmniconvertCS.Gui
 
         private void txtInput_DragEnter(object sender, DragEventArgs e)
         {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data == null || !e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 e.Effect = DragDropEffects.None;
                 return;
@@ -47,7 +47,7 @@ namespace OmniconvertCS.Gui
 
         private void txtInput_DragDrop(object sender, DragEventArgs e)
         {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data == null || !e.Data.GetDataPresent(DataFormats.FileDrop))
                 return;
 
             var files = (string[]?)e.Data.GetData(DataFormats.FileDrop);

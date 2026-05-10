@@ -1,532 +1,942 @@
-# OmniConvertCS v1.03 – Function Map
+# OmniConvertCS v1.05 – Function Map
 
-This is a **high-level map of where things live** in the v1.02 baseline,  
-updated with features **as of v1.03** (drag & drop, ARMAX button glyphs/notes, PNACH filename tweaks).
+This is a **high-level developer map of where things live** in the current v1.05 codebase.
+
+v1.05 moves the project to **.NET 10 / C# 14**, keeps the WinForms GUI, and adds/updates the command-line conversion/analyze tooling. It also includes the tighter RAW/ARMAX text parsing rules so normal title lines such as `Never Have More Than 500000 Cash` are not mistaken for code lines.
+
+This map is intentionally not a full API reference. It is meant to help you quickly jump to the right file when working on a feature, parser issue, conversion issue, or file format export.
 
 ---
 
 ## Root
 
-### Program.cs
-- `Program.Main()` – WinForms entry point.
-  - Enables visual styles and runs `Gui.MainForm`.
+### `Program.cs`
+Application entry point.
 
-### OmniconvertCS.csproj
-- Project definition: target framework, WinForms settings, resources (`OmniconvertCS.ico`), etc.
+- `Program.Main(string[] args)`
+  - Starts **CLI mode** when arguments are supplied.
+  - Starts **GUI mode** when no arguments are supplied.
+  - Wraps CLI execution with a top-level exception guard so command-line runs do not fail silently.
+- `ConsoleBootstrap.EnsureConsole()`
+  - Since the app is a WinForms `WinExe`, this attaches to the parent console when launched from `cmd`/batch.
+  - Allocates a console when launched with CLI args but no parent console exists.
+  - Rebinds `Console.Out`, `Console.Error`, and `Console.In` so CLI/manual mode works correctly.
+
+### `OmniconvertCS.csproj`
+Project definition.
+
+- Targets `net10.0-windows`.
+- Uses explicit `LangVersion` `14.0`.
+- Uses WinForms via `<UseWindowsForms>true</UseWindowsForms>`.
+- Keeps nullable enabled for hand-written code.
+- Allows unsafe blocks.
+- Enables Windows targeting.
+- Version is `1.05.00`.
+- Uses `OmniconvertCS.ico` as the application icon.
+
+### `0-PUBLISH.bat`
+Publish helper.
+
+- Builds/publishes the Win64 project output.
+- Intended for local release packaging.
+- Should be kept aligned with the current target framework/runtime.
 
 ---
 
 ## Core – Data Structures & Common Helpers
 
-### Core/cheat_t.cs
-Managed equivalents of the original `cheat_t` / `game_t` structs.
+### `Core/cheat_t.cs`
+Managed equivalents of the original C-style `cheat_t` / `game_t` structs.
 
 - `class cheat_t`
-  - Fields for `id`, `name`, `comment`, code list, flags, and ARMAX folder IDs.
-  - Uses managed collections instead of raw pointers.
+  - Holds cheat ID, name, comments, state/flags, code words, and ARMAX folder metadata.
 - `class game_t`
-  - Minimal fields: `id`, `name`, `cnt` (cheat count).
+  - Holds game ID, game name, and cheat count metadata used by some file writers.
 
-### Core/Cheat.cs
-Helper API around `cheat_t` – port of `cheat.c` behaviour.
+### `Core/Cheat.cs`
+Helper API around `cheat_t`.
 
-- Constants such as:
-  - `NAME_MAX_SIZE`, `CODE_INVALID`, `CODE_NO_TARGET`, `FLAG_MCODE`, etc.
+- Constants:
+  - `NAME_MAX_SIZE`, `CODE_INVALID`, `CODE_NO_TARGET`, `FLAG_MCODE`, and related legacy flags.
 - Key methods:
-  - `cheatInit(cheat_t cheat, uint id, string name)`  
-    Initialize a cheat with name/id and default state.
-  - `cheatAppendCodeFromText(cheat_t cheat, string text)`  
-    Parse a single code line (address/value) and append.
-  - `cheatAppendOctet(...)`, `cheatPrependOctet(...)`, `cheatRemoveOctets(...)`  
-    Low-level code-word manipulations (insert/remove words).
-  - `cheatFinalizeData(cheat_t cheat)`  
-    Final size/bookkeeping once code list is assembled.
-  - `cheatDestroy(cheat_t cheat)`  
-    Clear fields / code lists.
+  - `cheatInit()` / `cheatInit(cheat_t cheat, uint id, string name)`
+    - Create or initialize a cheat object.
+  - `cheatAppendCodeFromText(...)`
+    - Append an address/value text line into the cheat word list.
+  - `cheatAppendOctet(...)`
+    - Append one raw 32-bit word.
+  - `cheatPrependOctet(...)`
+    - Insert a raw word at the beginning.
+  - `cheatRemoveOctets(...)`
+    - Remove words from the cheat code list.
+  - `cheatFinalizeData(...)`
+    - Final bookkeeping after code words are assembled.
+  - `cheatDestroy(...)`
+    - Clear object fields/lists.
+  - `cheatClearFolderId(...)`
+    - Clear ARMAX folder metadata.
 
-### Core/Common.cs
-Shared utility helpers used across the project.
+### `Core/Common.cs`
+Shared legacy-style helpers.
 
-- Validation helpers:
-  - `IsHexStr(string)`, `IsNumStr(string)`, `IsEmptyStr(string)`.
-- Bit/byte helpers:
-  - `swapbytes(uint)` – endian swapping.
-- Text helpers used by the legacy code:
-  - `MsgBox(IntPtr hwnd, int flags, string message)` – wrapper for user messages.
-  - `AppendText(...)`, `PrependText(...)`, `AppendNewLine(...)` – legacy-style text building used in some device writers.
+- Validation:
+  - `IsHexStr(string)`
+  - `IsNumStr(string)`
+  - `IsEmptyStr(string)`
+- Data helpers:
+  - `swapbytes(uint)`
+- UI/text helpers:
+  - `MsgBox(IntPtr hwnd, int flags, string message)`
+  - `AppendText(...)`
+  - `PrependText(...)`
+  - `AppendNewLine(...)`
 
 ---
 
 ## Core – Conversion Pipeline
 
-### Core/ConvertCore.cs
-Central static class that holds global conversion state and the main “cheat pipeline”.
+### `Core/ConvertCore.cs`
+Central conversion state and per-cheat conversion pipeline.
 
-- Global enums & state:
-  - `enum Device` – AR1, AR2, ARMAX, CB, GS3, GS5, RAW, PNACH, etc.
-  - `enum Crypt` – `CRYPT_AR1`, `CRYPT_AR2`, `CRYPT_ARMAX`, `CRYPT_CB`, `CRYPT_GS3`, `CRYPT_GS5`, `CRYPT_MAXRAW`, `CRYPT_RAW`, etc.
-  - `g_indevice`, `g_outdevice` – current input/output device.
-  - `g_incrypt`, `g_outcrypt` – current input/output crypt mode.
-  - `g_gameid` – numeric game ID used for some formats.
-  - `ar2seeds`, ARMAX verifier settings, GS3 key version, etc.
+- Global enums/state:
+  - `enum Device`
+    - AR1, AR2, ARMAX, CB, GS3, GS5, RAW, PNACH-style paths, etc.
+  - `enum Crypt`
+    - `CRYPT_AR1`, `CRYPT_AR2`, `CRYPT_ARMAX`, `CRYPT_CB`, `CRYPT_CB7_COMMON`, `CRYPT_GS3`, `CRYPT_GS5`, `CRYPT_MAXRAW`, `CRYPT_RAW`, `CRYPT_ARAW`, `CRYPT_CRAW`, `CRYPT_GRAW`, etc.
+  - `g_indevice`, `g_outdevice`
+  - `g_incrypt`, `g_outcrypt`
+  - `g_gameid`
+  - AR2 seeds, ARMAX hash/verifier settings, GS3 key, CBC save version, organizer/folder options.
 
 - Main pipeline methods:
-  - `DecryptCode(cheat_t cheat)`  
-    Decrypts a single cheat from the selected input device/crypt
-    into an internal “standard” representation (RAW words).
-  - `TranslateCode(cheat_t cheat)`  
-    Calls into `Translate.TransBatchTranslate` to convert opcodes between
-    device formats (ARMAX ↔ CB ↔ GS ↔ RAW, etc.).
-  - `EncryptCode(cheat_t cheat)`  
-    Re-encrypts a translated cheat according to `g_outdevice` / `g_outcrypt`
-    using AR2/ARMAX/CB/GS3 helpers.
-  - `ConvertCode(cheat_t cheat)`  
-    **Top-level per-cheat pipeline**:
-    1. Decrypt from input mode.
-    2. Translate between devices.
-    3. Encrypt to output mode.  
-    Returns an error code (0 = success) for per-cheat error reporting.
+  - `DecryptCode(cheat_t cheat)`
+    - Decrypts from selected input device/crypt into internal RAW words.
+  - `TranslateCode(cheat_t cheat)`
+    - Routes through `Translate.TransBatchTranslate(...)` for opcode translation.
+  - `EncryptCode(cheat_t cheat)`
+    - Encrypts translated words into the selected output crypt/device.
+  - `ConvertCode(cheat_t cheat)`
+    - Top-level per-cheat flow:
+      1. Decrypt input.
+      2. Translate opcode family.
+      3. Encrypt/output.
+    - Returns an integer error code for per-cheat reporting.
 
-- Also holds:
-  - ARMAX disc hash helpers (using `Devices.Armax`).
-  - CBC save version flags.
-  - PNACH/RAW handling helpers used by the UI.
+### `Core/InlineCryptParser.cs`
+INLINE crypt tag parser.
 
-### Core/Translate.cs
-Implements the internal **opcode translation engine** (port of `translate.c`).
-
-- Bit helpers:
-  - `ADDR`, `LOHALF`, `HIHALF`, `LOBYTE32`, `HIBYTE32`.
-  - `GET_STD_CMD`, `GET_ARM_CMD`, `GET_ARM_TYPE`, `GET_ARM_SUBTYPE`, `GET_ARM_SIZE`.
-  - `MAKE_STD_CMD`, `MAKE_ARM_CMD`, `MAKEWORD32`, `MAKEHALF`.
-- Internal translation helpers:
-  - `TransSmash(...)`, `TransExplode(...)` – handle compression/expansion of ARMAX vs. standard code streams.
-- Public/internal surface:
-  - `TransBatchTranslate(List<uint> code, ...)`  
-    Called from `ConvertCore.TranslateCode` – translates whole code streams.
-  - `TransSetErrorSuppress(bool)`, `TransToggleErrorSuppress()`  
-    Control whether translation errors are thrown or accumulated.
-  - `TransGetErrorText()`  
-    Returns the last human-readable translation error for UI display.
-
-### Core/InlineCryptParser.cs
-Powers **INLINE crypt mode**.
-
-- `TryGetCryptFromLabel(string label, out ConvertCore.Crypt crypt)`  
-  - Scans a label for `", CRYPT_XXXX"` and maps it to a `ConvertCore.Crypt`.
-  - Returns `true` for known tags (AR1/AR2/ARMAX/CB/CB7_COMMON/GS3/GS5/MAXRAW/RAW).
-- `StripCryptTag(string label)`  
-  - Returns the label with any `", CRYPT_XXXX"` suffix removed.
-- `UpdateCryptTagForOutput(string label, ConvertCore.Crypt outCrypt)`  
-  - For INLINE input → non-PNACH output:
-    - Rewrites any `, CRYPT_XXXX` to match the **output** crypt.
-  - For PNACH(RAW) output:
-    - Can be used to drop the crypt tag entirely.
+- `TryGetCryptFromLabel(string label, out ConvertCore.Crypt crypt)`
+  - Reads labels like `Some Code, CRYPT_ARMAX`.
+  - Maps known `CRYPT_XXXX` text into a `ConvertCore.Crypt` value.
+- `StripCryptTag(string label)`
+  - Removes a `, CRYPT_XXXX` suffix from a label.
+- `UpdateCryptTagForOutput(string label, ConvertCore.Crypt outCrypt)`
+  - Rewrites an existing `CRYPT_XXXX` label suffix to match the output crypt.
+- `GetDeviceForCrypt(ConvertCore.Crypt crypt)`
+  - Maps a crypt enum to the matching device enum for conversion setup.
 - Private helper:
-  - `GetCryptTokenForOutput(ConvertCore.Crypt crypt)`  
-    Converts a `Crypt` enum value back to `"CRYPT_XXXX"` text.
+  - `GetCryptTokenForOutput(ConvertCore.Crypt crypt)`
+
+---
+
+## Core – Translate Engine
+
+The old monolithic translate logic is split into partial files under `Core/Translate/`.
+
+### `Core/Translate/Translate.Batch.cs`
+- `TransBatchTranslate(cheat_t src)`
+  - Main batch translation entry point.
+  - Calls the appropriate translation path based on current input/output crypt/device.
+
+### `Core/Translate/Translate.Constants.Std.cs`
+Standard/RAW opcode constants.
+
+- Defines standard command nibbles such as:
+  - write byte/half/word
+  - increment write
+  - multi-write
+  - copy bytes
+  - pointer write
+  - bitwise
+  - master/test/hook/timer command families
+- Holds size conversion tables and masks used during translation.
+
+### `Core/Translate/Translate.Constants.Armax.cs`
+ARMAX opcode constants.
+
+- Defines ARMAX compare/write types.
+- Defines ARMAX direct/pointer/increment/hook subtypes.
+- Defines ARMAX skip behavior constants.
+- Defines masks and special command values used by ARMAX translation.
+
+### `Core/Translate/Translate.Helpers.Bit.cs`
+Bit-packing helpers.
+
+- `ADDR(...)`, `LOHALF(...)`, `HIHALF(...)`, `LOBYTE32(...)`, `HIBYTE32(...)`
+- `GET_STD_CMD(...)`
+- `GET_ARM_CMD(...)`, `GET_ARM_TYPE(...)`, `GET_ARM_SUBTYPE(...)`, `GET_ARM_SIZE(...)`
+- `MAKE_ARM_CMD(...)`, `MAKE_STD_CMD(...)`, `MAKEWORD32(...)`, `MAKEHALF(...)`
+
+### `Core/Translate/Translate.Helpers.SmashExplode.cs`
+Compression/expansion helpers.
+
+- `TransSmash(...)`
+  - Collapses repeated lines where supported.
+- `TransExplode(...)`
+  - Expands multi-line/multi-write style commands.
+
+### `Core/Translate/Translate.TransMaxToStd.cs`
+ARMAX-to-standard translation.
+
+- `TransMaxToStd(...)`
+  - Converts ARMAX command words into standard/internal command words.
+  - Handles ARMAX-specific special/multi-write/test behavior.
+
+### `Core/Translate/Translate.TransStdToMax.cs`
+Standard-to-ARMAX translation.
+
+- `TransStdToMax(...)`
+  - Converts standard/internal command words to ARMAX-style commands.
+
+### `Core/Translate/Translate.TransOther.cs`
+Non-ARMAX translation path.
+
+- `TransOther(...)`
+  - Handles translation between compatible non-ARMAX opcode families.
+
+### `Core/Translate/Translate.Errors.cs`
+Translation error handling.
+
+- Error constants such as:
+  - `ERR_NONE`
+  - `ERR_VALUE_INCREMENT`
+  - `ERR_COPYBYTES`
+  - `ERR_EXCESS_OFFSETS`
+  - `ERR_BITWISE`
+  - `ERR_TIMER`
+  - `ERR_TEST_TYPE`
+  - `ERR_PTR_SIZE`
+  - `ERR_INVALID_CODE`
+- `TransSetErrorSuppress(byte val)`
+- `TransToggleErrorSuppress()`
+- `TransGetErrorText(int idx)`
+
+### `Core/Translate/Translate.Debug.cs`
+Debug trace helpers.
+
+- `Trace(string message)`
+- `Trace(string format, params object[] args)`
+
+---
+
+## Core – CLI / Batch Conversion
+
+v1.05 includes a fuller command-line workflow for batch conversion, analysis, and analyze/fix mode.
+
+### `Core/Cli/CliOptions.cs`
+CLI argument parser and option model.
+
+- `AnalyzeMode`
+  - `None`
+  - `Analyze`
+  - `AnalyzeFix`
+- `CliOptions`
+  - Tracks mode, output crypt, manual mode flags, E001 rewrite option, input path, output root, output folder, and analysis folder.
+- `TryParse(string[] args, out CliOptions options, out string error)`
+  - Parses command-line flags:
+    - `-a` analyze
+    - `-af` analyze + fix
+    - `-m` manual on failures
+    - `-mc` manual check all
+    - `-e` CRAW E001-to-D rewrite
+    - `-o` / `--out` output root
+    - `-h` / `--help` / `/?`
+- `TryParseCrypt(string token, out ConvertCore.Crypt crypt)`
+  - Supports tokens with or without `CRYPT_` prefix.
+
+### `Core/Cli/CliRunner/`
+Partial CLI runner split by responsibility.
+
+#### `CliRunner.cs`
+- `Run(string[] args)`
+  - Parses options.
+  - Prints usage or errors.
+  - Calls execution.
+
+#### `CliRunner.Execute.cs`
+- `Execute(CliOptions opt)`
+  - Creates output/analysis folders.
+  - Gathers input files.
+  - Processes each file without allowing one bad file to stop the whole folder run.
+- `ComputeExitCode(...)`
+  - Exit code logic:
+    - normal success = `0`
+    - argument/no-file style errors = `1`
+    - analyze failures = `2`
+    - analyze/fix still failing = `3`
+
+#### `CliRunner.Input.cs`
+- `GatherInputFiles(CliOptions opt, out string inputRoot)`
+  - Accepts one `.txt` file or a folder.
+  - Recurses folder input.
+  - Skips existing output/analysis folders so previous CLI results are not reprocessed.
+
+#### `CliRunner.Process.cs`
+- `ProcessOneFile(...)`
+  - Parses input via `TextCheatParser`.
+  - Converts each block.
+  - Runs analyze/analyze-fix checks when requested.
+  - Writes converted output.
+  - Writes analysis reports.
+  - Applies optional `E001ToDFixer` post-processing for CRAW output.
+- `WriteAnalysisReport(...)`
+  - Writes per-file `.analysis.txt` reports under `<OutputCrypt>/Analysis/`.
+- `HandleFileException(...)`
+  - Logs exceptions and writes report details without stopping the batch.
+
+#### `CliRunner.Helpers.cs`
+- `MakeAnalysisRelPath(...)`
+- `ShortLabel(...)`
+- `GetDeclaredCrypt(CheatBlock b)`
+- `CloneCheat(cheat_t src)`
+
+#### `CliRunner.Usage.cs`
+- `PrintUsage()`
+  - Prints CLI syntax, options, output paths, and examples.
+
+### `Core/Cli/TextCheatParser.cs`
+Text input parser for CLI mode.
+
+- `CheatBlock`
+  - `Label`
+  - `CheatInput`
+  - `Wildcards`
+  - `OriginalLines`
+  - `HasArmaxEncryptedTextLine`
+- `WildcardMask`
+  - Tracks wildcard/mask information for value words so masks can be reapplied after conversion.
+- `ParseFile(string path)`
+  - Reads `.txt` using non-throwing UTF-8.
+- `ParseText(string inputText)`
+  - Splits input into logical cheat blocks.
+  - Accepts ARMAX encrypted lines such as `XXXXX-XXXXX-XXXXX`.
+  - Accepts RAW-style lines only when the **first two tokens** are valid `ADDR VALUE` pairs.
+  - Treats other lines as labels/group/name lines.
+- `TryParseHexAddressToken(...)`
+  - Allows 6–8 hex digits for addresses.
+  - Does not allow wildcard characters in addresses.
+- `TrySanitizeRawValueToken(...)`
+  - Allows 1–8 value nibbles.
+  - Allows only hex plus explicit wildcard markers `?`, `X`, or `x`.
+  - Rejects normal words such as `Cash`, `Money`, or `Unlocked` as code values.
+- `SanitizeHexWithMask(...)`
+  - Converts wildcard nibbles to `0` for conversion while preserving a mask for final output.
+
+### `Core/Cli/TextCheatWriter.cs`
+Text output writer for CLI mode.
+
+- `WriteToText(List<(CheatBlock Block, cheat_t CheatConverted)> converted, ConvertCore.Crypt outCrypt)`
+  - Writes labels and converted code lines.
+  - Formats ARMAX encrypted output using `Armax.FormatEncryptedLine(...)`.
+  - Updates existing inline `CRYPT_XXXX` tags when present.
+  - Reapplies wildcard masks to value words.
+- `ApplyMaskToHex(...)`
+  - Overlays saved wildcard mask characters onto an 8-digit value string.
+
+### `Core/Cli/RawPlausibility.cs`
+RAW-family analysis heuristics.
+
+- `ValidateFirstCheckableAddress(cheat_t cheat, ConvertCore.Crypt outputCrypt, AnalyzeMode mode)`
+  - Validates the first checkable output line for RAW-family analysis.
+  - Skips CB7 master/enabler prologue lines.
+  - Checks basic structure such as even code count and plausible address range.
+  - Adds stricter CRAW analysis rules for some command families.
+- `IsCb7MasterPrologueLine(...)`
+  - Detects known CB7 master/enabler prologue lines.
+
+### `Core/Cli/RawPlausibilityResult.cs`
+Result model for RAW-family analysis.
+
+- `IsValid`
+- `CheckedWord`
+- `CheckedAddr28`
+- `Rule`
+- `FailReason`
+- `Note`
+
+### `Core/Cli/AutoFix/`
+Analyze/fix crypt selection engine.
+
+#### `AutoFixCryptSelector.cs`
+- `ConvertWithAutoFix(...)`
+  - Main analyze/fix entry point.
+  - Reads declared inline crypt when present.
+  - Converts directly when possible.
+  - Tries alternate crypt candidates when analysis fails.
+  - Supports manual and manual-all flows.
+
+#### `AutoFixCryptSelector.Candidates.cs`
+- `BuildCandidateList(...)`
+  - Builds crypt retry order.
+  - Moves likely neighbor crypts earlier, such as CB/CB7 and AR1/AR2 swaps.
+
+#### `AutoFixCryptSelector.Attempts.cs`
+- `TryConvertCandidate(...)`
+  - Attempts conversion for a candidate crypt.
+  - Handles AR2 key variants when testing AR2.
+- `TryConvertOnce(...)`
+  - Runs one conversion and optional plausibility check.
+
+#### `AutoFixCryptSelector.Helpers.cs`
+- `SeedFromAr2Key(...)`
+- `CloneCheat(...)`
+- `IsRawFamilyCrypt(...)`
+
+#### `AutoFixCryptSelector.Heuristics.cs`
+- `InputAddr28InStdRange(...)`
+  - Checks whether the input itself already looks plausible.
+  - Used to detect cases where an auto-fix pass may be a false positive and should be confirmed.
+- `IsCb7MasterPrologueLineLocal(...)`
+
+#### `AutoFixCryptSelector.Manual.cs`
+- `PromptManualOnFail(...)`
+  - Interactive prompt after an attempted crypt fails.
+- `PromptManualConfirmOnPass(...)`
+  - Interactive confirmation when a candidate passes but the input also looks plausible.
+
+#### `AutoFixCryptSelector.ManualAll.cs`
+- `InitManualAllPick(...)`
+  - Forces manual selection/checking for every cheat when `-mc` is used.
+
+#### `AutoFixCryptSelector.ManualExtras.cs`
+- `PromptManualPickInputCrypt(...)`
+- `ParseManualFlags(...)`
+- `TryParseHexUInt(...)`
+  - Supports manual command flags such as `-y` and `-k<AR2Key>`.
+
+#### `AutoFixResult.cs`
+Result model for analyze/fix.
+
+- `Deleted`
+- `Fixed`
+- `UsedInputCrypt`
+- `CheatConverted`
+- `Plausibility`
+- `RetCode`
+- `Note`
+
+### `Core/Cli/CliUi.cs`
+Centralized console UI.
+
+- Wraps console streams:
+  - `Out`, `Err`, `In`
+- Prints usage, run summaries, errors, and manual-mode prompts.
+- Displays original input block and converted output during manual crypt selection.
+- Supports manual commands:
+  - `Enter` continue/accept
+  - `S` skip cheat
+  - `D` delete cheat
+  - `Q` quit
+  - `-y` force accept selected crypt
+  - `-k<hex>` apply manual AR2 key for an AR2 attempt
+
+### `Core/Cli/CliScreenContext.cs`
+Small shared context for CLI display.
+
+- Tracks the current file name/path for manual-mode banners.
+
+### `Core/Cli/E001ToDFixer.cs`
+Optional CRAW post-processor.
+
+- `RewriteE001ToD(string text)`
+  - Rewrites lines like `$E001vvvv 0aaaaaaa` into `$Daaaaaaa 0000vvvv`.
+  - Only intended for the `-e` option with CRAW output.
 
 ---
 
 ## Devices – Crypto Engines
 
-### Devices/Ar2.cs
-Action Replay 1/2 encryption/decryption.
+### `Devices/Ar2.cs`
+Action Replay 1/2 crypto.
 
-- Core methods:
-  - `Ar2Decrypt(...)`, `Ar2Encrypt(...)` – word-level AR2 crypto.
-  - `Ar2SetSeed(...)`, `Ar2GetSeed()` – seed management.
-  - `Ar2BatchDecrypt(...)`, `Ar2BatchEncrypt(...)` – batch operations on buffers.
-  - `Ar1BatchDecrypt(...)`, `Ar1BatchEncrypt(...)` – AR1 compatibility helpers.
-  - `Ar2AddKeyCode(...)` – merges AR2 key codes into a cheat.
-- Uses a `NibbleFlip` helper internally.
+- `Ar2Decrypt(...)`, `Ar2Encrypt(...)`
+- `Ar2SetSeed(...)`, `Ar2GetSeed()`
+- `Ar2BatchDecryptArr(...)`, `Ar2BatchEncryptArr(...)`
+- `Ar2BatchDecrypt(...)`, `Ar2BatchEncrypt(...)`
+- `Ar1BatchDecrypt(...)`, `Ar1BatchEncrypt(...)`
+- `Ar2AddKeyCode(...)`
+- Internal helper:
+  - `NibbleFlip(...)`
 
-### Devices/Armax.cs
-Action Replay MAX crypto and disc hash / verifier logic.
+### `Devices/Armax.cs`
+Action Replay MAX crypto, text formatting, verifier, and disc hash support.
 
-- Utility/text helpers:
-  - `MaxRemoveDashes(string)` – strip dashes from MAX code strings.
-  - `IsArMaxStr(string)` – quick ARMAX code detection.
-  - `TryParseEncryptedLine(...)` / `FormatEncryptedLine(...)` – parse/format encrypted ARMAX text lines.
-- Crypto functions:
-  - `ArmBatchDecryptFull(...)`, `ArmBatchEncryptFull(...)` – full ARMAX block crypto.
-- Verifiers & disc hash:
-  - `ArmReadVerifier(...)`, `ArmMakeVerifier(...)` – ARMAX verifier management.
-  - `ArmEnableExpansion(...)` – enable expansion device flags.
-  - `ComputeDiscHash(string path)` – compute ARMAX “disc hash” from an ISO/drive.
-  - `ArmMakeFolder(...)` – helper for ARMAX folder entries.
+- Text helpers:
+  - `MaxRemoveDashes(string)`
+  - `IsArMaxStr(string)`
+  - `TryParseEncryptedLine(...)`
+  - `FormatEncryptedLine(...)`
+- Crypto helpers:
+  - `ArmBatchDecryptFull(...)`
+  - `ArmBatchEncryptFull(...)`
+  - Internal seed/build/encrypt/decrypt helpers.
+- Verifier/hash helpers:
+  - `ArmReadVerifier(...)`
+  - `ArmMakeVerifier(...)`
+  - `ArmEnableExpansion(...)`
+  - `ComputeDiscHash(string path)`
+  - `ArmMakeFolder(...)`
 
-### Devices/Cb2Crypto.cs
-CodeBreaker v1/v7/v8 RSA + ARC4 crypto helper.
+### `Devices/Cb2Crypto.cs`
+CodeBreaker crypto.
 
-- RSA & multiplicative inverse:
-  - `RSACrypt(...)`, `RSADecode(...)`, `RSAEncode(...)`.
-  - Internal: `MulInverse`, `MulEncrypt`, `MulDecrypt`.
-- ARC4 and state helpers:
-  - `CBReset()`, `CBSetCommonV7()` – configure CBC v7 common keys.
-  - `CBCryptFileData(...)` – encrypt/decrypt payloads for CBC files.
-- Code encryption:
-  - `CB1EncryptCode(...)`, `CB1DecryptCode(...)` – legacy v1.
-  - `CBEncryptCode(...)`, `CBDecryptCode(...)`.
-  - `CBBatchDecrypt(...)`, `CBBatchEncrypt(...)`.
+- RSA helpers:
+  - `RSACrypt(...)`
+  - `RSADecode(...)`
+  - `RSAEncode(...)`
+- Multiplicative helpers:
+  - `MulInverse(...)`
+  - `MulEncrypt(...)`
+  - `MulDecrypt(...)`
+- ARC4 helpers:
+  - `CBReset()`
+  - `CBSetCommonV7()`
+  - `CBCryptFileData(...)`
+- Code crypto:
+  - `CB1EncryptCode(...)`, `CB1DecryptCode(...)`
+  - `CBEncryptCode(...)`, `CBDecryptCode(...)`
+  - `CBBatchDecrypt(...)`, `CBBatchEncrypt(...)`
+  - CB7 helper path such as `CB7EncryptCode(...)` / `CB7DecryptCode(...)`
 
-### Devices/Gs3.cs
-GameShark v3 / v5 stream cipher and verifier support.
+### `Devices/Gs3.cs`
+GameShark v3/v5 crypto and verifier support.
 
-- CRC & seed helpers:
-  - `SetVersion5()`, `IsVersion5()` – GS3 vs GS5 behavior.
-  - `CcittCrc(...)`, `GenCrc(...)`, `Crc32(...)`, `GenCrc32(...)`.
-  - `InitMtStateTbl(...)`, `GetMtNum(...)`, `BuildByteSeedTbl(...)`, `ReverseSeeds(...)`, `BuildSeeds(...)`.
+- Version/key behavior:
+  - `SetVersion5()`
+  - `IsVersion5()`
+- CRC/seed helpers:
+  - `CcittCrc(...)`
+  - `GenCrc(...)`
+  - `Crc32(...)`
+  - `GenCrc32(...)`
+  - `InitMtStateTbl(...)`
+  - `GetMtNum(...)`
+  - `BuildByteSeedTbl(...)`
+  - `ReverseSeeds(...)`
+  - `BuildSeeds(...)`
 - Crypto:
-  - `Init(...)`, `Update(...)` – initialize/update cipher state.
-  - `Encrypt(...)`, `Decrypt(...)`.
-  - `BatchEncrypt(...)`, `BatchDecrypt(...)`.
-- Verifier helpers:
-  - `CreateVerifier(...)`, `AddVerifier(...)`.
-- File crypto:
-  - `CryptFileData(...)` – used by P2M/CBC flows.
+  - `Init(...)`
+  - `Update(...)`
+  - `Encrypt(...)`
+  - `Decrypt(...)`
+  - `BatchEncrypt(...)`
+  - `BatchDecrypt(...)`
+- Verifier/file helpers:
+  - `CreateVerifier(...)`
+  - `AddVerifier(...)`
+  - `CryptFileData(...)`
 
 ---
 
-## Devices – Loaders (File → cheat_t)
+## Devices – Loaders
 
-### Devices/Load/ArmaxBinReader.cs
-Reader for **ARMAX `.bin` codelist** files (`PS2_CODELIST` layout).
+### `Devices/Load/ArmaxBinReader.cs`
+Reader for ARMAX `.bin` codelist files.
 
-- Internal:
-  - Validates header (`LIST_IDENT`, header size).
-  - Handles two layout variants for game headers (writer-style and official).
-- Public surface:
-  - `Result` class – holds `List<cheat_t> Cheats` + game name/ID metadata.
-  - `Load(string path)` (via public static entry) – read file, decode ARMAX payload using `Devices.Armax`, populate cheats.
-- **As of v1.03:**
-  - Wide-string reader (`ReadWideStringZeroTerminated`) now maps embedded ARMAX **button glyph code units**
-    (e.g. `0x0010`–`0x001D`) into readable tokens like `{X}`, `{Square}`, `{Triangle}`, `{Circle}`,
-    `{L1}`, `{L2}`, `{R1}`, `{R2}`, `{Up}`, `{Right}`, `{Down}`, `{Left}` in both names and notes.
-  - When non-empty game or cheat notes are present, they are appended in braces to the label text, e.g.  
-    `Infinite Time {Press {L1}+{L2}+{X} to activate.}`.
+- `LoadAsArmaxEncryptedTextWithGames(...)`
+  - Reads an ARMAX list and returns encrypted ARMAX text grouped by game.
+- `LoadAsArmaxEncryptedLines(...)`
+  - Reads an ARMAX list as encrypted line output.
+- `Load(...)`
+  - Reads and decodes ARMAX `.bin` payloads into cheats/metadata.
+- `MapArmaxButtonGlyph(...)`
+  - Converts embedded ARMAX button glyph code units into readable tokens such as `{X}`, `{Square}`, `{Triangle}`, `{Circle}`, `{L1}`, `{R1}`, etc.
+- Header/string helpers:
+  - `IsReasonableCheatCount(...)`
+  - `TryReadGameCheatHeader(...)`
+  - `ReadWideStringZeroTerminated(...)`
+  - `ReadUInt32LE(...)`, `ReadUInt16LE(...)`
 
-### Devices/Load/CbcReader.cs
-Reader for **CodeBreaker `.cbc`** Day1/CFU files.
+### `Devices/Load/CbcReader.cs`
+Reader for CodeBreaker `.cbc` Day1/CFU files.
 
-- Constants for CBC v7/v8 headers; `CBC_FILE_ID`.
-- `Result` class:
-  - `string GameName`, `List<cheat_t> Cheats`.
-- `Load(string path)`:
-  - Detects v7 vs v8 CFU layout.
-  - Decrypts payload with `Cb2Crypto`.
-  - Parses the internal cheat list into `cheat_t` objects.
+- `Load(string path)`
+  - Detects CBC v7/v8 and dispatches accordingly.
+- `LoadV7(...)`
+- `LoadV8(...)`
+- `IsCbcV8(...)`
+- `ParseCheatsFromPayload(...)`
+- ASCII/little-endian helpers.
 
-### Devices/Load/P2mReader.cs
-Reader for **GameShark v5 / XP `.p2m`** archives.
+### `Devices/Load/P2mReader.cs`
+Reader for GameShark v5 / XP `.p2m` archives.
 
-- Handles `P2MS` header and file descriptor table.
-- `Load(string path)`:
-  - Validates header, reads file descriptors.
-  - Locates and decrypts `user.dat` using **GS3** logic.
-  - Builds a `Result` containing extracted cheats and metadata.
+- `Load(string path)`
+  - Validates the P2M archive.
+  - Locates and decrypts embedded `user.dat` using GS3 logic.
+  - Builds a result containing extracted cheats and metadata.
+- Helpers:
+  - `ReadUInt32LE(...)`
+  - `ReadUInt16LE(...)`
+  - `ReadFixedAscii(...)`
+  - `ReadWideStringWithTag(...)`
 
 ---
 
-## Devices – Writers / “Save As”
+## Devices – Writers / Save As
 
-### Devices/SaveAs/ArmaxBinWriter.cs
-Writer for **ARMAX `.bin` codelist** files (C# port of `armlist.c`).
+### `Devices/SaveAs/ArmaxBinWriter.cs`
+Writer for ARMAX `.bin` codelist files.
 
-- `CreateList(List<cheat_t> cheats, game_t game, string fileName)`  
-  - Mirrors `alCreateList`:
-    - Computes space for names/comments/flags.
-    - Builds ARMAX list header and cheat blocks.
-    - Writes out the `PS2_CODELIST` file.
-- Uses `game.name` from the **Game Name** textbox in `MainForm` for the list’s internal game title.
+- `CreateList(List<cheat_t> cheats, game_t game, string fileName)`
+  - Builds ARMAX list header, game metadata, cheat blocks, and encrypted payload.
+- Helpers:
+  - `WriteUInt32LE(...)`
+  - `WriteUInt16LE(...)`
 
-### Devices/SaveAs/CbcWriter.cs
-Writer for **CodeBreaker `.cbc`** files.
+### `Devices/SaveAs/CbcWriter.cs`
+Writer for CodeBreaker `.cbc` files.
 
-- `CreateFile(List<cheat_t> cheats, game_t game, string fileName, bool doHeadings)`  
-  - C# port of `cbcCreateFile`.
-  - Can emit:
-    - v7 Day1 header + encrypted payload.
-    - v8 CFU header + encrypted payload.
-  - Uses `Cb2Crypto` for encryption and CRC.
-  - Uses `game.name` as the file’s game title.
+- `CreateFile(List<cheat_t> cheats, game_t game, string fileName, bool doHeadings)`
+  - Writes CBC v7 Day1 or v8 CFU output depending on current settings.
+- `CreateV8Signature(...)`
+- `WriteUInt32LE(...)`
 
-### Devices/SaveAs/P2m.cs
-Writer for **GameShark v5+ `.p2m`** archives.
+### `Devices/SaveAs/P2m.cs`
+Writer for GameShark v5+ `.p2m` archives.
 
-- Contains C# versions of `p2mheader_t`, `p2mfd_t`, `p2mdate_t`, constants, etc.
-- `CreateFile(List<cheat_t> cheats, game_t game, string path, bool doHeadings)`  
-  - Builds a P2M archive with code list / user data.
-  - Uses `Gs3` crypto for the embedded `user.dat`.
-  - Uses `game.name` as the internal game name.
+- Contains managed versions of P2M header/file descriptor/date structures.
+- `CreateFile(List<cheat_t> cheats, game_t game, string path, bool doHeadings)`
+  - Builds P2M archive structures.
+  - Creates embedded code-list/user data.
+  - Uses GS3 crypto for the embedded payload.
+- Helpers:
+  - `InitHeader(...)`
+  - `InitFd(...)`
+  - `WriteDate(...)`
+  - `WriteHeader(...)`
+  - `WriteArcStat(...)`
+  - `WriteFileDescriptor(...)`
+  - `WriteStringW(...)`
+  - `WriteFixedAscii(...)`
+  - little-endian writers.
 
-### Devices/SaveAs/SwapMagicBinWriter.cs
-Writer for **Swap Magic Coder `.bin`** files.
+### `Devices/SaveAs/SwapMagicBinWriter.cs`
+Writer for Swap Magic Coder `.bin` files.
 
-- `CreateFile(List<cheat_t> cheats, game_t game, string path)`  
-  - Port of `scfCreateFile`.
-  - Builds Swap Magic game header + cheat list.
-  - Uses `Common.MsgBox` to report cases where no cheats are valid.
+- `CreateFile(List<cheat_t> cheats, game_t game, string path)`
+  - Builds Swap Magic game header and cheat list.
 
-### Devices/SaveAs/PnachWriter.cs
-Simple helper to save PNACH text.
+### `Devices/SaveAs/PnachWriter.cs`
+PNACH text save helper.
 
-- `SaveFromText(string path, string? pnachText)`  
-  - Writes `pnachText` as UTF-8 to disk (null → empty string).
+- `SaveFromText(string path, string? pnachText)`
+  - Writes PNACH text as UTF-8.
 
-### Devices/SaveAs/Crc32.cs
-CRC-32 implementation used by file writers.
+### `Devices/SaveAs/Crc32.cs`
+CRC-32 helper.
 
-- `Compute(ReadOnlySpan<byte> buffer, uint crc)`  
-  - Standard CRC-32 with final XOR, using a precomputed table.
-  - Matches original `crc32.c` behaviour.
+- `Compute(ReadOnlySpan<byte> buffer, uint crc)`
+  - CRC-32 implementation used by writers.
 
 ---
 
 ## Devices – Options & PNACH CRC
 
-### Devices/Options/PnachCrcHelper.cs
-Manages **PNACH CRC mappings** via `PnachCRC.json`.
+### `Devices/Options/PnachCrcHelper.cs`
+Manages `PnachCRC.json` mappings.
 
-- `CrcEntry` type:
-  - `uint Crc`, `string GameName`, `string ElfName`.
-- CRC calculation:
-  - `ComputeElfCrc(string elfPath)`  
-    Reads a PS2 ELF and computes the PCSX2 “Game CRC” value.
-- Mapping management:
-  - `GetEntries()` – load all entries from `PnachCRC.json`.
-  - `TryGetGameName(uint crc, out string gameName)`  
-  - `TryGetElfName(uint crc, out string elfName)`  
-  - `AddOrUpdate(uint crc, string elfName, string gameName)`  
-    - Adds/updates entries and saves them.
+- `CrcEntry`
+  - `Crc`
+  - `GameName`
+  - `ElfName`
+- `NormalizeElfName(...)`
+- `ComputeElfCrc(string elfPath)`
+  - Computes PCSX2-style game CRC from a PS2 ELF.
+- `GetEntries()`
+- `TryGetGameName(uint crc, out string gameName)`
+- `TryGetElfName(uint crc, out string elfName)`
+- `AddOrUpdate(uint crc, string elfName, string gameName)`
 - Private helpers:
-  - `GetMappingPath()` – returns path to `PnachCRC.json`.
-  - `LoadEntries()`, `SaveEntries(List<CrcEntry>)` – JSON round-trip.
+  - `GetMappingPath()`
+  - `LoadEntries()`
+  - `SaveEntries(List<CrcEntry>)`
 
 ---
 
-## UI – Main Form (Core Behaviour)
+## UI – Main Form
 
-### UI/MainForm/MainForm.Designer.cs
+### `UI/MainForm/MainForm.Designer.cs`
 Designer-generated layout for the main window.
 
-- Declares:
-  - Input/Output text boxes.
-  - Convert / Clear buttons.
-  - MenuStrip (`File`, `Edit`, `Input`, `Output`, `Options`).
-  - PNACH CRC checkbox and related labels.
-  - AR2 key textbox & label.
-  - Status text labels for input/output format.
-  - Game ID / Game Name fields.
-- **As of v1.03:**
-  - Enables drag-and-drop on the Input textbox (`AllowDrop = true`) and wires
-    `DragEnter` / `DragDrop` to `MainForm.DragDrop` handlers for file loading.
+- Input/output text boxes.
+- Convert/Clear buttons.
+- MenuStrip:
+  - File
+  - Edit
+  - Input
+  - Output
+  - Options
+- PNACH CRC controls.
+- AR2 current-key controls.
+- Game ID / Game Name controls.
+- Input/output format labels.
+- Drag/drop wiring for input loading.
 
-### UI/MainForm/MainForm.cs
-Main behavior for the form; **core event handlers and convert pipeline entry**.
+### `UI/MainForm/MainForm.cs`
+Main form behavior and GUI conversion pipeline.
 
-- Startup:
-  - `MainForm_Load(...)` – initialization:
-    - Loads app settings.
-    - Initializes crypt/device menus.
-    - Syncs AR2 key / PNACH UI.
-- Convert:
-  - `btnConvert_Click(...)` – the main “Convert” button handler:
-    - Reads input text and current Input/Output devices.
-    - Builds `cheat_t` list from input (RAW/PNACH/INLINE, etc.).
-    - Calls `ConvertCore.ConvertCode(...)` per cheat.
-    - Appends PNACH headers / group headings as needed.
-    - Writes final text to `txtOutput`.
-  - Uses `AppendErrorCommentBlock(...)` to include **per-cheat error comments** when non-zero error codes are returned.
-- GS3 key menu handlers:
-  - `menuOptionsGs3Key0_Click(...)` … `menuOptionsGs3Key4_Click(...)`  
-    - Update `ConvertCore.g_gs3key` and refresh the UI.
-- Utility:
-  - `CleanCbSiteFormat(string)` – helper to clean up CodeTwink/GameHacking.org style pasted text.
+- State:
+  - `_lastConvertedCheats`
+  - `_lastGameId`
+  - `_outputAsPnachRaw`
+  - `_inputAsPnachRaw`
+  - `_pnachCrc`, `_pnachGameName`, `_pnachElfName`, `_pnachCrcActive`
+  - `_inlineInputMode`
+- RAW/wildcard parser helpers:
+  - `TryParseHexAddressToken(...)`
+    - Requires 6–8 hex digits for addresses.
+    - Does not allow address wildcards.
+  - `IsRawValueNibble(...)`
+    - Allows hex plus `?`, `X`, `x` only.
+  - `TrySanitizeRawValueToken(...)`
+    - Rejects normal words as values.
+    - Preserves wildcard masks for later output.
+  - `SanitizeHexWithMask(...)`
+  - `ApplyMaskToHex(...)`
+  - `OutputSupportsWildcardValues()`
+    - Allows wildcard values only for safe outputs:
+      - RAW family outputs.
+      - CodeBreaker v1–6.
+      - GS3 key 0, 1, or 3.
+    - Blocks wildcard values for ARMAX RAW, ARMAX encrypted, CB7, GS5, AR1/AR2, etc.
+- `MainForm_Load(...)`
+  - Loads settings.
+  - Initializes menus and UI state.
+  - Shows version in title bar.
+- `btnConvert_Click(...)`
+  - GUI conversion entry point.
+  - Parses PNACH, INLINE, ARMAX encrypted text, and RAW text.
+  - Prevents ARMAX encrypted input from falling back to RAW parsing.
+  - Reads RAW lines from the first two tokens only.
+  - Treats unrecognized lines as labels/titles.
+  - Converts each cheat through `ConvertCore.ConvertCode(...)`.
+  - Emits PNACH headers/groups when needed.
+  - Reapplies wildcard masks in supported output formats.
+  - Writes per-cheat error comment blocks on failure.
+- `CleanCbSiteFormat(string input)`
+  - Cleans pasted CodeBreaker/GameHacking style text.
+- `AppendErrorCommentBlock(...)`
+  - Adds readable conversion error comments to output.
 
-### UI/MainForm/MainForm.Ar2Helpers.cs
-Helpers specific to AR2 key handling in the UI.
+### `UI/MainForm/MainForm.CryptMenus.cs`
+Input/output crypt menu handling.
 
-- `RefreshAr2KeyDisplayFromSeed()`  
-  - Shows/hides the AR2 key line based on current input crypt.
-  - Updates `lblAr2CurrentKey` / `txtAr2CurrentKey` contents.
-- `TryApplyAr2KeyFromCheatHeader(cheat_t cheat)`  
-  - Looks at cheat headers (e.g. AR2 key codes) and auto-applies them
-    to `ConvertCore.ar2seeds` / UI when possible.
+- `CryptMenuItem_Click(...)`
+  - Updates selected input/output crypt/device.
+  - Handles PNACH RAW and INLINE mode state.
+  - Updates UI labels.
+- `BuildCryptMenu(...)`
+- `AddCryptMenuItem(...)`
+- `FindCryptOption(...)`
+- Holds the menu option table for supported crypts/devices.
 
-### UI/MainForm/MainForm.CryptMenus.cs
-Centralized handling for Input/Output crypt menus and device options.
+### `UI/MainForm/MainForm.FileMenu.cs`
+File load/save behavior.
 
-- `CryptMenuItem_Click(...)`  
-  - Handles all “Input/Output → (Device/Crypt)” menu clicks.
-  - Updates `ConvertCore.g_indevice`, `g_outdevice`, `g_incrypt`, `g_outcrypt`.
-  - Updates `lblInputFormat`, `lblOutputFormat`.
-- Helpers:
-  - `BuildCryptMenuItem(...)`, `FindCryptOption(...)`  
-    - Internal helpers to construct and locate menu options.
-  - Holds the table of `CryptOption` entries, including **INLINE** input mode.
-
-### UI/MainForm/MainForm.EditMenu.cs
-Edit menu and associated shortcuts.
-
-- `SwapInputOutput()`  
-  - Swaps text between Input/Output boxes and updates format labels.
-- Clipboard actions:
-  - `menuEditCopy_Click`, `menuEditCut_Click`, `menuEditPaste_Click`, `menuEditSelectAll_Click`.
-- Clear handlers:
-  - `menuEditClearInput_Click`, `menuEditClearOutput_Click`.
-  - `btnClearInput_Click`, `btnClearOutput_Click`.
-
-### UI/MainForm/MainForm.FileMenu.cs
-File load/save behaviour for all supported formats.
-
-- **Shared load helpers (new in v1.03):**
-  - `LoadTextFromPath(string path)` – central text-file load logic (used by menu + drag & drop).
-  - `LoadCbcFromPath(string path)` – wraps `CbcReader.Load` and pushes result into Input/Game Name.
-  - `LoadArmaxBinFromPath(string path)` – wraps `ArmaxBinReader.LoadAsArmaxEncryptedTextWithGames`, handles single vs multi-game lists.
-  - `LoadP2mFromPath(string path)` – wraps `P2mReader.Load`, fills Game Name and Input.
+- Shared load helpers:
+  - `LoadTextFromPath(string path)`
+  - `LoadCbcFromPath(string path)`
+  - `LoadArmaxBinFromPath(string path)`
+  - `LoadP2mFromPath(string path)`
 - Load menu handlers:
-  - `menuFileLoadText_Click(...)` – show `OpenFileDialog` then call `LoadTextFromPath`.
-  - `menuFileLoadArmaxBin_Click(...)` – show dialog then call `LoadArmaxBinFromPath`.
-  - `menuFileLoadCbc_Click(...)` – show dialog then call `LoadCbcFromPath`.
-  - `menuFileLoadP2m_Click(...)` – show dialog then call `LoadP2mFromPath`.
+  - `menuFileLoadText_Click(...)`
+  - `menuFileLoadArmaxBin_Click(...)`
+  - `menuFileLoadCbc_Click(...)`
+  - `menuFileLoadP2m_Click(...)`
 - Save menu handlers:
-  - `menuFileSaveAsText_Click(...)` – save Output as plain text.
-  - `menuFileSaveAsPnach_Click(...)` – PNACH text via `PnachWriter`:
-    - Warns if Output format is not Pnach(RAW).
-    - **As of v1.03**, when PNACH CRC is active and ELF/CRC are known,
-      pre-fills the filename as `ELFNAME_CRC.pnach`; otherwise falls back to `PUTNAME.pnach`.
-  - `menuFileSaveAsArmaxBin_Click(...)` – ARMAX `.bin` via `ArmaxBinWriter`, using last converted cheats and `txtGameName`.
-  - `menuFileSaveAsCbc_Click(...)` – CBC `.cbc` via `CbcWriter` (Day1/CFU depending on options).
-  - `menuFileSaveAsP2m_Click(...)` – P2M archive via `P2m.CreateFile` (XP/GS).
-  - `menuFileSaveAsSwapBin_Click(...)` – Swap Magic `.bin` via `SwapMagicBinWriter`.
+  - `menuFileSaveAsText_Click(...)`
+  - `menuFileSaveAsPnach_Click(...)`
+  - `menuFileSaveAsArmaxBin_Click(...)`
+  - `menuFileSaveAsCbc_Click(...)`
+  - `menuFileSaveAsP2m_Click(...)`
+  - `menuFileSaveAsSwapBin_Click(...)`
+- `ShowBinaryExportNotImplemented(...)`
+  - Fallback for unavailable binary export paths.
 
-### UI/MainForm/MainForm.DragDrop.cs
-Implements drag-and-drop loading into the Input text box. **(new in v1.03)**
+### `UI/MainForm/MainForm.DragDrop.cs`
+Drag-and-drop input loading.
 
-- `IsSupportedLoadExtension(string? ext)`  
-  - Returns `true` for `.txt`, `.cbc`, `.bin`, `.p2m` (files that can be loaded into Input).
-- `txtInput_DragEnter(object sender, DragEventArgs e)`  
-  - Checks for file-drop data and sets `DragDropEffects.Copy` only if at least one supported file is present.
-- `txtInput_DragDrop(object sender, DragEventArgs e)`  
-  - Extracts the first supported file from the drop and calls `LoadFileIntoInput(path)`.
-- `LoadFileIntoInput(string path)`  
-  - Switches on file extension and delegates to the shared load helpers in `MainForm.FileMenu`:
-    - `.cbc` → `LoadCbcFromPath`
-    - `.bin` → `LoadArmaxBinFromPath`
-    - `.p2m` → `LoadP2mFromPath`
-    - `.txt` / default → `LoadTextFromPath`
-  - Ensures drag & drop loading behaves identically to the File → Load menu.
+- `IsSupportedLoadExtension(string? ext)`
+  - Supports `.txt`, `.cbc`, `.bin`, `.p2m`.
+- `txtInput_DragEnter(...)`
+  - Allows copy drop effect only for supported files.
+- `txtInput_DragDrop(...)`
+  - Loads the first supported dropped file.
+- `LoadFileIntoInput(string path)`
+  - Routes file extension to the same shared helpers used by File menu loading.
 
-### UI/MainForm/MainForm.GameIdAndPnachUi.cs
-Helpers for Game ID fields and PNACH CRC UI.
+### `UI/MainForm/MainForm.EditMenu.cs`
+Edit menu and shortcuts.
 
-- `SyncGameIdFromGlobals()` / `SyncGameIdToGlobals()`  
-  - Synchronize the three game ID text boxes with `ConvertCore.g_gameid`.
-- `txtGameId*_TextChanged(...)`  
-  - Validate and update the global game ID on edits.
-- `RefreshArmaxGameIdDisplay()`  
-  - Reflect changes for ARMAX lists and relevant UI.
+- `SwapInputOutput()`
+- `menuEditUndo_Click(...)`
+- `menuEditCut_Click(...)`
+- `menuEditCopy_Click(...)`
+- `menuEditPaste_Click(...)`
+- `menuEditSelectAll_Click(...)`
+- `menuEditSwapInputOutput_Click(...)`
+- `menuEditClearInput_Click(...)`
+- `menuEditClearOutput_Click(...)`
+- `btnClearInput_Click(...)`
+- `btnClearOutput_Click(...)`
 
-### UI/MainForm/MainForm.OptionsMenu.cs
-Handlers for the **Options** menu.
+### `UI/MainForm/MainForm.Ar2Helpers.cs`
+AR2 key UI helpers.
 
-- `menuOptionsArmaxOptions_Click(...)` – opens the ARMAX options dialog.
-- `menuOptionsArmaxDiscHashNone_Click(...)` / related handlers  
-  - Configure ARMAX disc hash behaviour.
-- `menuOptionsArmaxVerifiersAuto_Click(...)` / `Manual_Click(...)`  
-  - Toggle ARMAX verifier mode.
-- `menuOptionsCbcSaveVersion7_Click(...)` / `Version8_Click(...)`  
-  - Set CBC v7 vs v8 file output.
-- `menuOptionsGs3KeyX_Click(...)`  
-  - Additional wrappers for GS3 key selection.
-- `menuOptionsPnachCrc_Click(...)`  
-  - Opens `PnachCrcForm` to edit PNACH CRC / ELF / Game Name mappings.
-- `menuOptionsMakeOrganizers_Click(...)` (if present)  
-  - Stub for future “organizer” output.
+- `RefreshAr2KeyDisplayFromSeed()`
+  - Shows current AR2 key state in the UI.
+- `TryApplyAr2KeyFromCheatHeader(cheat_t cheat)`
+  - Detects/applies AR2 key codes from cheat headers when possible.
 
-### UI/MainForm/MainForm.Settings.cs
+### `UI/MainForm/MainForm.GameIdAndPnachUi.cs`
+Game ID and PNACH UI helpers.
+
+- `SyncGameIdFromGlobals()`
+- `txtGameId_KeyPress(...)`
+- `txtGameId_TextChanged(...)`
+- `chkPnachCrcActive_CheckedChanged(...)`
+- `RefreshArmaxGameIdDisplay()`
+
+### `UI/MainForm/MainForm.OptionsMenu.cs`
+Options menu handlers.
+
+- ARMAX options:
+  - `menuOptionsArmaxOptions_Click(...)`
+  - `EnumerateArmaxDiscHashDrives()`
+  - `SetArmaxHashDrive(...)`
+  - `menuOptionsArmaxDiscHashNone_Click(...)`
+  - `menuOptionsArmaxDiscHashDrive_Click(...)`
+- AR2 key:
+  - `menuOptionsAr2Key_Click(...)`
+- PNACH CRC:
+  - `menuOptionsPnachCrc_Click(...)`
+- Organizers/folders:
+  - `UpdateMakeOrganizersCheck()`
+  - `menuOptionsMakeOrganizers_Click(...)`
+- ARMAX verifiers/region:
+  - `UpdateVerifierMenuChecks()`
+  - `UpdateRegionMenuChecks()`
+  - `menuOptionsArmaxVerifiersAuto_Click(...)`
+  - `menuOptionsArmaxVerifiersManual_Click(...)`
+  - `menuOptionsArmaxRegionUsa_Click(...)`
+  - `menuOptionsArmaxRegionPal_Click(...)`
+  - `menuOptionsArmaxRegionJapan_Click(...)`
+- GS3 key:
+  - `UpdateGs3MenuChecks()`
+  - `SetGs3Key(int key)`
+- CBC save version:
+  - `UpdateCbcSaveVersionMenuChecks()`
+  - `menuOptionsCbcVersion7_Click(...)`
+  - `menuOptionsCbcVersion8_Click(...)`
+
+### `UI/MainForm/MainForm.Settings.cs`
 User settings persistence.
 
-- Internal `AppSettings` class:
-  - Stores last used Input/Output device + crypt, game ID, window size/position, CBC save version, disc hash settings, INLINE state, etc.
-- `GetSettingsPath()`  
-  - Returns path to `OmniconvertSettings.json`.
-- `LoadAppSettings()`  
-  - Reads JSON (if present) and populates:
-    - `ConvertCore.g_indevice`, `g_outdevice`, `g_incrypt`, `g_outcrypt`.
-    - `ConvertCore.g_gameid`.
-    - Window geometry and UI state.
-- `SaveAppSettings()`  
-  - Serializes and writes `OmniconvertSettings.json`.
-- `OnFormClosing(...)`  
-  - Overrides base to call `SaveAppSettings()` automatically on exit.
+- `AppSettings`
+  - Stores last selected input/output device/crypt, game ID, window geometry, CBC save version, ARMAX hash/verifier settings, INLINE mode state, PNACH state, etc.
+- `GetSettingsPath()`
+- `LoadAppSettings()`
+- `SaveAppSettings()`
+- `OnFormClosing(...)`
 
 ---
 
 ## UI – Dialogs & Forms
 
-### UI/Ar2KeyForm.cs (+ Designer)
-Dialog for managing AR2 key seeds / codes.
+### `UI/Ar2KeyForm.cs` + Designer
+Dialog for AR2 key seed/key selection.
 
-- Initializes from `ConvertCore.ar2seeds`.
-- `btnApply_Click(...)`, `btnReset_Click(...)`, `btnCancel_Click(...)`.
-- `txtKey_KeyPress(...)` – validation for key input.
-- `cmbCommonKeys_SelectedIndexChanged(...)` – quickly select from known keys.
+- `InitializeFromCurrentSeed()`
+- `cmbCommonKeys_SelectedIndexChanged(...)`
+- `btnOk_Click(...)`
+- `btnReset_Click(...)`
+- `txtKey_KeyPress(...)`
 
-### UI/ArmaxOptionsForm.cs (+ Designer)
-Dialog for ARMAX-specific options and disc hash configuration.
+### `UI/ArmaxOptionsForm.cs` + Designer
+Dialog for ARMAX options and disc hash/game ID settings.
 
-- `PopulateDiscHashCombo(...)` – fill drop-down with known drives/paths.
-- `btnComputeDiscHash_Click(...)` – compute a disc hash using `Armax.ComputeDiscHash`.
-- `btnOk_Click(...)`, `btnCancel_Click(...)` – apply/cancel configuration.
+- `PopulateDiscHashCombo(...)`
+- `txtGameId_KeyPress(...)`
+- `btnOk_Click(...)`
+- `btnCancel_Click(...)`
 
-### UI/PnachCrcForm.cs (+ Designer)
-Dialog for PNACH CRC / Game Name / ELF mapping.
+### `UI/PnachCrcForm.cs` + Designer
+PNACH CRC / ELF / Game Name mapping dialog.
 
-- `btnBrowseElf_Click(...)` – choose ELF file; uses `PnachCrcHelper.ComputeElfCrc`.
-- `btnComputeFromElf_Click(...)` – compute CRC from a supplied ELF.
-- `btnOk_Click(...)`, `btnCancel_Click(...)`.
-- Drag-and-drop:
-  - `PnachCrcForm_DragEnter(...)`, `PnachCrcForm_DragDrop(...)` – allow dropping ELF files.
-- Exposes:
-  - `SelectedCrcHex`, `SelectedGameName`, `SelectedElfName` for use in `MainForm`.
+- `btnBrowseElf_Click(...)`
+- `SetElfPathAndCompute(...)`
+- `comboKnown_SelectedIndexChanged(...)`
+- `btnOk_Click(...)`
+- `btnCancel_Click(...)`
+- Drag-and-drop handlers:
+  - `PnachCrcForm_DragEnter(...)`
+  - `PnachCrcForm_DragDrop(...)`
+- Exposes selected CRC/game/ELF info back to `MainForm`.
 
 ---
 
-## Docs / Help / Data Files
+## Docs / Help / Runtime Data
 
-### INFO/OmniconvertCS_Help.html
-- HTML help for end-users; linked from README and/or future Help menu.
-- Describes formats, usage, and examples.
-- **Updated for v1.03** to cover:
-  - Drag & drop loading into Input.
-  - ARMAX button glyph decoding & notes appended to labels.
-  - PNACH filename defaults based on ELF + CRC.
+### `INFO/DEV_FunctionMap.md`
+This file.
 
-### README.md
-- Full project overview, supported devices/crypts, and usage notes.
-- Mentions INLINE mode, PNACH support, and PNACH CRC helper.
-- Should be kept in sync with v1.03 features as they settle.
+- Developer navigation map.
+- Should be updated whenever files move, major parser behavior changes, CLI behavior changes, or new load/save formats are added.
 
-### CREDITS.md
-- Attribution for original Omniconvert, research, and contributors.
+### `INFO/OmniconvertCS_Help.html`
+End-user help document.
 
-### LICENSE
-- Project licensing information.
+- Describes supported formats and common workflows.
+- Should be kept aligned with GUI-visible behavior.
 
-### OmniconvertSettings.json (runtime)
-- Saved in the app directory (or alongside the EXE).
-- Managed by `MainForm.LoadAppSettings()` / `SaveAppSettings()`.
+### `README.md`
+Project overview and usage notes if present in future packages.
 
-### PnachCRC.json (runtime)
-- Mapping file for PNACH CRC ↔ Game Name ↔ ELF name.
+### `CREDITS.md`
+Attribution for the original OmniConvert work and related research/contributors.
+
+### `LICENSE`
+Project license if present in future packages.
+
+### `OmniconvertSettings.json` runtime file
+Saved app settings.
+
+- Managed by `MainForm.LoadAppSettings()` and `MainForm.SaveAppSettings()`.
+- Stored next to the executable/project runtime path.
+
+### `PnachCRC.json` runtime file
+PNACH CRC mapping data.
+
 - Managed by `Devices.Options.PnachCrcHelper`.
+- Maps CRC ↔ game name ↔ ELF name.
 
 ---
 
-This map is intentionally **not exhaustive** – it’s meant as a quick guide
-so you can jump to the right file when you’re working on a feature.
+## v1.05 Notes Worth Remembering
 
-As new v1.03+ features land (e.g. INLINE enhancements, extra loaders/writers, organizer export),
-we can keep adding bullets marked “new in v1.03+” under the relevant sections.
+- The project is now **.NET 10 / C# 14**.
+- CLI mode is active whenever `Program.Main` receives arguments.
+- GUI mode remains the no-argument default.
+- CLI batch conversion supports analyze and analyze/fix flows.
+- RAW-family analysis validates plausible output addresses and has stricter CRAW checks.
+- Manual CLI mode can force/skip/delete/quit and can test AR2 key variants.
+- RAW text parsing is intentionally stricter:
+  - RAW code lines must begin with the address/value pair.
+  - Address token must be 6–8 hex digits.
+  - Value token must be hex plus optional explicit wildcard markers `?`, `X`, or `x`.
+  - Normal words such as `Cash` are no longer accepted as wildcard values.
+- ARMAX encrypted input does not fall back to RAW parsing when an encrypted line parse fails.
+- Wildcard value masks are preserved and reapplied only for supported output formats.
+- `ARMAX RAW` does **not** support wildcard values in the current safety rules.
+

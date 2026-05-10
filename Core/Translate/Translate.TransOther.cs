@@ -30,7 +30,7 @@ namespace OmniconvertCS
 
             byte cmd = (byte)((src.code[idx] >> 28) & 0xF);
             byte size;
-            uint addr, val;
+            uint addr;
 
             switch (cmd) {
                     case STD_WRITE_BYTE:

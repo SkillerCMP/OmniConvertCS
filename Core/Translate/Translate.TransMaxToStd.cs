@@ -10,9 +10,9 @@ namespace OmniconvertCS
 
         private static int TransMaxToStd(cheat_t dest, cheat_t src, ref int idx)
         {
-            int i, cnt, trans, tmp, ret;
+            int cnt, trans, tmp, ret;
             byte command, size, type, subtype, type2, subtype2;
-            uint address, increment, offset, value, count, skip;
+            uint address, offset, value, count, skip;
             var code = src.code;
             
             trans = cnt = ret = 0;

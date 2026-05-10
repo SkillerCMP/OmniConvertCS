@@ -1,13 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <UseWindowsForms>true</UseWindowsForms>
     <OutputType>WinExe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<Version>1.04.03</Version>
-	<!-- App / EXE icon -->
-	<ApplicationIcon>OmniconvertCS.ico</ApplicationIcon>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Version>1.05.00</Version>
+    <ApplicationIcon>OmniconvertCS.ico</ApplicationIcon>
   </PropertyGroup>
 </Project>

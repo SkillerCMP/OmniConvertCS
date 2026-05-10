@@ -93,34 +93,31 @@ namespace OmniconvertCS.Cli
                     continue;
                 }
 
-                // Standard hex line: ADDR VALUE (ADDR can be 6-8 hex digits, VALUE can include wildcards like ??)
-                if (parts.Length >= 2 && TryParseHexAddressToken(parts[0], out uint addrWord))
+                // Standard hex line: ADDR VALUE. VALUE may contain real hex or
+                // explicit wildcard markers (?/X) only. This keeps title words
+                // such as "Cash" from becoming accidental wildcard code values.
+                if (parts.Length >= 2 &&
+                    TryParseHexAddressToken(parts[0], out uint addrWord) &&
+                    TrySanitizeRawValueToken(parts[1], out string valHex, out string? valMask))
                 {
-                    string valToken = parts[1];
+                    var blk = EnsureCurrentBlock();
+                    int baseIndex = blk.CheatInput.codecnt; // index of addr word
 
-                    SanitizeHexWithMask(valToken, out string valHex, out string? valMask);
+                    string addrHex = addrWord.ToString("X8", CultureInfo.InvariantCulture);
+                    Cheat.cheatAppendCodeFromText(blk.CheatInput, addrHex, valHex);
 
-                    if (uint.TryParse(valHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _))
+                    // Keep original source line for manual/analysis output
+                    blk.OriginalLines.Add(raw);
+
+                    if (!string.IsNullOrEmpty(valMask))
                     {
-                        var blk = EnsureCurrentBlock();
-                        int baseIndex = blk.CheatInput.codecnt; // index of addr word
-
-                        string addrHex = addrWord.ToString("X8", CultureInfo.InvariantCulture);
-                        Cheat.cheatAppendCodeFromText(blk.CheatInput, addrHex, valHex);
-
-                        // Keep original source line for manual/analysis output
-                        blk.OriginalLines.Add(raw);
-
-                        if (!string.IsNullOrEmpty(valMask))
+                        blk.Wildcards.Add(new WildcardMask
                         {
-                            blk.Wildcards.Add(new WildcardMask
-                            {
-                                WordIndex = baseIndex,
-                                ValMask = valMask
-                            });
-                        }
-                        continue;
+                            WordIndex = baseIndex,
+                            ValMask = valMask
+                        });
                     }
+                    continue;
                 }
 
                 // Otherwise treat as label/group/name line
@@ -145,6 +142,43 @@ namespace OmniconvertCS.Cli
             if (t.Length < 6 || t.Length > 8) return false;
 
             return uint.TryParse(t, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out addrWord);
+        }
+
+        private static bool IsRawValueNibble(char c)
+        {
+            return (c >= '0' && c <= '9') ||
+                   (c >= 'A' && c <= 'F') ||
+                   (c >= 'a' && c <= 'f') ||
+                   c == '?' || c == 'X' || c == 'x';
+        }
+
+        private static bool TrySanitizeRawValueToken(
+            string token,
+            out string sanitizedHex,
+            out string? maskOrNull)
+        {
+            sanitizedHex = "00000000";
+            maskOrNull = null;
+
+            if (string.IsNullOrWhiteSpace(token))
+                return false;
+
+            string t = token.Trim();
+
+            if (t.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                t = t.Substring(2);
+
+            if (t.Length < 1 || t.Length > 8)
+                return false;
+
+            for (int i = 0; i < t.Length; i++)
+            {
+                if (!IsRawValueNibble(t[i]))
+                    return false;
+            }
+
+            SanitizeHexWithMask(t, out sanitizedHex, out maskOrNull);
+            return uint.TryParse(sanitizedHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _);
         }
 
         private static void SanitizeHexWithMask(string token, out string sanitizedHex, out string? maskOrNull)

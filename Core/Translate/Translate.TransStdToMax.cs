@@ -9,7 +9,7 @@ namespace OmniconvertCS
     {
 private static int TransStdToMax(cheat_t dest, cheat_t src, ref int idx)
         {
-            int i, cnt, trans, tmp, ret;
+            int cnt, trans, tmp, ret;
             byte command, size;
             uint address, increment, offset, value, count, skip;
             var code = src.code;

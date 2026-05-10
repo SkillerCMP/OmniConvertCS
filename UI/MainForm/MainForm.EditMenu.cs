@@ -11,7 +11,7 @@ namespace OmniconvertCS.Gui
 {
     public partial class MainForm : Form
     {
-        private System.Windows.Forms.TextBox GetActiveTextBox()
+        private System.Windows.Forms.TextBox? GetActiveTextBox()
         {
             // If the active control *is* a TextBox, use it.
             if (this.ActiveControl is System.Windows.Forms.TextBox tb)

@@ -111,13 +111,13 @@ namespace OmniconvertCS.Gui
             }
         }
 
-        private void menuOptionsArmaxDiscHashNone_Click(object sender, EventArgs e)
+        private void menuOptionsArmaxDiscHashNone_Click(object? sender, EventArgs e)
         {
             // "Do Not Create" selected
             SetArmaxHashDrive('\0');
         }
 
-        private void menuOptionsArmaxDiscHashDrive_Click(object sender, EventArgs e)
+        private void menuOptionsArmaxDiscHashDrive_Click(object? sender, EventArgs e)
         {
             if (sender is ToolStripMenuItem mi && mi.Tag is char letter)
             {

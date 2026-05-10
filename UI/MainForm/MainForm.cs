@@ -91,6 +91,53 @@ namespace OmniconvertCS.Gui
         }
 
         /// <summary>
+        /// Returns true if a VALUE nibble is safe for RAW input parsing.
+        /// Only true hex and explicit wildcard markers are allowed. This prevents
+        /// normal title words like "Cash" from being treated as wildcard values.
+        /// </summary>
+        private static bool IsRawValueNibble(char c)
+        {
+            return (c >= '0' && c <= '9') ||
+                   (c >= 'A' && c <= 'F') ||
+                   (c >= 'a' && c <= 'f') ||
+                   c == '?' || c == 'X' || c == 'x';
+        }
+
+        /// <summary>
+        /// Validates and sanitizes a RAW VALUE token. Values may be 1-8 nibbles
+        /// and may include explicit wildcard nibbles '?' or 'X'. Other letters
+        /// are rejected so titles do not become accidental code lines.
+        /// </summary>
+        private static bool TrySanitizeRawValueToken(
+            string token,
+            out string sanitizedHex,
+            out string? maskOrNull)
+        {
+            sanitizedHex = "00000000";
+            maskOrNull = null;
+
+            if (string.IsNullOrWhiteSpace(token))
+                return false;
+
+            string t = token.Trim();
+
+            if (t.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                t = t.Substring(2);
+
+            if (t.Length < 1 || t.Length > 8)
+                return false;
+
+            for (int i = 0; i < t.Length; i++)
+            {
+                if (!IsRawValueNibble(t[i]))
+                    return false;
+            }
+
+            SanitizeHexWithMask(t, out sanitizedHex, out maskOrNull);
+            return uint.TryParse(sanitizedHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _);
+        }
+
+        /// <summary>
         /// Returns true if the currently selected OUTPUT crypt/device safely supports
         /// wildcard value nibbles (like 000000?? or XXXXXXXX).
         /// </summary>
@@ -204,7 +251,7 @@ namespace OmniconvertCS.Gui
 
             using (var reader = new StringReader(input))
             {
-                string line;
+                string? line;
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (string.IsNullOrWhiteSpace(line))
@@ -439,7 +486,7 @@ namespace OmniconvertCS.Gui
                 labels.Add(label);
             }
 
-            string currentPnachGroup = null;   // tracks [Group\Name] group while parsing
+            string? currentPnachGroup = null;   // tracks [Group\Name] group while parsing
 
             string[] lines = inputText.Replace("\r\n", "\n").Split('\n');
             foreach (string rawLine in lines)
@@ -519,7 +566,7 @@ namespace OmniconvertCS.Gui
                         if (rest.Length == 0)
                             continue;
 
-                        string[] p = rest.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                        string[] p = rest.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
                         if (p.Length >= 2 && TryParseHexAddressToken(p[0], out _))
                         {
                             line = rest; // let normal hex-pair parsing handle it
@@ -575,7 +622,7 @@ namespace OmniconvertCS.Gui
                         if (inner.Length == 0)
                             continue;
 
-                        string groupName = null;
+                        string? groupName = null;
                         string codeName;
                         int slashIndex = inner.IndexOf('\\');
                         if (slashIndex >= 0)
@@ -623,29 +670,25 @@ namespace OmniconvertCS.Gui
                             if (commentIdx >= 0) valToken = valToken.Substring(0, commentIdx);
 
                             // Address must LOOK like a real 32-bit address (6–8 hex digits).
-                            if (TryParseHexAddressToken(addrToken, out uint addrWord))
+                            // VALUE must be real hex or explicit wildcard nibble(s) only.
+                            if (TryParseHexAddressToken(addrToken, out uint addrWord) &&
+                                TrySanitizeRawValueToken(valToken, out string valHex, out string? valMask))
                             {
-                                // Allow wildcards/non-hex in VALUE and mask them
-                                SanitizeHexWithMask(valToken, out string valHex, out string? valMask);
+                                var cheatForLine = EnsureCurrentCheat();
+                                int baseIndex = cheatForLine.codecnt; // ADDR word index
 
-                                if (uint.TryParse(valHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _))
+                                string addrHex = addrWord.ToString("X8", CultureInfo.InvariantCulture);
+                                Cheat.cheatAppendCodeFromText(cheatForLine, addrHex, valHex);
+
+                                if (valMask != null)
                                 {
-                                    var cheatForLine = EnsureCurrentCheat();
-                                    int baseIndex = cheatForLine.codecnt; // ADDR word index
-
-                                    string addrHex = addrWord.ToString("X8", CultureInfo.InvariantCulture);
-                                    Cheat.cheatAppendCodeFromText(cheatForLine, addrHex, valHex);
-
-                                    if (valMask != null)
+                                    wildcards.Add(new WildcardInfo
                                     {
-                                        wildcards.Add(new WildcardInfo
-                                        {
-                                            Cheat = cheatForLine,
-                                            WordIndex = baseIndex,
-                                            AddrMask = null,
-                                            ValMask = valMask
-                                        });
-                                    }
+                                        Cheat = cheatForLine,
+                                        WordIndex = baseIndex,
+                                        AddrMask = null,
+                                        ValMask = valMask
+                                    });
                                 }
                             }
                         }
@@ -659,7 +702,7 @@ namespace OmniconvertCS.Gui
                 // ----------------------------
                 // Generic input parsing (RAW / ARMAX)
                 // ----------------------------
-                string[] parts = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                string[] parts = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 0)
                     continue;
 
@@ -681,35 +724,42 @@ namespace OmniconvertCS.Gui
                 }
 
                 // Default: ADDR VALUE hex pairs on a line
-                if (!handledCode && parts.Length >= 2)
+                //
+                // Tight parsing rules:
+                //   - ARMAX encrypted input never falls back to RAW parsing.
+                //   - RAW fallback reads the first two tokens only, not the last two.
+                //   - VALUE may contain real hex or explicit wildcard markers (?/X) only.
+                //
+                // This prevents title lines such as:
+                //     Never Have More Than 500000 Cash
+                // from being misread as:
+                //     ADDR=500000, VALUE=Cash
+                bool allowRawPairFallback = !isArmaxEncryptedInput;
+
+                if (!handledCode && allowRawPairFallback && parts.Length >= 2)
                 {
-                    string addrToken = parts[parts.Length - 2];
-                    string valToken = parts[parts.Length - 1];
+                    string addrToken = parts[0];
+                    string valToken = parts[1];
 
-                    // Address must LOOK like a real 32-bit address (6–8 hex digits).
-                    if (TryParseHexAddressToken(addrToken, out uint addrWord))
+                    if (TryParseHexAddressToken(addrToken, out uint addrWord) &&
+                        TrySanitizeRawValueToken(valToken, out string valHex, out string? valMask))
                     {
-                        SanitizeHexWithMask(valToken, out string valHex, out string? valMask);
+                        var cheatForLine = EnsureCurrentCheat();
+                        int baseIndex = cheatForLine.codecnt; // ADDR index
 
-                        if (uint.TryParse(valHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _))
+                        string addrHex = addrWord.ToString("X8", CultureInfo.InvariantCulture);
+                        Cheat.cheatAppendCodeFromText(cheatForLine, addrHex, valHex);
+                        handledCode = true;
+
+                        if (valMask != null)
                         {
-                            var cheatForLine = EnsureCurrentCheat();
-                            int baseIndex = cheatForLine.codecnt; // ADDR index
-
-                            string addrHex = addrWord.ToString("X8", CultureInfo.InvariantCulture);
-                            Cheat.cheatAppendCodeFromText(cheatForLine, addrHex, valHex);
-                            handledCode = true;
-
-                            if (valMask != null)
+                            wildcards.Add(new WildcardInfo
                             {
-                                wildcards.Add(new WildcardInfo
-                                {
-                                    Cheat = cheatForLine,
-                                    WordIndex = baseIndex,
-                                    AddrMask = null,
-                                    ValMask = valMask
-                                });
-                            }
+                                Cheat = cheatForLine,
+                                WordIndex = baseIndex,
+                                AddrMask = null,
+                                ValMask = valMask
+                            });
                         }
                     }
                 }
@@ -845,7 +895,7 @@ namespace OmniconvertCS.Gui
                 // Prefer explicit PNACH game name if set, otherwise use the UI textbox.
                 string gameName = !string.IsNullOrWhiteSpace(_pnachGameName)
                     ? _pnachGameName!
-                    : txtGameName.Text?.Trim();
+                    : txtGameName.Text.Trim();
 
                 if (string.IsNullOrEmpty(gameName))
                     gameName = "Unknown Game";
@@ -931,7 +981,7 @@ namespace OmniconvertCS.Gui
             }
 
 
-            string currentGroupForPnach = null;   // track current PNACH group
+            string? currentGroupForPnach = null;   // track current PNACH group
 
             for (int idx = 0; idx < cheats.Count; idx++)
             {
@@ -990,7 +1040,7 @@ namespace OmniconvertCS.Gui
                     }
 
                     // Name for this section
-                    string baseName = effectiveHeader;
+                    string baseName = effectiveHeader ?? string.Empty;
                     if (string.IsNullOrWhiteSpace(baseName))
                         baseName = $"Code {idx + 1}";
 
@@ -1061,7 +1111,7 @@ namespace OmniconvertCS.Gui
                 if (errorCodeForCheatNonPnach != 0)
                 {
                     // When there is an error, just print a neat error block
-                    string nameForError = effectiveHeader;
+                    string nameForError = effectiveHeader ?? string.Empty;
                     if (string.IsNullOrWhiteSpace(nameForError))
                         nameForError = $"Code {idx + 1}";
                     AppendErrorCommentBlock(sb, nameForError, errorCodeForCheatNonPnach);

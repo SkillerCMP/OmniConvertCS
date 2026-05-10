@@ -11,8 +11,6 @@ namespace OmniconvertCS.Gui
         public string SelectedGameName { get; private set; } = string.Empty;
 		public string SelectedElfName   { get; private set; } = string.Empty;   // NEW
 
-        private bool _hasComputedCrc;
-
         public PnachCrcForm(string initialCrcHex, string initialGameName)
         {
             InitializeComponent();
@@ -72,7 +70,6 @@ namespace OmniconvertCS.Gui
                 uint crc = PnachCrcHelper.ComputeElfCrc(path);
                 string crcHex = crc.ToString("X8");
                 txtCrc.Text = crcHex;
-                _hasComputedCrc = true;
 
                 var knownName = PnachCrcHelper.TryGetGameName(crc);
                 if (!string.IsNullOrEmpty(knownName))
@@ -111,7 +108,6 @@ namespace OmniconvertCS.Gui
             {
                 txtCrc.Text = entry.CrcHex;
                 txtGameName.Text = entry.GameName;
-                _hasComputedCrc = true;
             }
         }
 
