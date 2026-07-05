@@ -1,324 +1,479 @@
-<h1>OmniconvertCS INFO</h1>
-<p class="small-note">
-    C# / .NET port of <strong>Omniconvert 1.1.1R</strong>, the classic PS2 cheat code converter by <strong>Pyriel</strong>.
+# 🔄 OmniConvertCS
+
+**OmniConvertCS** is a native **C++17** PlayStation 2 cheat-code converter based on  
+**OmniConvert 1.1.1R**, the classic converter created by **Pyriel**.
+
+The project retains the **OmniConvertCS** name for continuity with previous releases.  
+The former C# implementation is preserved in the [`~Legacy~/`](./~Legacy~/) folder for reference, but the active application is now built from the native C++17 source.
+
+<p>
+  <a href="https://github.com/SkillerCMP/OmniConvertCS/releases">
+    <img alt="GitHub Downloads — All Releases" src="https://img.shields.io/github/downloads/SkillerCMP/OmniConvertCS/total?style=social">
+  </a>
+  <a href="https://github.com/SkillerCMP/OmniConvertCS/releases/latest">
+    <img alt="GitHub Downloads — Latest Release" src="https://img.shields.io/github/downloads/SkillerCMP/OmniConvertCS/latest/total?style=social">
+  </a>
 </p>
 
-<!-- Overview -->
+> **Current release:** OmniConvertCS v1.06  
+> **Architecture:** Native C++17, Windows x64  
+> **Compatibility:** Windows 7 SP1 and newer
+
+---
+
+## ✨ Highlights
+
+- 🔐 Convert between RAW, CodeBreaker, Action Replay, ARMAX, GameShark, Xploder, and other PS2 formats
+- 🧩 Mix different crypt types in one conversion using **INLINE** input
+- 📝 Read and generate PCSX2 PNACH text
+- 🔎 Compute and save PCSX2 ELF CRC mappings
+- 🧠 Assemble and disassemble PS2 R5900/MIPS instructions
+- 🗂️ Format supported text output for the CMP Code Database
+- 📦 Read and write ARMAX `.bin` codelists
+- 🎨 Native Win32 interface with persistent settings
+- 🪟 Windows 7 SP1 x64 compatibility
+- 🚫 No .NET runtime required
+
+---
+
 <details open>
-    <summary>Project Overview</summary>
-    <div>
-        <p>
-            <strong>OmniconvertCS</strong> is a C# port of <strong>Omniconvert 1.1.1R</strong> with additional quality-of-life features
-            and helpers for modern systems. It allows converting between multiple PS2 cheat formats
-            such as CodeBreaker, Action Replay MAX, GameShark / Xploder, RAW, and PNACH.
-        </p>
-        <p>
-            This project builds on years of PS2 cheat research and tools, particularly the original work by
-            <strong>Pyriel</strong> and others in the community.
-        </p>
-        <div class="callout">
-            <p>
-                <strong>Original Omniconvert:</strong><br />
-                <a href="https://github.com/pyriell/omniconvert" target="_blank" rel="noopener noreferrer">
-                    https://github.com/pyriell/omniconvert
-                </a>
-            </p>
-        </div>
-    </div>
-</details>
-<!-- Features -->
-<details>
-    <summary>Features</summary>
-    <div>
-        <ul>
-            <li>
-                <strong>Multi-device PS2 cheat conversion</strong>
-                <ul>
-                    <li>Convert between RAW, CodeBreaker, Action Replay MAX, GameShark / Xploder, and other supported formats.</li>
-                </ul>
-            </li>
-            <li>
-                <strong>ARMAX support</strong>
-                <ul>
-                    <li>Import and export ARMAX <span class="inline-code">.bin</span> cheat lists.</li>
-                    <li>Preserve game names, folder/group names, and code descriptions where possible.</li>
-                </ul>
-            </li>
-            <li>
-                <strong>PNACH (RAW) support</strong>
-                <ul>
-                    <li>Input: parse PNACH files that use <span class="inline-code">[GROUP\Name]</span> headers and
-                        <span class="inline-code">patch=1,EE,ADDR,extended,VALUE</span> lines.</li>
-                    <li>Output: generate PNACH (RAW) text suitable for PCSX2.</li>
-                    <li>Optional <em>Add CRC</em> helper to embed CRC and notes at the top of the PNACH output.</li>
-                </ul>
-            </li>
-            <li>
-                <strong>PNACH CRC helper</strong>
-                <ul>
-                    <li>Drag-and-drop a PS2 ELF to compute the PCSX2 “Game CRC”.</li>
-                    <li>Associate CRC + ELF name + Game Name in a simple <span class="inline-code">PnachCRC.json</span> mapping.</li>
-                    <li>Use those mappings when generating PNACH text and default <span class="inline-code">.pnach</span> filenames.</li>
-                </ul>
-            </li>
-            <li>
-                <strong>ARMAX / P2M tooling</strong>
-                <ul>
-                    <li>Read and write ARMAX <span class="inline-code">.bin</span> codelists.</li>
-                    <li>Load XP/GS P2M data where supported.</li>
-                </ul>
-            </li>
-            <li>
-                <strong>Modern Windows build</strong>
-                <ul>
-                    <li>C# / .NET 8.</li>
-                    <li>WinForms UI; easier to tweak, maintain, and extend compared to the original C implementation.</li>
-                </ul>
-            </li>
-        </ul>
-    </div>
+<summary><strong>📖 Project Overview</strong></summary>
+
+<br>
+
+OmniConvertCS continues the work of the original **OmniConvert 1.1.1R** while adding new formats, utilities, and workflow improvements.
+
+The application can be used to:
+
+- Decrypt encrypted PS2 cheat codes to RAW
+- Re-encrypt RAW codes for another cheat device
+- Convert mixed-format code collections
+- Generate PNACH files for PCSX2
+- Convert PS2 R5900 instructions between opcodes and assembly text
+- Prepare code lists for the CMP Code Database
+- Read and write supported binary codelist formats
+
+The original OmniConvert project is available here:
+
+- [Pyriel's original OmniConvert repository](https://github.com/pyriell/omniconvert)
+
 </details>
 
-<!-- Differences from Original -->
 <details>
-    <summary>What’s Different From the Original Omniconvert</summary>
-    <div>
-        <p>
-            OmniconvertCS is a <strong>C → C# port</strong> with additional features on top of the original
-            <strong>Omniconvert 1.1.1R</strong>:
-        </p>
-        <ul>
-            <li>Ported to <strong>C# / .NET 8</strong> using WinForms.</li>
-            <li>Added <strong>PNACH (RAW) input/output</strong> and a PNACH CRC helper UI.</li>
-            <li>Introduced <strong>PnachCRC.json</strong> mapping:
-                <ul>
-                    <li>Lines like <span class="inline-code">SLES_526.41&gt;A1FD63D6&gt;Game Name</span>.</li>
-                    <li>Supports multiple ELF names sharing the same CRC.</li>
-                </ul>
-            </li>
-            <li>Quality-of-life improvements:
-                <ul>
-                    <li><strong>Add CRC</strong> checkbox next to the Output label for PNACH mode.</li>
-                    <li><strong>Save As .pnach</strong> with auto-suggested filename:
-                        <span class="inline-code">ELF_CRC.pnach</span> (for example, <span class="inline-code">SLUS_203.12_A1FD63D6.pnach</span>).
-                    </li>
-                    <li>Persistence of certain UI options and settings between runs (depending on your build).</li>
-                </ul>
-            </li>
-            <li>Various UI tweaks and bugfixes around ARMAX / P2M loading, error handling, and formatting.</li>
-        </ul>
-        <p>
-            The <strong>core conversion logic and crypt routines</strong> remain faithful to the original Omniconvert
-            and upstream research—this C# port aims to modernize and extend the tool, not rewrite its behavior.
-        </p>
-    </div>
+<summary><strong>🧬 Current C++17 Version and Legacy C# Source</strong></summary>
+
+<br>
+
+The active OmniConvertCS application is now written in native **C++17**.
+
+The previous C# implementation has been retained in:
+
+```text
+~Legacy~/
+```
+
+The legacy folder is included for:
+
+- Historical reference
+- Comparing behavior with older releases
+- Reviewing the earlier C# port
+- Preserving previous development work
+
+The files under `~Legacy~/` are not used by the current C++17 build unless explicitly referenced by a separate legacy project or workflow.
+
 </details>
 
-<!-- PNACH CRC Helper -->
 <details>
-    <summary>PNACH CRC Helper (Add CRC &amp; PnachCRC.json)</summary>
-    <div>
-        <h2>Overview</h2>
-        <p>
-            The PNACH CRC helper lets you compute PCSX2’s “Game CRC” from a PS2 ELF and associate it with a game name
-            and ELF name. These mappings are stored in <span class="inline-code">PnachCRC.json</span> and reused when
-            generating PNACH files and default <span class="inline-code">.pnach</span> filenames.
-        </p>
-        <h2>Using the Helper</h2>
-        <ol>
-            <li>Set the <strong>Output</strong> format to <strong>Pnach (RAW)</strong>.</li>
-            <li>Click the <strong>Add CRC</strong> checkbox next to the Output label.</li>
-            <li>
-                The <strong>Set PNACH CRC</strong> dialog opens:
-                <ul>
-                    <li>Drag-and-drop a PS2 ELF onto the dialog, or click <strong>Browse...</strong> and select one
-                        (e.g. <span class="inline-code">SLUS_203.12</span>).
-                    </li>
-                    <li>The helper computes the CRC and tries to match an existing entry in
-                        <span class="inline-code">PnachCRC.json</span>.
-                    </li>
-                    <li>If found, it pre-fills the game name; otherwise, enter a new game name.</li>
-                </ul>
-            </li>
-            <li>
-                When you confirm:
-                <ul>
-                    <li>An entry is saved like <span class="inline-code">SLES_526.41&gt;A1FD63D6&gt;Game Name</span>.</li>
-                    <li>Multiple ELF names may share the same CRC; each ELF + CRC + Name combination is preserved.</li>
-                </ul>
-            </li>
-        </ol>
-        <h2>Effect on PNACH Output</h2>
-        <ul>
-            <li>When <strong>Add CRC</strong> is checked and a CRC mapping is present:
-                <ul>
-                    <li>The PNACH output includes CRC/game name info in the header (comments or structured lines, depending on how you configure it).</li>
-                    <li><strong>Save As &rarr; PNACH File (.pnach)</strong> suggests a filename like:
-                        <span class="inline-code">ELFNAME_CRC.pnach</span>
-                        (e.g. <span class="inline-code">SLUS_203.12_A1FD63D6.pnach</span>).
-                    </li>
-                </ul>
-            </li>
-            <li>If <strong>Add CRC</strong> is unchecked, the PNACH filename defaults to <span class="inline-code">PUTNAME.pnach</span>
-                and the CRC header is not emitted.</li>
-        </ul>
-    </div>
+<summary><strong>🔐 Supported Conversion Features</strong></summary>
+
+<br>
+
+### Common formats
+
+OmniConvertCS supports conversion between formats such as:
+
+- RAW
+- Action Replay 1 and 2
+- Action Replay MAX
+- CodeBreaker
+- CodeBreaker v7+ Common
+- GameShark
+- Xploder
+- MAX RAW
+- PNACH
+- PS2 MIPS
+- INLINE mixed-format input
+
+The exact available choices are shown in the application's **Input** and **Output** format lists.
+
+### ARMAX and codelist support
+
+- Import and export ARMAX `.bin` codelists
+- Preserve game names, group names, and code descriptions where supported
+- Load supported XP/GS P2M data
+- Convert ARMAX codes to and from RAW and other formats
+
 </details>
 
-<!-- Download & Usage -->
 <details>
-    <summary>Download &amp; Basic Usage</summary>
-    <div>
-        <h2>Download</h2>
-        <ol>
-            <li>Download the latest release ZIP from the project’s <strong>Releases</strong> page.</li>
-            <li>Extract it to a folder, for example:
-                <span class="inline-code">C:\Tools\OmniconvertCS</span>.
-            </li>
-            <li>Run <span class="inline-code">OmniconvertCS.exe</span>.</li>
-        </ol>
-        <h2>Basic Usage</h2>
-        <ol>
-            <li>Select an <strong>Input</strong> device/crypt format on the left (e.g. CodeBreaker, ARMAX, RAW).</li>
-            <li>Select an <strong>Output</strong> format on the right (e.g. CodeBreaker, ARMAX, PNACH (RAW)).</li>
-            <li>Paste or load your cheat codes into the <strong>Input</strong> text area.</li>
-            <li>Click <strong>Convert</strong>.</li>
-            <li>Copy the result from the <strong>Output</strong> area, or use <strong>File &rarr; Save As</strong>
-                to export as:
-                <ul>
-                    <li>Plain text (<span class="inline-code">.txt</span>)</li>
-                    <li>ARMAX <span class="inline-code">.bin</span></li>
-                    <li>PNACH <span class="inline-code">.pnach</span></li>
-                    <li>Other supported formats</li>
-                </ul>
-            </li>
-        </ol>
-        <h2>PNACH (RAW) Input Rules</h2>
-        <ul>
-            <li>Group/title lines use:
-                <span class="inline-code">[GROUP\Name]</span>
-            </li>
-            <li>Code lines use:
-                <span class="inline-code">patch=1,EE,ADDR,extended,VALUE</span>
-            </li>
-            <li>Other lines such as <span class="inline-code">gametitle=</span>,
-                <span class="inline-code">comment=</span>, <span class="inline-code">crc=</span>,
-                <span class="inline-code">description=</span> are ignored by the PNACH input parser.
-            </li>
-        </ul>
-    </div>
+<summary><strong>🧩 INLINE Mixed-Crypt Input</strong></summary>
+
+<br>
+
+INLINE input allows separate code blocks to declare different crypt formats in the same conversion.
+
+```text
+Infinite Health, CRYPT_AR2
+CEB1E0D2 BCA99C84
+
+Master Code, CRYPT_ARMAX
+VNVH-7KMA-DX61K
+A4UT-3BKQ-TYYV5
+
+Max Money, CRYPT_CRAW
+20123456 05F5E0FF
+```
+
+Supported INLINE identifiers include:
+
+```text
+CRYPT_AR1
+CRYPT_AR2
+CRYPT_ARMAX
+CRYPT_CB
+CRYPT_CB7_COMMON
+CRYPT_GS3
+CRYPT_GS5
+CRYPT_MAXRAW
+CRYPT_RAW
+CRYPT_ARAW
+CRYPT_CRAW
+CRYPT_GRAW
+```
+
+INLINE behavior:
+
+- Headers are case-insensitive
+- Each named block uses its own crypt type
+- Blocks without a recognized header default to RAW
+- INLINE is an input-only format
+
 </details>
 
-<!-- Credits -->
 <details>
-    <summary>Credits &amp; Acknowledgements</summary>
-    <div>
-        <h2>Upstream Projects &amp; Authors</h2>
-        <ul>
-            <li>
-                <strong>Pyriel</strong>
-                <ul>
-                    <li>Original <strong>Omniconvert 1.1.1R</strong> PS2 converter.</li>
-                    <li>GS3 / XP4+ crypt implementations.</li>
-                    <li>Major reverse-engineering work for device formats and crypto routines.</li>
-                    <li>
-                        Original repo:
-                        <a href="https://github.com/pyriell/omniconvert" target="_blank" rel="noopener noreferrer">
-                            https://github.com/pyriell/omniconvert
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <strong>a-n-t-i-b-a-r-y-o-n</strong>
-                <ul>
-                    <li>Omniconvert fork with additional references and tweaks.</li>
-                    <li>
-                        Fork:
-                        <a href="https://github.com/a-n-t-i-b-a-r-y-o-n/omniconvert" target="_blank" rel="noopener noreferrer">
-                            https://github.com/a-n-t-i-b-a-r-y-o-n/omniconvert
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <strong>misfire / mlafeldt</strong>
-                <ul>
-                    <li><strong>CB2Crypt</strong> source.</li>
-                    <li>CodeBreaker v2 crypt.</li>
-                    <li>Action Replay 2 crypt.</li>
-                    <li><strong>CodeBreaker PS2 File Utility (cb2util)</strong>.</li>
-                    <li>
-                        Repo:
-                        <a href="https://github.com/mlafeldt/cb2util" target="_blank" rel="noopener noreferrer">
-                            https://github.com/mlafeldt/cb2util
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <strong>Parasyte</strong>
-                <ul>
-                    <li>Action Replay MAX (ARMAX) encryption implementation.</li>
-                </ul>
-            </li>
-            <li>
-                <strong>Alexander Valyalkin</strong> (<span class="inline-code">valyala@gmail.com</span>)
-                <ul>
-                    <li><strong>BIG_INT</strong> arbitrary-precision integer library.</li>
-                </ul>
-            </li>
-        </ul>
-        <h2>OmniconvertCS (C → C# Conversion)</h2>
-        <p>
-            <strong>OmniconvertCS</strong> is a C# port of <strong>Omniconvert 1.1.1R</strong> with additional features.
-        </p>
-        <p>
-            This is not meant to take away from anyone who built standalone editors over the years.
-            Omniconvert itself was already a huge community effort, pulling together:
-        </p>
-        <ul>
-            <li>Public research on device formats and crypt routines.</li>
-            <li>New reversing work to fill in missing pieces.</li>
-            <li>A unified tool that made PS2 cheat formats manageable.</li>
-        </ul>
-        <p>
-            <em>
-                “Pyriel was always someone I looked up to and is one of the reasons I was even able to do what I do now.
-                Converting Omniconvert into C# has been a fun challenge and an honor — I never thought I’d be porting
-                something this complex. Big thanks to everyone who contributed to the PS2 scene back in the day and
-                keeps it alive now.”
-            </em>
-        </p>
-    </div>
+<summary><strong>📝 PNACH Support</strong></summary>
+
+<br>
+
+### PNACH input
+
+OmniConvertCS can read PNACH text containing group headers and EE patch rows:
+
+```ini
+[Infinite Health]
+patch=1,EE,20123456,extended,00000063
+```
+
+Common PNACH metadata such as the following is ignored by the code parser when appropriate:
+
+```ini
+gametitle=
+comment=
+crc=
+description=
+```
+
+### PNACH output
+
+OmniConvertCS can generate PCSX2-compatible PNACH output:
+
+```ini
+patch=1,EE,20123456,extended,00000063
+```
+
+The generated output can be copied as text or saved directly as a `.pnach` file.
+
 </details>
 
-<!-- Links -->
 <details>
-    <summary>Useful Links</summary>
-    <div>
-        <ul>
-            <li>
-                Original Omniconvert 1.1.1R (PS2):
-                <a href="https://github.com/pyriell/omniconvert" target="_blank" rel="noopener noreferrer">
-                    https://github.com/pyriell/omniconvert
-                </a>
-            </li>
-            <li>
-                Omniconvert fork (a-n-t-i-b-a-r-y-o-n):
-                <a href="https://github.com/a-n-t-i-b-a-r-y-o-n/omniconvert" target="_blank" rel="noopener noreferrer">
-                    https://github.com/a-n-t-i-b-a-r-y-o-n/omniconvert
-                </a>
-            </li>
-            <li>
-                CodeBreaker PS2 File Utility (cb2util):
-                <a href="https://github.com/mlafeldt/cb2util" target="_blank" rel="noopener noreferrer">
-                    https://github.com/mlafeldt/cb2util
-                </a>
-            </li>
-        </ul>
-    </div>
+<summary><strong>🔎 PNACH CRC Helper</strong></summary>
+
+<br>
+
+The PNACH CRC helper calculates the PCSX2 game CRC from a PS2 ELF and stores an ELF, CRC, and game-name mapping.
+
+Mappings are stored in:
+
+```text
+PnachCRC.json
+```
+
+Example mapping:
+
+```text
+SLES_526.41>A1FD63D6>Game Name
+```
+
+### Using the helper
+
+1. Select **PNACH (RAW)** as the output format
+2. Enable **Add CRC**, or open **Set PNACH CRC**
+3. Drag a PS2 ELF onto the dialog or select it with **Browse**
+4. Confirm or enter the game name
+5. Save the mapping
+
+When a mapping is available, OmniConvertCS can suggest a PNACH filename such as:
+
+```text
+SLUS_203.12_A1FD63D6.pnach
+```
 </details>
 
-</body>
-</html>
+<details>
+<summary><strong>🗂️ CMP Output Mode</strong></summary>
+
+<br>
+
+CMP Output Mode formats supported text output for the CMP Code Database.
+
+It is available under:
+
+```text
+Options
+└── Omni Options
+    └── CMP Output Mode
+```
+
+Example input:
+
+```text
+Master Codes
+Enable Code (Must Be On), by Lajos Szalay
+904903A8 0C109375
+2012EF74 00441021
+```
+
+CMP-formatted output:
+
+```text
+!Master Codes:
++Enable Code (Must Be On)
+%Credits: Lajos Szalay
+$904903A8 0C109375
+$2012EF74 00441021
+!!
+```
+
+CMP Output Mode supports:
+
+- `!Group Name:` group headers
+- `!!` group-closing markers
+- `+Code Name` rows
+- `$XXXXXXXX YYYYYYYY` code rows
+- Automatic `%Credits:` extraction
+- Automatic group closing at the next group or end of input
+
+CMP formatting is not applied to PNACH or PS2 MIPS output.
+
+</details>
+
+<details>
+<summary><strong>🔀 Transpose Type</strong></summary>
+
+<br>
+
+Transpose behavior can be selected from:
+
+```text
+Options
+└── Omni Options
+    └── Transpose Type
+        ├── Strict
+        └── Original
+```
+
+**Original** is the default for new settings.
+
+**Strict** selection remains respected This is based on Engine Research, it only converts items that are 1 to 1 so it wont convert the "Make it Work" conversions We did for the original.
+
+</details>
+
+<details>
+<summary><strong>🧠 PS2 R5900 / MIPS Support</strong></summary>
+
+<br>
+
+OmniConvertCS includes a bidirectional PS2 R5900 assembler and disassembler.
+
+Supported instruction areas include:
+
+- Standard R5900 integer operations
+- Branches and jumps
+- COP0 system-control instructions
+- COP1 floating-point operations
+- R5900 MMI0–MMI3 packed instructions
+- Trap instructions
+- COP2 register transfers and branches
+- Core VU0 macro-mode arithmetic
+- Destination masks and broadcast forms
+
+Example:
+
+```asm
+vadd.xyzw $vf1, $vf2, $vf3
+vaddz.xw  $vf4, $vf5, $vf6
+vmul.y    $vf7, $vf8, $vf9
+```
+
+Reserved or unsupported instruction encodings remain exact `.word` values instead of being silently changed.
+
+</details>
+
+<details>
+<summary><strong>🎨 Interface and Settings</strong></summary>
+
+<br>
+
+The current application uses a native Windows desktop interface.
+
+Features include:
+
+- Resizable input and output areas
+- Correct repainting during window resizing
+- Persistent application settings
+- Copy-and-paste text cleanup
+- Input and output format selection
+- Game-name field
+- Convert and Swap controls
+- Product name and version in the title bar
+
+The interface is implemented using the native **Win32 API** and the application is compiled for **64-bit x64 Windows**.
+
+</details>
+
+<details>
+<summary><strong>📥 Download and Basic Usage</strong></summary>
+
+<br>
+
+### Download
+
+1. Open the [Releases page](https://github.com/SkillerCMP/OmniConvertCS/releases)
+2. Download the latest release ZIP
+3. Extract the ZIP to a writable folder
+4. Run:
+
+```text
+OmniConvertCS.exe
+```
+
+### Basic usage
+
+1. Select the input format
+2. Select the output format
+3. Paste or load the source codes
+4. Click **Convert**
+5. Copy the result or use **File → Save As**
+
+Supported exports may include:
+
+- Plain text
+- ARMAX `.bin`
+- PNACH `.pnach`
+- Other supported format-specific files
+
+</details>
+
+<details>
+<summary><strong>🛠️ Building from Source</strong></summary>
+
+<br>
+
+The active project is written in C++17 and uses CMake.
+
+For the Windows 7 x64 build workflow, run:
+
+```bat
+build-windows7-x64.cmd Release clean auto
+```
+
+Generated release files and logs are placed under:
+
+```text
+0-Finished\
+├── dist\
+└── logs\
+```
+
+The temporary build folder is removed when the build script finishes.
+
+The current build uses the static Microsoft C++ runtime, so a separate Visual C++ Redistributable should not normally be required.
+
+</details>
+
+<details>
+<summary><strong>🙏 Credits and Acknowledgements</strong></summary>
+
+<br>
+
+### Pyriel
+
+- Original **OmniConvert 1.1.1R** PS2 converter
+- GS3 / XP4+ crypt implementations
+- Major reverse-engineering work for cheat-device formats and crypt routines
+- [Original OmniConvert repository](https://github.com/pyriell/omniconvert)
+
+### a-n-t-i-b-a-r-y-o-n
+
+- OmniConvert fork containing additional references and changes
+- [OmniConvert fork](https://github.com/a-n-t-i-b-a-r-y-o-n/omniconvert)
+
+### misfire / mlafeldt
+
+- CB2Crypt source
+- CodeBreaker v2 crypt
+- Action Replay 2 crypt
+- CodeBreaker PS2 File Utility
+- [cb2util repository](https://github.com/mlafeldt/cb2util)
+
+### Parasyte
+
+- Action Replay MAX encryption implementation
+
+### Alexander Valyalkin
+
+- BIG_INT arbitrary-precision integer library
+
+### PS2 community
+
+OmniConvert and the tools surrounding it are the result of many years of public research, reverse engineering, testing, and documentation from the PlayStation 2 community.
+
+> Pyriel was always someone I looked up to and is one of the reasons I was able to do what I do now. Porting and expanding OmniConvert has been both a challenge and an honor. Thank you to everyone who contributed to the PS2 scene and continues to keep it alive.
+
+</details>
+
+<details>
+<summary><strong>🔗 Useful Links</strong></summary>
+
+<br>
+
+- [OmniConvertCS releases](https://github.com/SkillerCMP/OmniConvertCS/releases)
+- [Original OmniConvert 1.1.1R](https://github.com/pyriell/omniconvert)
+- [a-n-t-i-b-a-r-y-o-n OmniConvert fork](https://github.com/a-n-t-i-b-a-r-y-o-n/omniconvert)
+- [CodeBreaker PS2 File Utility](https://github.com/mlafeldt/cb2util)
+
+</details>
+
+---
+
+## 📋 Current Project Information
+
+```text
+Product: OmniConvertCS
+Current Version: 1.06
+Language: C++17
+Architecture: 64-bit x64
+Interface: Native Windows desktop (Win32 API)
+Minimum Target: Windows 7 SP1
+Legacy C# Source: ~Legacy~/
+```

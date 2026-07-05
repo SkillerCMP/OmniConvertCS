@@ -1,0 +1,283 @@
+^1 = HASH: FD2CF599
+^3 = NAME: 187 Ride Or Die
+^2 = GameID: SLUS_211.16
+
+Masters:
+
+Enable Code (Must Be On) [Read Note] by Code Master , CRYPT_CB7_COMMON
+FE129B51 800813BF
+000FFFFE 0000013B
+000FFFFF 0000013B
+9012DC4C 0C07F8AA
+
+
+Codes:
+
+Infinite Life Bar by Code Master , CRYPT_CB7_COMMON
+200C0220 8C61035C
+200C0224 AC610320
+200C0228 03E00008
+200C022C C4640320
+20309228 0C030088
+
+Infinite Life Bar (Escorts) by Code Master , CRYPT_CB7_COMMON
+200C0240 8C61035C
+200C0244 AC610320
+200C0248 03E00008
+200C024C C4630320
+203BA110 0C030090
+
+Infinite Turbo (On Pickup) by Code Master , CRYPT_CB7_COMMON
+201B50F8 00000000
+
+Always Max Infinite Turbo by Code Master , CRYPT_CB7_COMMON
+200C0230 3C013F80
+200C0234 AC410324
+200C0238 080C34CF
+200C023C C4410324
+2030D338 0803008C
+
+Infinite Ammo by Code Master , CRYPT_CB7_COMMON
+202EAA30 00000000
+
+Extra Ammo by Code Master , CRYPT_CB7_COMMON
+202EAA28 46000800
+
+Instant Death (Enemies) by Code Master , CRYPT_CB7_COMMON
+200C0250 52200001
+200C0254 44800800
+200C0258 E4610320
+200C025C 03E00008
+200C0260 44800000
+20255704 0C030094
+
+P1 Press L1+Select To Kill Enemy Racers by Code Master , CRYPT_CB7_COMMON
+200C0250 52200001
+200C0254 44800800
+200C0258 E4610320
+200C025C 03E00008
+200C0260 44800000
+D0892CC2 0000FBFE
+20255704 0C030094
+D0892CC2 0000FFFF
+20255704 44800000
+
+Access All Cars by Code Master , CRYPT_CB7_COMMON
+20466628 24020001
+
+Access All Fighters by Code Master , CRYPT_CB7_COMMON
+20466D04 24020001
+
+Access All Missions by Code Master , CRYPT_CB7_COMMON
+2048E454 24020001
+2047C838 24020001
+2047C720 24020001
+
+
+Have Mission Completed Codes:
+
+Western-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F58C 00000001
+
+Western Payback-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F594 00000001
+
+Western-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F59C 00000001
+
+Western Payback-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F5B4 00000001
+
+The Jungle-Survivor by Code Master , CRYPT_CB7_COMMON
+2079F5F4 00000001
+
+Grave Digga Payback-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F5D4 00000001
+
+The Coast-Escort by Code Master , CRYPT_CB7_COMMON
+2079F754 00000001
+
+Grave Digga-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F5BC 00000001
+
+Grave Digga Payback-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F5C4 00000001
+
+Western Payback-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F5A4 00000001
+
+The Lot-Domination by Code Master , CRYPT_CB7_COMMON
+2079F764 00000001
+
+Grave Digga-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F5CC 00000001
+
+The Jungle-Death Match Warefare by Code Master , CRYPT_CB7_COMMON
+2079F5FC 00000001
+
+Po-Po Chase-Strickly Business by Code Master , CRYPT_CB7_COMMON
+2079F56C 00000001
+
+The Sticks-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F60C 00000001
+
+Rip Ville-Death Match by Code Master , CRYPT_CB7_COMMON
+2079F66C 00000001
+
+The Sticks Payback-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F614 00000001
+
+The Sticks-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F61C 00000001
+
+Boondocks Payback-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F664 00000001
+
+Rip Ville-Survivor by Code Master , CRYPT_CB7_COMMON
+2079F674 00000001
+
+Boondocks Payback-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F654 00000001
+
+The Coast-Bomb by Code Master , CRYPT_CB7_COMMON
+2079F74C 00000001
+
+Boondocks-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F63C 00000001
+
+Rip Ville-Death Match Warefare by Code Master , CRYPT_CB7_COMMON
+2079F67C 00000001
+
+Boondocks Payback-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F644 00000001
+
+Boondocks-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F64C 00000001
+
+The Sticks Payback-Minefield by Code Master , CRYPT_CB7_COMMON
+2079F634 00000001
+
+Rip Ville-Survivor Bulletproof by Code Master , CRYPT_CB7_COMMON
+2079F684 00000001
+
+The Sticks Payback-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F624 00000001
+
+The Lot-Gun Play by Code Master , CRYPT_CB7_COMMON
+2079F76C 00000001
+
+Po-Po Chase-Going All Out by Code Master , CRYPT_CB7_COMMON
+2079F574 00000001
+
+Grand City-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F68C 00000001
+
+Dillinger Ville-Death Match by Code Master , CRYPT_CB7_COMMON
+2079F6EC 00000001
+
+Grand City Payback-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F694 00000001
+
+Clip City Payback-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F6D4 00000001
+
+Clip City Payback-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F6E4 00000001
+
+Dillinger Ville-Survivor by Code Master , CRYPT_CB7_COMMON
+2079F6F4 00000001
+
+Grand City Payback-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F6A4 00000001
+
+The Coast-The Hit by Code Master , CRYPT_CB7_COMMON
+2079F75C 00000001
+
+Clip City-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F6BC 00000001
+
+Dillinger Ville-Death Match Warefare by Code Master , CRYPT_CB7_COMMON
+2079F6FC 00000001
+
+Clip City Payback-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F6C4 00000001
+
+Grand City-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F69C 00000001
+
+Grand City Payback-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F6B4 00000001
+
+Dillinger Ville-Survivor Bulletproof by Code Master , CRYPT_CB7_COMMON
+2079F704 00000001
+
+Clip City-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F6CC 00000001
+
+The Lot-Predator by Code Master , CRYPT_CB7_COMMON
+2079F774 00000001
+
+Po-Po Chase-Mobbin' by Code Master , CRYPT_CB7_COMMON
+2079F57C 00000001
+
+The Hills-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F70C 00000001
+
+Rollin Heights-Death Match by Code Master , CRYPT_CB7_COMMON
+2079F73C 00000001
+
+The Hills Payback-Whip Race by Code Master , CRYPT_CB7_COMMON
+2079F714 00000001
+
+The Hills-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F71C 00000001
+
+Rollin Heights-Survivor by Code Master , CRYPT_CB7_COMMON
+2079F744 00000001
+
+The Hills Payback-Death Race by Code Master , CRYPT_CB7_COMMON
+2079F724 00000001
+
+The Lot-The Hard Way by Code Master , CRYPT_CB7_COMMON
+2079F77C 00000001
+
+Po-Po Chase-Ride Or Die by Code Master , CRYPT_CB7_COMMON
+2079F584 00000001
+
+Western-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F5AC 00000001
+
+Grave Digga-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F5DC 00000001
+
+Grave Digga Payback-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F5E4 00000001
+
+The Jungle-Death Match by Code Master , CRYPT_CB7_COMMON
+2079F5EC 00000001
+
+The Jungle-Survivor Bulletproof by Code Master , CRYPT_CB7_COMMON
+2079F604 00000001
+
+The Sticks-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F62C 00000001
+
+Boondocks-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F65C 00000001
+
+Grand City-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F6AC 00000001
+
+Clip City-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F6DC 00000001
+
+The Hills-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F72C 00000001
+
+The Hills Payback-Mine Field by Code Master , CRYPT_CB7_COMMON
+2079F734 00000001
+
+All Missions Completed by Code Master , CRYPT_CB7_COMMON
+4079F56C 00420002
+00000001 00000000
+

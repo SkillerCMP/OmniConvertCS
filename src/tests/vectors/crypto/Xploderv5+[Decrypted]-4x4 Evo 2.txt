@@ -1,0 +1,11 @@
+^3 = NAME: 4x4 Evo 2
+
+MasterCode by Xploder
+F0100008 00299B97
+
+
+Other:
+
+Unlimited Cash by Xploder
+204E6B0C 05F5E0FF
+!!

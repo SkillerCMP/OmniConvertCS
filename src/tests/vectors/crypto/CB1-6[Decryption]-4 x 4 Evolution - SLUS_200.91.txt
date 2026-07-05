@@ -1,0 +1,35 @@
+^1 = HASH: 5185A93D
+^3 = NAME: 4 x 4 Evolution
+^2 = GameID: SLUS_200.91
+
+Masters:
+
+Code Breaker Version 1-5Enable Code (Must Be On) by Code Master , CRYPT_CB
+F0200008 00335E0F
+
+Code Breaker Version 6+Enable Code (Must Be On) by Code Master , CRYPT_CB
+90335E0C 0C0C557C
+
+Codes:
+
+Infinite Money by Code Master , CRYPT_CB
+208B235C FFFFFFFF
+
+Always Low Timer by Code Master , CRYPT_CB
+203A6F7C 41200000
+
+Always Slow Motion Mode by Code Master , CRYPT_CB
+203A5E68 3F400000
+
+Always Turbo Mode by Code Master , CRYPT_CB
+203A5E68 3FE00000
+
+Have All Trucks by Code Master , CRYPT_CB
+208B2670 FFFFFFFF
+
+Moon Gravity by Code Master , CRYPT_CB
+203A5E6C 3F800000
+
+Super Gravity by Code Master , CRYPT_CB
+203A5E6C 44000000
+

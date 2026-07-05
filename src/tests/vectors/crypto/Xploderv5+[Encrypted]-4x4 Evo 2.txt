@@ -1,0 +1,17 @@
+^3 = NAME: 4x4 Evo 2
+
+!Masters:
++MasterCode by Xploder, CRYPT_GS3
+76032730 00000000
+F457BE3C B67C0D16
+
+
+!!
+
+!Other:
++Unlimited Cash by Xploder, CRYPT_GS3
+76036500 00000000
+2403DEC6 DC61D83A
+
+
+!!

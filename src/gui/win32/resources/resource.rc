@@ -1,0 +1,421 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#include <winres.h>
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#include <winres.h>\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+IDI_ICON1 ICON DISCARDABLE "oc.ico"
+
+#ifdef OMNI_EMBED_MANIFEST_RESOURCE
+/////////////////////////////////////////////////////////////////////////////
+//
+// Application Manifest (non-MSVC resource-tool builds only)
+//
+1 24 "OmniConvert.manifest"
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG1 DIALOGEX 0, 0, 500, 340
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_CLIPCHILDREN
+CAPTION ""
+MENU IDR_MENU1
+FONT 9, "MS Shell Dlg 2", 400, 0, 0x0
+BEGIN
+    LTEXT           "Input: RAW / Standard",ID_STATIC_INPUT,7,7,190,10
+    PUSHBUTTON      "Clear",ID_BTN_CLEAR_IN,205,5,42,14
+    LTEXT           "Output: RAW / Standard",ID_STATIC_OUTPUT,253,7,190,10
+    PUSHBUTTON      "Clear",ID_BTN_CLEAR_OUT,451,5,42,14
+    LTEXT           "AR2 key:",ID_STATIC_AR2_CURRENT,120,7,38,10
+    EDITTEXT        IDC_EDIT_AR2_CURRENT,160,5,54,14,ES_UPPERCASE | ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Game ID:",ID_STATIC_GAMEID_INPUT,150,7,38,10
+    EDITTEXT        IDC_EDIT_GAMEID_INPUT,190,5,30,14,ES_UPPERCASE | ES_AUTOHSCROLL | WS_TABSTOP
+    LTEXT           "Game ID:",ID_STATIC_GAMEID_OUTPUT,390,7,38,10
+    EDITTEXT        IDC_EDIT_GAMEID_OUTPUT,430,5,30,14,ES_UPPERCASE | ES_AUTOHSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_IN,7,22,240,270,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_OUT,253,22,240,270,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Convert",ID_BTN_CONVERT,7,299,48,15
+    PUSHBUTTON      "Swap",ID_BTN_SWAP,59,299,42,15
+    LTEXT           "Game ID:",ID_STATIC_GAMEID,111,302,33,8
+    EDITTEXT        IDC_EDIT_GAMEID,146,299,52,15,ES_AUTOHSCROLL | WS_TABSTOP
+    LTEXT           "Game Name:",ID_STATIC_GAMENAME,208,302,43,8
+    EDITTEXT        IDC_EDIT_GAMENAME,253,299,240,15,ES_AUTOHSCROLL | WS_TABSTOP
+    CONTROL         "Add CRC",IDC_CHECK_PNACH_CRC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,407,5,44,14
+    LTEXT           "Ready",ID_STATIC_STATUS,7,322,486,10,SS_LEFTNOWORDWRAP
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog for AR2 Key
+//
+
+IDD_DIALOG2 DIALOGEX 100, 130, 280, 80
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Encrypted AR2 Key Code"
+FONT 9, "MS Shell Dlg 2", 400, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_AR2_COMMON,12,12,120,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Common AR2 Keys:",IDC_AR2_COMMON_LABEL,140,15,100,10
+    EDITTEXT        IDC_EDIT_AR2,12,43,80,14,ES_UPPERCASE | ES_AUTOHSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,100,42,60,16
+    PUSHBUTTON      "RESET (AR1 Key)",ID_BTN_RESET,166,42,100,16
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// PNACH CRC dialog
+//
+
+IDD_PNACH_CRC DIALOGEX 100, 100, 300, 146
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set PNACH CRC"
+FONT 9, "MS Shell Dlg 2", 400, 0, 0x0
+BEGIN
+    LTEXT           "PS2 ELF:",-1,7,9,42,10
+    EDITTEXT        IDC_PNACH_ELF_PATH,52,7,190,14,ES_AUTOHSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Browse...",IDC_PNACH_BROWSE,247,7,46,14
+    LTEXT           "CRC:",-1,7,32,42,10
+    EDITTEXT        IDC_PNACH_CRC,52,30,72,14,ES_AUTOHSCROLL | WS_TABSTOP
+    LTEXT           "Game Name:",-1,7,55,42,10
+    EDITTEXT        IDC_PNACH_GAME_NAME,52,53,241,14,ES_AUTOHSCROLL | WS_TABSTOP
+    LTEXT           "Known:",-1,7,78,42,10
+    COMBOBOX        IDC_PNACH_KNOWN,52,76,241,70,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,184,121,50,16
+    PUSHBUTTON      "Cancel",IDCANCEL,243,121,50,16
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AR MAX Options dialog
+//
+
+IDD_ARMAX_OPTIONS DIALOGEX 100, 100, 430, 240
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ARMAX Options"
+FONT 9, "MS Shell Dlg 2", 400, 0, 0x0
+BEGIN
+    LTEXT           "Game ID:",-1,12,15,58,10
+    EDITTEXT        IDC_ARMAX_GAMEID,90,12,60,14,ES_UPPERCASE | ES_AUTOHSCROLL | WS_TABSTOP
+    GROUPBOX        "AR MAX Verifiers",-1,15,45,200,70
+    CONTROL         "Automatic",IDC_ARMAX_VERIFIER_AUTO,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,30,65,75,12
+    CONTROL         "Manual",IDC_ARMAX_VERIFIER_MANUAL,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,30,85,60,12
+    GROUPBOX        "AR MAX Region",-1,230,45,180,90
+    CONTROL         "USA",IDC_ARMAX_REGION_USA,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,245,65,45,12
+    CONTROL         "PAL",IDC_ARMAX_REGION_PAL,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,245,85,45,12
+    CONTROL         "Japan",IDC_ARMAX_REGION_JAPAN,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,245,105,55,12
+    GROUPBOX        "AR MAX Disc Hash",-1,15,130,395,60
+    COMBOBOX        IDC_ARMAX_DISC_HASH,30,155,280,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Manual...",IDC_ARMAX_DISC_HASH_MANUAL,318,155,72,14
+    DEFPUSHBUTTON   "OK",IDOK,254,205,75,16
+    PUSHBUTTON      "Cancel",IDCANCEL,335,205,75,16
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AR MAX Disc Hash dialog
+//
+
+IDD_ARMAX_DISC_HASH DIALOGEX 100, 100, 430, 205
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set AR MAX Disc Hash"
+FONT 9, "MS Shell Dlg 2", 400, 0, 0x0
+BEGIN
+    LTEXT           "Known:",-1,7,10,55,10
+    COMBOBOX        IDC_ARMAX_HASH_KNOWN,65,8,358,80,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "SYSTEM.CNF:",-1,7,37,55,10
+    EDITTEXT        IDC_ARMAX_HASH_CNF_PATH,65,35,285,14,ES_AUTOHSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Browse...",IDC_ARMAX_HASH_BROWSE_CNF,357,35,66,14
+    LTEXT           "PS2 ELF:",-1,7,64,55,10
+    EDITTEXT        IDC_ARMAX_HASH_ELF_PATH,65,62,285,14,ES_AUTOHSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Browse...",IDC_ARMAX_HASH_BROWSE_ELF,357,62,66,14
+    LTEXT           "Disc Hash:",-1,7,91,55,10
+    EDITTEXT        IDC_ARMAX_HASH_VALUE,65,89,85,14,ES_UPPERCASE | ES_AUTOHSCROLL | WS_TABSTOP
+    LTEXT           "Game Name:",-1,7,118,55,10
+    EDITTEXT        IDC_ARMAX_HASH_GAME_NAME,65,116,358,14,ES_AUTOHSCROLL | WS_TABSTOP
+    LTEXT           "Selecting SYSTEM.CNF automatically uses the BOOT2 ELF when it is in the same disc root.",-1,65,139,358,18
+    DEFPUSHBUTTON   "Save && Use",IDOK,296,178,62,16
+    PUSHBUTTON      "Cancel",IDCANCEL,365,178,58,16
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator Table
+//
+IDA_ACCEL_TABLE ACCELERATORS DISCARDABLE
+BEGIN
+    "A",        ID_EDIT_SELECTALL, VIRTKEY, CONTROL
+    "C",        ID_EDIT_COPY, VIRTKEY, CONTROL
+    "K",        ID_AR2_KEY, VIRTKEY, CONTROL
+    "M",        ID_OPTIONS_ARMAX, VIRTKEY, CONTROL
+    "S",        ID_FILE_SAVEASTEXT, VIRTKEY, CONTROL
+    "S",        ID_EDIT_SWAP, VIRTKEY, CONTROL, SHIFT
+    "V",        ID_EDIT_PASTE, VIRTKEY, CONTROL
+    "X",        ID_EDIT_CUT, VIRTKEY, CONTROL
+    "Z",        ID_EDIT_UNDO, VIRTKEY, CONTROL
+    VK_ESCAPE,  ID_FILE_EXIT, VIRTKEY
+END
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DIALOG1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        TOPMARGIN, 7
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU 
+BEGIN
+    POPUP "File"
+    BEGIN
+        POPUP "Load"
+        BEGIN
+            MENUITEM "Text File...",                 ID_FILE_LOADTEXT
+            MENUITEM "CodeBreaker CBC...",           ID_FILE_LOADCBC
+            MENUITEM "AR MAX BIN...",                ID_FILE_LOADARMAXBIN
+            MENUITEM "XP/GS P2M...",                 ID_FILE_LOADP2M
+            MENUITEM "Swap Magic BIN...",            ID_FILE_LOADSMC
+        END
+        POPUP "Save As"
+        BEGIN
+            MENUITEM "Text / PNACH / MIPS...\tCtrl + S", ID_FILE_SAVEASTEXT
+            MENUITEM "CodeBreaker CBC...",               ID_FILE_SAVEASCBC
+            MENUITEM "AR MAX BIN...",                    ID_FILE_SAVEASARMAX
+            MENUITEM "XP/GS P2M...",                     ID_FILE_SAVEASP2M
+            MENUITEM "Swap Magic BIN...",                ID_FILE_SAVEASSMC
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tESC",                  ID_FILE_EXIT
+    END
+    POPUP "Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "&Delete \tDel",               ID_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "S&wap Input && Output	Ctrl+Shift+S", ID_EDIT_SWAP
+        MENUITEM SEPARATOR
+        MENUITEM "Clear Input",                 ID_EDIT_CLEAR_INPUT
+        MENUITEM "Clear Output",                ID_EDIT_CLEAR_OUTPUT
+    END
+    POPUP "Input"
+    BEGIN
+        POPUP "Unencrypted"
+        BEGIN
+            MENUITEM "Standard",                    ID_INPUT_UNENC_COMMON
+            MENUITEM "INLINE (from CRYPT_ headers)",  ID_INPUT_UNENC_INLINE
+            MENUITEM "PS2 MIPS (R5900)",             ID_INPUT_UNENC_MIPS
+            MENUITEM "Pnach (RAW)",                  ID_INPUT_UNENC_PNACH
+            MENUITEM "Action Replay MAX",           ID_INPUT_UNENC_ARMAX
+	    MENUITEM "Action Replay V1/V2",         ID_INPUT_UNENC_AR1_2
+	    MENUITEM "CodeBreaker",                 ID_INPUT_UNENC_CB
+	    MENUITEM "GameShark V1/V2",             ID_INPUT_UNENC_GS1_2
+	    MENUITEM "Xploder/GameShark V3",        ID_INPUT_UNENC_XP
+        END
+        POPUP "Action Replay"
+        BEGIN
+            MENUITEM "Version 1",                   ID_INPUT_AR2_V1
+            MENUITEM "Version 2",                   ID_INPUT_AR2_V2
+            MENUITEM "MAX",                         ID_INPUT_ARMAX
+        END
+        POPUP "CodeBreaker"
+        BEGIN
+            MENUITEM "Version 1+ (All v7 Keys)",    ID_INPUT_CB
+            MENUITEM "Version 7+ (Common Key)",     ID_INPUT_CB7_COMMON
+        END
+        POPUP "GameShark"
+        BEGIN
+            POPUP "Interact"
+            BEGIN
+                MENUITEM "Version 1",                   ID_INPUT_IA_V1
+                MENUITEM "Version 2",                   ID_INPUT_IA_V2
+            END
+            POPUP "MadCatz"
+            BEGIN
+                MENUITEM "Version 3 - 4",               ID_INPUT_MC_V3
+                MENUITEM "Version 5+",                  ID_INPUT_MC_V5
+            END
+        END
+	POPUP "Swap Magic"
+	BEGIN
+	    MENUITEM "Coder Version 3.x",	    ID_INPUT_SMC
+	END
+        POPUP "Xploder"
+        BEGIN
+            MENUITEM "Version 1 - 3",               ID_INPUT_XP_V1
+            MENUITEM "Version 4",                   ID_INPUT_XP_V4
+	    MENUITEM "Version 5+",                  ID_INPUT_XP_V5
+        END
+    END
+    POPUP "Output"
+    BEGIN
+        POPUP "Unencrypted"
+        BEGIN
+            MENUITEM "Standard",                    ID_OUTPUT_UNENC_COMMON
+            MENUITEM "PS2 MIPS (R5900)",             ID_OUTPUT_UNENC_MIPS
+            MENUITEM "Pnach (RAW)",                  ID_OUTPUT_UNENC_PNACH
+            MENUITEM "Action Replay MAX",           ID_OUTPUT_UNENC_ARMAX
+	    MENUITEM "Action Replay V1/V2",         ID_OUTPUT_UNENC_AR1_2
+	    MENUITEM "CodeBreaker",                 ID_OUTPUT_UNENC_CB
+	    MENUITEM "GameShark V1/V2",             ID_OUTPUT_UNENC_GS1_2
+	    MENUITEM "Xploder/GameShark V3",        ID_OUTPUT_UNENC_XP
+        END
+        POPUP "Action Replay"
+        BEGIN
+            MENUITEM "Version 1",                   ID_OUTPUT_AR2_V1
+            MENUITEM "Version 2",                   ID_OUTPUT_AR2_V2
+            MENUITEM "MAX",                         ID_OUTPUT_ARMAX
+        END
+        POPUP "CodeBreaker"
+        BEGIN
+	    MENUITEM "Version 1+ (All v7 Keys)",    ID_OUTPUT_CB
+            MENUITEM "Version 7+ (Common Key)",     ID_OUTPUT_CB7_COMMON
+        END
+        POPUP "GameShark"
+        BEGIN
+            POPUP "Interact"
+            BEGIN
+                MENUITEM "Version 1",                   ID_OUTPUT_IA_V1
+                MENUITEM "Version 2",                   ID_OUTPUT_IA_V2
+            END
+            POPUP "MadCatz"
+            BEGIN
+                MENUITEM "Version 3 - 4",               ID_OUTPUT_MC_V3
+                MENUITEM "Version 5+",                  ID_OUTPUT_MC_V5
+            END
+        END
+	POPUP "Swap Magic"
+	BEGIN
+		MENUITEM "Coder Version 3.x",	    ID_OUTPUT_SMC
+	END
+        POPUP "Xploder"
+        BEGIN
+            MENUITEM "Version 1 - 3",               ID_OUTPUT_XP_V1
+            MENUITEM "Version 4",                   ID_OUTPUT_XP_V4
+	    MENUITEM "Version 5+",                  ID_OUTPUT_XP_V5
+        END
+    END
+    POPUP "Options"
+    BEGIN
+        POPUP "Omni Options"
+        BEGIN
+            POPUP "Transpose Type"
+            BEGIN
+                MENUITEM "Strict",                  ID_TRANSPOSE_STRICT
+                MENUITEM "Original",                ID_TRANSPOSE_ORIGINAL
+            END
+            MENUITEM "CMP Output Mode",             ID_OPTION_CMP_OUTPUT
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Make Organizers",                 ID_OPTION_MAKEFOLDERS
+        MENUITEM SEPARATOR
+        MENUITEM "AR MAX Options...\tCtrl+M",      ID_OPTIONS_ARMAX
+        MENUITEM SEPARATOR
+        MENUITEM "Set PNACH CRC...",                ID_OPTIONS_PNACH_CRC
+        MENUITEM "Set AR2 Key Code...\tCtrl+K",   ID_AR2_KEY
+        POPUP "GS3 Key"
+        BEGIN
+            MENUITEM "0",                           ID_GS3_KEY_0
+            MENUITEM "1",                           ID_GS3_KEY_1
+            MENUITEM "2",                           ID_GS3_KEY_2
+            MENUITEM "3",                           ID_GS3_KEY_3
+            MENUITEM "4",                           ID_GS3_KEY_4
+        END
+        POPUP "CBC Save Version"
+        BEGIN
+            MENUITEM "Version 7 (Day1)",             ID_OPTIONS_CBC_V7
+            MENUITEM "Version 8 (CFU)",              ID_OPTIONS_CBC_V8
+        END
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

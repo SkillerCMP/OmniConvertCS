@@ -1,0 +1,31 @@
+^3 = NAME: Catwoman
+
+MasterCode by Xploder, CRYPT_GS3
+901D2280 0C078881
+
+
+Unlimited:
+
+Health by Xploder, CRYPT_GS3
+5025D2E0 00000004
+0025D2DC 00000000
+
+
+Max:
+
+Health by Xploder, CRYPT_GS3
+2025D2E0 461C4000
+
+Points by Xploder, CRYPT_GS3
+2025DB70 0001869F
+
+Diamonds by Xploder, CRYPT_GS3
+2025DACC 000F423F
+
+
+Unlock:
+
+All Goodies by Xploder, CRYPT_GS3
+40341CE8 00080001
+FFFFFFFF 00000000
+

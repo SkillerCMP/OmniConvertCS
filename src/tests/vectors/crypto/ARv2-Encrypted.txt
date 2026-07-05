@@ -1,0 +1,14 @@
+Key line: 1853E59E
+
+(M) Must Be On by Codejunkies , CRYPT_AR2
+0E3C7DF2 1853E59E
+EE8AA78A BCBDF29A
+
+Mig-29smt by Codejunkies , CRYPT_AR2
+CEB1E0D2 BCA99C84
+
+S-55 Lfs by Codejunkies , CRYPT_AR2
+CEB1E79A BCA99C84
+
+Su-20 by Codejunkies , CRYPT_AR2
+CEB1E03A BCA99C84

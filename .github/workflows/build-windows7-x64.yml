@@ -1,0 +1,92 @@
+name: Build Windows 7 x64
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: win7-x64-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-win7-x64:
+    name: Visual Studio 2022 v143
+    runs-on: windows-2022
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Read application identity
+        id: identity
+        shell: pwsh
+        run: |
+          $Text = Get-Content 'cmake\OmniIdentity.cmake' -Raw
+          if ($Text -notmatch 'set\(OMNI_PRODUCT_NAME "([^"]+)"\)') { throw 'Missing OMNI_PRODUCT_NAME.' }
+          "product_name=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          if ($Text -notmatch 'set\(OMNI_EXECUTABLE_NAME "([^"]+)"\)') { throw 'Missing OMNI_EXECUTABLE_NAME.' }
+          "executable_name=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          if ($Text -notmatch 'set\(OMNI_VERSION "([0-9]+\.[0-9]+\.[0-9]+)"\)') { throw 'Missing OMNI_VERSION.' }
+          "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
+
+      - name: Build, test, and validate Windows 7 executable
+        shell: pwsh
+        run: |
+          .\tools\build-windows7-x64.ps1 `
+            -Configuration Release `
+            -BuildDir 'build\GitHub-Win7-x64' `
+            -DistDir '0-Finished\dist\Win7-x64\Release' `
+            -Toolset v143 `
+            -Clean
+
+      - name: Add build summary
+        if: success()
+        shell: pwsh
+        run: |
+          $HashFile = "0-Finished\dist\Win7-x64\Release\${{ steps.identity.outputs.executable_name }}.exe.sha256"
+          $Hash = (Get-Content $HashFile).Split(' ')[0]
+          @"
+          ## Windows 7 x64 build passed
+
+          - Version: ${{ steps.identity.outputs.version }}
+          - Compiler: Visual Studio 2022 / MSVC v143
+          - Runtime: static /MT
+          - PE subsystem: 6.01
+          - Tests: passed
+          - Forbidden Windows 8+ imports: none
+          - SHA-256: $Hash
+          "@ >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload Windows 7 x64 release
+        if: success()
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.identity.outputs.executable_name }}-v${{ steps.identity.outputs.version }}-Win7-x64
+          path: 0-Finished/dist/Win7-x64/Release/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.identity.outputs.executable_name }}-v${{ steps.identity.outputs.version }}-Win7-x64-logs
+          path: |
+            0-Finished/logs/
+            build/GitHub-Win7-x64/CMakeCache.txt
+            build/GitHub-Win7-x64/CMakeFiles/CMakeConfigureLog.yaml
+            build/GitHub-Win7-x64/Testing/Temporary/
+          if-no-files-found: ignore
+          retention-days: 14
+          compression-level: 6

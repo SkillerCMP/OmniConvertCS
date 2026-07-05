@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OmniConvertCS v1.06 – Help</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --accent: #0078d7;
+            --accent-dark: #005a9e;
+            --background: #f5f5f5;
+            --surface: #ffffff;
+            --text: #222222;
+            --muted: #666666;
+            --border: #dddddd;
+            --code: #f0f0f0;
+            --warning: #d83b01;
+            --success: #107c10;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.55;
+            margin: 0;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        header {
+            background: var(--accent);
+            color: #ffffff;
+            padding: 20px 24px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 13px;
+            opacity: 0.95;
+        }
+
+        main {
+            max-width: 1020px;
+            margin: 0 auto;
+            padding: 18px 16px 42px;
+        }
+
+        section {
+            background: var(--surface);
+            margin-bottom: 16px;
+            padding: 22px 24px 30px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            margin: 0 0 16px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+            font-size: 20px;
+        }
+
+        h3 {
+            margin-top: 22px;
+            margin-bottom: 8px;
+        }
+
+        h4 {
+            margin-top: 18px;
+            margin-bottom: 6px;
+        }
+
+        p {
+            margin: 8px 0;
+        }
+
+        ul,
+        ol {
+            margin-top: 7px;
+        }
+
+        li {
+            margin: 3px 0;
+        }
+
+        code {
+            font-family: Consolas, "Courier New", monospace;
+            background: var(--code);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        pre {
+            background: var(--code);
+            padding: 11px 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        a {
+            color: var(--accent-dark);
+        }
+
+        a:hover {
+            text-decoration: none;
+        }
+
+        .toc ul {
+            column-count: 2;
+            column-gap: 44px;
+        }
+
+        .toc li {
+            break-inside: avoid;
+            margin-bottom: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-left: 5px;
+            padding: 1px 6px;
+            border-radius: 9px;
+            background: var(--accent);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .note,
+        .warning,
+        .success {
+            margin: 12px 0;
+            padding: 9px 11px;
+            background: #fafafa;
+            font-size: 13px;
+        }
+
+        .note {
+            border-left: 4px solid var(--accent);
+        }
+
+        .warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .success {
+            border-left: 4px solid var(--success);
+        }
+
+        .mono {
+            font-family: Consolas, "Courier New", monospace;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .feature-card {
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 10px 12px;
+            background: #fcfcfc;
+        }
+
+        footer {
+            max-width: 1020px;
+            margin: 0 auto 24px;
+            padding: 0 16px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 700px) {
+            .toc ul {
+                column-count: 1;
+            }
+
+            section {
+                padding: 18px 16px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>OmniConvertCS v1.06 – Help</h1>
+    <p>
+        Native C++17 PlayStation 2 cheat-code converter<br />
+        RAW / Action Replay / ARMAX / CodeBreaker / GameShark / Xploder / PNACH / PS2 MIPS
+    </p>
+</header>
+
+<main>
+    <section class="toc">
+        <h2>Contents</h2>
+        <ul>
+            <li><a href="#overview">1. Overview</a></li>
+            <li><a href="#window-tour">2. Main window tour</a></li>
+            <li><a href="#quick-start">3. Quick start</a></li>
+            <li><a href="#file-menu">4. Loading and saving</a></li>
+            <li><a href="#formats">5. Input and output formats</a></li>
+            <li><a href="#inline-mode">6. INLINE mixed-crypt input</a></li>
+            <li><a href="#pnach">7. PNACH and CRC helper</a></li>
+            <li><a href="#omni-options">8. Omni Options</a></li>
+            <li><a href="#armax-options">9. ARMAX options</a></li>
+            <li><a href="#mips">10. PS2 R5900 / MIPS mode</a></li>
+            <li><a href="#errors">11. Errors and preserved data</a></li>
+            <li><a href="#cli">12. Command-line interface</a></li>
+            <li><a href="#legacy">13. Legacy C# source</a></li>
+            <li><a href="#tips">14. Tips and notes</a></li>
+        </ul>
+    </section>
+
+    <section id="overview">
+        <h2>1. Overview</h2>
+
+        <p>
+            <strong>OmniConvertCS</strong> is a native C++17 continuation of the classic
+            <strong>OmniConvert 1.1.1R</strong> PlayStation 2 cheat-code converter.
+            The application keeps the OmniConvertCS name for continuity with earlier releases.
+        </p>
+
+        <p>
+            Version 1.06 replaces the former C# / WinForms application with a native
+            64-bit Windows desktop build while retaining the familiar conversion workflow.
+        </p>
+
+        <div class="feature-grid">
+            <div class="feature-card"><strong>Native C++17</strong><br />No .NET runtime required.</div>
+            <div class="feature-card"><strong>Windows x64</strong><br />Windows 7 SP1 and newer.</div>
+            <div class="feature-card"><strong>Mixed Crypts</strong><br />Per-code INLINE crypt selection.</div>
+            <div class="feature-card"><strong>PS2 MIPS</strong><br />R5900 assembler and disassembler.</div>
+            <div class="feature-card"><strong>CMP Formatting</strong><br />Code Database-compatible text output.</div>
+            <div class="feature-card"><strong>PNACH Tools</strong><br />Input, output, CRC, and filenames.</div>
+        </div>
+
+        <h3>Supported areas</h3>
+        <ul>
+            <li>Action Replay V1 and V2</li>
+            <li>Action Replay MAX encrypted and RAW formats</li>
+            <li>CodeBreaker encrypted and RAW formats</li>
+            <li>GameShark and Xploder formats</li>
+            <li>Standard RAW and device-specific RAW variants</li>
+            <li>PCSX2 PNACH input and output</li>
+            <li>INLINE mixed-crypt input</li>
+            <li>PS2 R5900 / MIPS assembly and disassembly</li>
+            <li>Supported ARMAX, CBC, P2M, and related codelist workflows</li>
+        </ul>
+
+        <div class="note">
+            The previous C# implementation is preserved under <code>~Legacy~/</code> for reference.
+            It is not used by the active C++17 build.
+        </div>
+    </section>
+
+    <section id="window-tour">
+        <h2>2. Main window tour</h2>
+
+        <h3>2.1 Input side</h3>
+        <ul>
+            <li><strong>Input format</strong> – selects the source crypt or text format.</li>
+            <li><strong>Input text box</strong> – paste, type, or load the source codes.</li>
+            <li><strong>Clear</strong> – clears the input text.</li>
+            <li><strong>Game ID</strong> – used by formats that require a numeric game identifier.</li>
+        </ul>
+
+        <h3>2.2 Output side</h3>
+        <ul>
+            <li><strong>Output format</strong> – selects the destination crypt or text format.</li>
+            <li><strong>Output text box</strong> – displays the converted result.</li>
+            <li><strong>Clear</strong> – clears the output text.</li>
+            <li><strong>Game ID</strong> – used by supported output formats that require it.</li>
+        </ul>
+
+        <h3>2.3 Bottom controls</h3>
+        <ul>
+            <li><strong>Convert</strong> – performs the current input-to-output conversion.</li>
+            <li><strong>Swap</strong> – exchanges the selected input and output formats where supported.</li>
+            <li><strong>Game Name</strong> – optional title used by binary codelists and PNACH helpers.</li>
+        </ul>
+
+        <div class="note">
+            The window is resizable. Input, output, labels, buttons, and the Game Name field are
+            repositioned and repainted automatically.
+        </div>
+    </section>
+
+    <section id="quick-start">
+        <h2>3. Quick start</h2>
+        <ol>
+            <li>Select the correct <strong>Input</strong> format.</li>
+            <li>Select the desired <strong>Output</strong> format.</li>
+            <li>Paste or load the source codes into the Input box.</li>
+            <li>Enter a Game ID or Game Name when required by the selected format.</li>
+            <li>Click <strong>Convert</strong>.</li>
+            <li>Copy the result or save it from the File menu.</li>
+        </ol>
+
+        <div class="warning">
+            Always verify the selected input crypt before converting. A valid-looking result can still be
+            incorrect when the wrong source crypt is selected.
+        </div>
+    </section>
+
+    <section id="file-menu">
+        <h2>4. Loading and saving</h2>
+
+        <h3>4.1 Loading</h3>
+        <p>The File menu and drag-and-drop support may load formats such as:</p>
+        <ul>
+            <li>Plain text files</li>
+            <li>PNACH files</li>
+            <li>ARMAX <code>.bin</code> codelists</li>
+            <li>CodeBreaker CBC files</li>
+            <li>XP / GameShark P2M files</li>
+            <li>PS2 ELF files for PNACH CRC calculation</li>
+        </ul>
+
+        <p>
+            Supported files can also be dropped onto the Input area. The same parser and cleanup logic
+            is used whether the file is loaded from the menu or by drag-and-drop.
+        </p>
+
+        <h4>ARMAX names, notes, and controller glyphs</h4>
+        <ul>
+            <li>Supported ARMAX button glyphs are converted to readable names.</li>
+            <li>Available game and cheat notes are preserved where possible.</li>
+            <li>Names, folders, and descriptions are retained when the destination format supports them.</li>
+        </ul>
+
+        <h3>4.2 Saving</h3>
+        <p>Depending on the selected output format, Save As may create:</p>
+        <ul>
+            <li>Plain text files</li>
+            <li>PCSX2 <code>.pnach</code> files</li>
+            <li>ARMAX <code>.bin</code> files</li>
+            <li>CodeBreaker CBC files</li>
+            <li>XP / GameShark P2M files</li>
+            <li>Other supported format-specific files</li>
+        </ul>
+
+        <div class="warning">
+            Binary exports use the most recent successful conversion. Run Convert before saving a binary
+            codelist and supply any required Game ID or Game Name.
+        </div>
+    </section>
+
+    <section id="formats">
+        <h2>5. Input and output formats</h2>
+
+        <h3>5.1 RAW-style formats</h3>
+        <p>RAW codes normally use two hexadecimal words:</p>
+<pre>XXXXXXXX YYYYYYYY</pre>
+
+        <p>Available RAW families may include:</p>
+        <ul>
+            <li>Standard RAW</li>
+            <li>Action Replay / GameShark V1–V2 RAW</li>
+            <li>CodeBreaker RAW</li>
+            <li>GameShark / Xploder V3 RAW</li>
+            <li>ARMAX RAW</li>
+        </ul>
+
+        <h3>5.2 Encrypted formats</h3>
+        <p>Encrypted choices may include:</p>
+        <ul>
+            <li>Action Replay V1</li>
+            <li>Action Replay V2</li>
+            <li>Action Replay MAX</li>
+            <li>CodeBreaker V1–V6</li>
+            <li>CodeBreaker V7+ Common</li>
+            <li>GameShark V3–V4 / Xploder V4</li>
+            <li>GameShark V5+ / Xploder V5+</li>
+        </ul>
+
+        <h3>5.3 Special text formats</h3>
+        <ul>
+            <li><strong>INLINE</strong> – mixed source crypts in one input.</li>
+            <li><strong>PNACH</strong> – PCSX2 patch text.</li>
+            <li><strong>PS2 MIPS</strong> – R5900 assembly text and opcodes.</li>
+        </ul>
+    </section>
+
+    <section id="inline-mode">
+        <h2>6. INLINE mixed-crypt input</h2>
+
+        <p>
+            INLINE mode lets each named code block declare its own source crypt.
+            This is useful for lists containing several devices or encryption types.
+        </p>
+
+<pre>Infinite Health, CRYPT_AR2
+CEB1E0D2 BCA99C84
+
+Master Code, CRYPT_ARMAX
+VNVH-7KMA-DX61K
+A4UT-3BKQ-TYYV5
+
+Max Money, CRYPT_CRAW
+20123456 05F5E0FF</pre>
+
+        <h3>Recognized INLINE identifiers</h3>
+<pre>CRYPT_AR1
+CRYPT_AR2
+CRYPT_ARMAX
+CRYPT_CB
+CRYPT_CB7_COMMON
+CRYPT_GS3
+CRYPT_GS5
+CRYPT_MAXRAW
+CRYPT_RAW
+CRYPT_ARAW
+CRYPT_CRAW
+CRYPT_GRAW</pre>
+
+        <ul>
+            <li>Headers are case-insensitive.</li>
+            <li>Each named block is processed with its own crypt.</li>
+            <li>A block without a recognized header defaults to RAW.</li>
+            <li>INLINE is an input-only format.</li>
+        </ul>
+    </section>
+
+    <section id="pnach">
+        <h2>7. PNACH and CRC helper</h2>
+
+        <h3>7.1 PNACH input</h3>
+        <p>PNACH input can contain group names and EE patch rows:</p>
+
+<pre>[Infinite Health]
+patch=1,EE,20123456,extended,00000063</pre>
+
+        <p>
+            Metadata such as <code>gametitle=</code>, <code>comment=</code>,
+            <code>crc=</code>, and <code>description=</code> is handled separately from code rows.
+        </p>
+
+        <h3>7.2 PNACH output</h3>
+        <p>PNACH output uses PCSX2-compatible patch rows:</p>
+
+<pre>patch=1,EE,20123456,extended,00000063</pre>
+
+        <h3>7.3 PNACH CRC helper</h3>
+        <p>
+            The CRC helper calculates the PCSX2 game CRC from a PS2 ELF and associates it with
+            an ELF name and game title.
+        </p>
+
+        <p>Mappings are stored in:</p>
+<pre>PnachCRC.json</pre>
+
+        <p>Example mapping:</p>
+<pre>SLES_526.41&gt;A1FD63D6&gt;Game Name</pre>
+
+        <ol>
+            <li>Select PNACH as the output format.</li>
+            <li>Open <strong>Set PNACH CRC</strong> or enable <strong>Add CRC</strong>.</li>
+            <li>Drop or browse to the PS2 ELF.</li>
+            <li>Confirm the detected CRC and Game Name.</li>
+            <li>Save the mapping.</li>
+        </ol>
+
+        <p>A mapped PNACH filename may be suggested as:</p>
+<pre>SLUS_203.12_A1FD63D6.pnach</pre>
+    </section>
+
+    <section id="omni-options">
+        <h2>8. Omni Options <span class="badge">v1.06</span></h2>
+
+        <p>The current menu layout is:</p>
+
+<pre>Options
+├── Omni Options
+│   ├── Transpose Type
+│   │   ├── Strict
+│   │   └── Original
+│   └── CMP Output Mode
+├── Make Organizers
+└── Remaining options</pre>
+
+        <h3>8.1 Transpose Type</h3>
+        <ul>
+            <li><strong>Original</strong> – preserves the original OmniConvert transpose behavior and is the default for new settings.</li>
+            <li><strong>Strict</strong> – uses stricter transpose handling.</li>
+        </ul>
+
+        <h3>8.2 CMP Output Mode</h3>
+        <p>
+            CMP Output Mode formats supported text output for the CMP Code Database.
+        </p>
+
+        <p>Example source:</p>
+<pre>Master Codes
+Enable Code (Must Be On), by Lajos Szalay
+904903A8 0C109375
+2012EF74 00441021</pre>
+
+        <p>CMP-formatted output:</p>
+<pre>!Master Codes:
++Enable Code (Must Be On)
+%Credits: Lajos Szalay
+$904903A8 0C109375
+$2012EF74 00441021
+!!</pre>
+
+        <ul>
+            <li>A name-only section opens a group with <code>!Group Name:</code>.</li>
+            <li><code>!!</code> closes the group before it.</li>
+            <li>The previous group is closed before another group begins.</li>
+            <li>An open group is closed when the input ends.</li>
+            <li>Inline <code>, by Author</code> text becomes a <code>%Credits:</code> line.</li>
+            <li>CMP formatting is not applied to PNACH or PS2 MIPS output.</li>
+        </ul>
+    </section>
+
+    <section id="armax-options">
+        <h2>9. ARMAX options</h2>
+
+        <p>The ARMAX options control settings such as:</p>
+        <ul>
+            <li>USA, PAL, or Japan region</li>
+            <li>Automatic or manual verifier selection</li>
+            <li>Disc-hash generation</li>
+            <li>Other ARMAX-specific output behavior</li>
+        </ul>
+
+        <p>Open the dialog from the Options menu when ARMAX-specific configuration is required.</p>
+    </section>
+
+    <section id="mips">
+        <h2>10. PS2 R5900 / MIPS mode <span class="badge">v1.06</span></h2>
+
+        <p>
+            OmniConvertCS includes a bidirectional PS2 R5900 assembler and disassembler.
+            It can convert instruction opcodes to readable assembly and assemble supported text
+            back into 32-bit instruction words.
+        </p>
+
+        <h3>Supported instruction areas</h3>
+        <ul>
+            <li>Standard R5900 integer operations</li>
+            <li>Branches, jumps, traps, and labels</li>
+            <li>COP0 system-control operations</li>
+            <li>COP1 floating-point operations</li>
+            <li>R5900 MMI0–MMI3 packed multimedia instructions</li>
+            <li>COP2 register transfers and branches</li>
+            <li>Core VU0 macro-mode arithmetic</li>
+            <li>VU destination masks and broadcast forms</li>
+        </ul>
+
+        <p>Example:</p>
+<pre>vadd.xyzw $vf1, $vf2, $vf3
+vaddz.xw  $vf4, $vf5, $vf6
+vmul.y    $vf7, $vf8, $vf9</pre>
+
+        <div class="note">
+            Reserved, invalid, or unsupported encodings are preserved as exact <code>.word</code>
+            values whenever decoding them as an instruction could alter the original data.
+        </div>
+    </section>
+
+    <section id="errors">
+        <h2>11. Errors and preserved data</h2>
+
+        <p>
+            Invalid or unsupported input should not silently disappear. Depending on the selected format,
+            OmniConvertCS preserves the original material and reports a conversion error or emits an exact
+            RAW/<code>.word</code> representation.
+        </p>
+
+        <p>Example text error block:</p>
+<pre># ERROR: Unsupported code type for the selected format
+# 12345678 00000000</pre>
+
+        <p>Review any error block before using the generated codes.</p>
+    </section>
+
+    <section id="cli">
+        <h2>12. Command-line interface</h2>
+
+        <p>
+            OmniConvertCS can also be run from CMD or PowerShell for scripted and batch conversions.
+        </p>
+
+        <h3>12.1 General usage</h3>
+<pre>OmniConvertCS.exe [-a|-af] [-m|-mc] [-e] [-o &lt;outdir&gt;] &lt;Output-Crypt&gt; &lt;input.txt | input_folder&gt;
+OmniConvertCS.exe -h</pre>
+
+        <h3>12.2 Common options</h3>
+        <ul>
+            <li><code>-a</code> – analyze supported RAW-family output.</li>
+            <li><code>-af</code> – analyze and try alternate input crypts when supported.</li>
+            <li><code>-m</code> – enable manual choices during supported auto-fix workflows.</li>
+            <li><code>-mc</code> – review every cheat manually.</li>
+            <li><code>-e</code> – apply the supported CRAW E001-to-D cleanup helper.</li>
+            <li><code>-o &lt;dir&gt;</code> – select the output root.</li>
+            <li><code>-h</code> or <code>--help</code> – display CLI help.</li>
+        </ul>
+
+        <h3>12.3 Manual-review commands</h3>
+        <ul>
+            <li><strong>Enter</strong> – continue the normal attempt order.</li>
+            <li><strong>S</strong> – skip the current cheat.</li>
+            <li><strong>D</strong> – delete the current cheat from output.</li>
+            <li><strong>Q</strong> – stop processing.</li>
+            <li><strong>N -y</strong> – force-accept crypt number N for that attempt.</li>
+            <li><strong>N -kHEX</strong> – override an AR2 key for that attempt.</li>
+        </ul>
+
+        <h3>12.4 CRAW E001 cleanup</h3>
+        <p>For supported CRAW output, <code>-e</code> can rewrite:</p>
+<pre>E001VVVV 0AAAAAAA</pre>
+        <p>as:</p>
+<pre>DAAAAAAA 0000VVVV</pre>
+    </section>
+
+    <section id="legacy">
+        <h2>13. Legacy C# source</h2>
+
+        <p>The former C# implementation is preserved in:</p>
+<pre>~Legacy~/</pre>
+
+        <p>This folder is retained for:</p>
+        <ul>
+            <li>Historical reference</li>
+            <li>Comparing older behavior</li>
+            <li>Reviewing the previous C# port</li>
+            <li>Preserving prior development work</li>
+        </ul>
+
+        <div class="note">
+            The active OmniConvertCS v1.06 application is the native C++17 project.
+            Files under <code>~Legacy~/</code> are not part of the normal C++17 build.
+        </div>
+    </section>
+
+    <section id="tips">
+        <h2>14. Tips and notes</h2>
+        <ul>
+            <li>Confirm the source crypt before every conversion.</li>
+            <li>Use Standard RAW as an intermediate format when troubleshooting.</li>
+            <li>Use INLINE mode for lists containing several crypt formats.</li>
+            <li>Enable CMP Output Mode only when preparing compatible database text.</li>
+            <li>Keep CMP mode disabled for ordinary forum or device output.</li>
+            <li>Supply the correct ARMAX region and verifier settings.</li>
+            <li>Review MIPS <code>.word</code> output before assuming it is an executable instruction.</li>
+            <li>Keep a backup of important original code lists before batch processing.</li>
+        </ul>
+    </section>
+</main>
+
+<footer>
+    OmniConvertCS v1.06 — native C++17 help file. The former C# implementation is preserved under ~Legacy~/.
+</footer>
+</body>
+</html>

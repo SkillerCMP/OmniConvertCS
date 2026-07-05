@@ -1,0 +1,17 @@
+#pragma once
+
+#include <string_view>
+
+namespace omni::identity {
+
+inline constexpr std::string_view product_name = "@OMNI_PRODUCT_NAME@";
+inline constexpr std::wstring_view product_name_w = L"@OMNI_PRODUCT_NAME@";
+inline constexpr std::string_view executable_name = "@OMNI_EXECUTABLE_NAME@";
+inline constexpr std::wstring_view executable_name_w = L"@OMNI_EXECUTABLE_NAME@";
+inline constexpr std::string_view version = "@OMNI_VERSION@";
+inline constexpr std::wstring_view version_w = L"@OMNI_VERSION@";
+inline constexpr std::string_view window_title = "@OMNI_PRODUCT_NAME@ v@OMNI_VERSION@";
+inline constexpr std::wstring_view window_title_w = L"@OMNI_PRODUCT_NAME@ v@OMNI_VERSION@";
+inline constexpr std::string_view converted_by = "Converted by @OMNI_PRODUCT_NAME@";
+
+} // namespace omni::identity

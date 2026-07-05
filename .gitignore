@@ -1,0 +1,13 @@
+# Generated build and release output
+build/
+0-Finished/
+
+# Visual Studio local files
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.VC.opendb
+
+# CMake local files
+CMakeUserPresets.json

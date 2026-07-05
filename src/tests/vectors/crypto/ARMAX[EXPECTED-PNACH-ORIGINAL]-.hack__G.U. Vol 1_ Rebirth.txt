@@ -1,0 +1,526 @@
+// Converted by Omniconvert C#
+// NO CRC/NAME SET
+
+[Masters:\(M)]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,F0144134,extended,00144137
+
+[Infinite Chim by Codejunkies , CRYPT_ARMAX\Extra Characters Enabled]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,40A032D8,extended,00020001
+patch=1,EE,00000000,extended,00000000
+
+[Infinite Chim by Codejunkies , CRYPT_ARMAX\Characters Never Busy]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,40A032E0,extended,00020001
+patch=1,EE,00000000,extended,00000000
+
+[Infinite Chim by Codejunkies , CRYPT_ARMAX\Characters Always Online]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,40A032E8,extended,00020001
+patch=1,EE,00000000,extended,00000000
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209F9FCC,extended,000003E7
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209F9FD0,extended,05F5E0FF
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209F9FD4,extended,0001869F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209F9FD8,extended,0001869F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FDC,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FDE,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FE0,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FE2,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FE4,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FE6,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FE8,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FEA,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FEC,extended,0000270F
+
+[Haseo Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109F9FEE,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA05C,extended,000003E7
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA060,extended,05F5E0FF
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA064,extended,0001869F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA068,extended,0000869F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA06C,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA06E,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA070,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA072,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA074,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA076,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA078,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA07A,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA07C,extended,0000270F
+
+[Silabus Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA07E,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA080,extended,000003E7
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA084,extended,05F5E0FF
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA088,extended,0001869F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA08C,extended,0001869F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA090,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA092,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA094,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA096,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA098,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA09A,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA09C,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA09E,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0A0,extended,0000270F
+
+[Gaspard Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0A2,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA278,extended,000003E7
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA27C,extended,05F5E0FF
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA280,extended,0001869F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA284,extended,0001869F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA288,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA28A,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA28C,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA28E,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA290,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA292,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA294,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA296,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA298,extended,0000270F
+
+[Iyoten Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA29A,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA29C,extended,000003E7
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA2A0,extended,05F5E0FF
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA2A4,extended,0001869F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA2A8,extended,0001869F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2AC,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2AE,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2B0,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2B2,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2B4,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2B6,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2B8,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2BA,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2BC,extended,0000270F
+
+[Asta Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA2BE,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209F9FF0,extended,000003E7
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209F9FF4,extended,05F5E0FF
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209F9FF8,extended,0001869F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209F9FFC,extended,0001869F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA000,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA002,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA004,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA006,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA008,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA00A,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA00C,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA00E,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA010,extended,0000270F
+
+[Atoli Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA012,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA014,extended,000003E7
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA018,extended,05F5E0FF
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA01C,extended,0001869F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA020,extended,0001869F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA024,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA026,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA028,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA02A,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA02C,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA02E,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA030,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA032,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA034,extended,0000270F
+
+[Kuhn Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA036,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA038,extended,000003E7
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA03C,extended,05F5E0FF
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA040,extended,0001869F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA044,extended,0001869F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA048,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA04A,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA04C,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA04E,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA050,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA052,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA054,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA056,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA058,extended,0000270F
+
+[Pi Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA05A,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max Level]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA0A4,extended,000003E7
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max Money]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA0A8,extended,05F5E0FF
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max HP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA0AC,extended,0001869F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max SP]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,209FA0B0,extended,0001869F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max P-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0B4,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max P-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0B6,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max M-ATK]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0B8,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max M-DEF]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0BA,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max Fire]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0BC,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max Water]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0BE,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max Wind]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0C0,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max Earth]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0C2,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max Light]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0C4,extended,0000270F
+
+[Piros the 3rd Codes by Codejunkies , CRYPT_ARMAX\Max Dark]
+author=Codejunkies , CRYPT_ARMAX
+patch=1,EE,109FA0C6,extended,0000270F
+
