@@ -21,6 +21,8 @@ ordered_tokens = [
     'POPUP "Transpose Type"',
     'MENUITEM "Strict"',
     'MENUITEM "Original"',
+    'MENUITEM "CMP Output Mode"',
+    'MENUITEM "MGS C-Type Pointer Mode"',
     'MENUITEM "Make Organizers"',
     'MENUITEM "AR MAX Options...\\tCtrl+M"',
     'MENUITEM "Set PNACH CRC..."',
@@ -44,6 +46,7 @@ for token in ordered_tokens:
 
 required_ids = [
     "ID_TRANSPOSE_STRICT", "ID_TRANSPOSE_ORIGINAL",
+    "ID_OPTION_CMP_OUTPUT", "ID_OPTION_MGS_CTYPE_POINTER",
     "ID_OPTION_MAKEFOLDERS", "ID_OPTIONS_ARMAX",
     "ID_OPTIONS_PNACH_CRC", "ID_AR2_KEY",
     "ID_GS3_KEY_0", "ID_GS3_KEY_1", "ID_GS3_KEY_2",

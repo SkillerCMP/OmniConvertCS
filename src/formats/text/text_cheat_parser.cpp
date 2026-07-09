@@ -76,9 +76,12 @@ std::vector<CheatBlock> parse_impl(std::string_view input, Crypt input_crypt, bo
     std::vector<CheatBlock> blocks;
     CheatBlock* current = nullptr;
 
-    auto start_block = [&](std::optional<std::string> label, std::optional<std::string> raw_label) {
+    auto start_block = [&](std::optional<std::string> label,
+                           std::optional<std::string> raw_label,
+                           TextBlockKind kind = TextBlockKind::normal) {
         blocks.push_back(CheatBlock{});
         current = &blocks.back();
+        current->kind = kind;
         current->label = std::move(label);
         if (raw_label && !raw_label->empty()) current->original_lines.push_back(std::move(*raw_label));
     };
@@ -104,7 +107,7 @@ std::vector<CheatBlock> parse_impl(std::string_view input, Crypt input_crypt, bo
         if (line.front() == '^') continue;
 
         if (line == "!!") {
-            start_block(std::string{}, raw);
+            start_block(std::nullopt, raw, TextBlockKind::cmp_group_close);
             continue;
         }
 
@@ -114,7 +117,7 @@ std::vector<CheatBlock> parse_impl(std::string_view input, Crypt input_crypt, bo
                 group.pop_back();
                 group = hex::trim(group);
             }
-            start_block(std::move(group), raw);
+            start_block(std::move(group), raw, TextBlockKind::cmp_group_open);
             continue;
         }
 

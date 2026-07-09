@@ -41,6 +41,28 @@ std::vector<std::string> split_commas(std::string_view line) {
     return parts;
 }
 
+std::vector<std::string> split_backslash_path(std::string_view path) {
+    std::vector<std::string> parts;
+    std::size_t start = 0U;
+    while (start <= path.size()) {
+        const std::size_t slash = path.find('\\', start);
+        const std::size_t end = slash == std::string_view::npos ? path.size() : slash;
+        const std::string part = trim(path.substr(start, end - start));
+        if (!part.empty()) parts.push_back(part);
+        if (slash == std::string_view::npos) break;
+        start = slash + 1U;
+    }
+    return parts;
+}
+
+std::size_t common_prefix_length(const std::vector<std::string>& left,
+                                 const std::vector<std::string>& right) noexcept {
+    const std::size_t limit = std::min(left.size(), right.size());
+    std::size_t index = 0U;
+    while (index < limit && left[index] == right[index]) ++index;
+    return index;
+}
+
 std::optional<std::uint32_t> parse_address_token(std::string token) {
     const std::size_t comment = token.find_first_of(" \t#;/");
     if (comment != std::string::npos) token.erase(comment);
@@ -151,13 +173,37 @@ std::string strip_existing_by(std::string label) {
 std::vector<text::CheatBlock> parse_text(std::string_view input) {
     std::vector<text::CheatBlock> blocks;
     text::CheatBlock* current = nullptr;
-    std::optional<std::string> current_group;
+    std::vector<std::string> current_groups;
 
-    auto start_block = [&](std::optional<std::string> label) -> text::CheatBlock& {
+    auto start_block = [&](std::optional<std::string> label,
+                           text::TextBlockKind kind = text::TextBlockKind::normal) -> text::CheatBlock& {
         blocks.push_back(text::CheatBlock{});
         current = &blocks.back();
+        current->kind = kind;
         current->label = std::move(label);
         return *current;
+    };
+
+    auto close_group = [&]() {
+        start_block(std::nullopt, text::TextBlockKind::cmp_group_close);
+        current = nullptr;
+    };
+
+    auto open_group = [&](std::string group_name) {
+        start_block(std::move(group_name), text::TextBlockKind::cmp_group_open);
+        current = nullptr;
+    };
+
+    auto sync_group_path = [&](const std::vector<std::string>& target_groups) {
+        const std::size_t keep = common_prefix_length(current_groups, target_groups);
+        while (current_groups.size() > keep) {
+            close_group();
+            current_groups.pop_back();
+        }
+        for (std::size_t index = keep; index < target_groups.size(); ++index) {
+            open_group(target_groups[index]);
+            current_groups.push_back(target_groups[index]);
+        }
     };
 
     auto ensure_block = [&]() -> text::CheatBlock& {
@@ -196,20 +242,13 @@ std::vector<text::CheatBlock> parse_text(std::string_view input) {
             const std::string inner = trim(std::string_view(line).substr(1U, line.size() - 2U));
             if (inner.empty()) continue;
 
-            std::optional<std::string> group_name;
-            std::string code_name = inner;
-            const std::size_t slash = inner.find('\\');
-            if (slash != std::string::npos) {
-                const std::string group = trim(std::string_view(inner).substr(0U, slash));
-                if (!group.empty()) group_name = group;
-                code_name = trim(std::string_view(inner).substr(slash + 1U));
-            }
+            std::vector<std::string> path = split_backslash_path(inner);
+            if (path.empty()) continue;
 
-            if (group_name && (!current_group || *current_group != *group_name)) {
-                start_block(*group_name);
-                current_group = *group_name;
-            }
-            if (!code_name.empty()) start_block(code_name);
+            std::string code_name = std::move(path.back());
+            path.pop_back();
+            sync_group_path(path);
+            if (!code_name.empty()) start_block(std::move(code_name));
             continue;
         }
 
@@ -234,6 +273,7 @@ std::vector<text::CheatBlock> parse_text(std::string_view input) {
         // PNACH input intentionally ignores non-section/non-patch content.
     }
 
+    sync_group_path({});
     return blocks;
 }
 

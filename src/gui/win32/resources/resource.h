@@ -136,6 +136,7 @@
 #define ID_TRANSPOSE_STRICT              40300
 #define ID_TRANSPOSE_ORIGINAL            40301
 #define ID_OPTION_CMP_OUTPUT             40302
+#define ID_OPTION_MGS_CTYPE_POINTER      40303
 #define ID_OPTIONS_PNACH_CRC             40310
 #define ID_OPTIONS_CBC_V7                40320
 #define ID_OPTIONS_CBC_V8                40321

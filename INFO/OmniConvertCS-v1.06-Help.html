@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OmniConvertCS v1.06 – Help</title>
+    <title>OmniConvertCS v1.06.02 – Help</title>
     <style>
         :root {
             color-scheme: light;
@@ -201,7 +201,7 @@
 </head>
 <body>
 <header>
-    <h1>OmniConvertCS v1.06 – Help</h1>
+    <h1>OmniConvertCS v1.06.02 – Help</h1>
     <p>
         Native C++17 PlayStation 2 cheat-code converter<br />
         RAW / Action Replay / ARMAX / CodeBreaker / GameShark / Xploder / PNACH / PS2 MIPS
@@ -239,7 +239,7 @@
         </p>
 
         <p>
-            Version 1.06 replaces the former C# / WinForms application with a native
+            Version 1.06.02 replaces the former C# / WinForms application with a native
             64-bit Windows desktop build while retaining the familiar conversion workflow.
         </p>
 
@@ -492,7 +492,8 @@ patch=1,EE,20123456,extended,00000063</pre>
 │   ├── Transpose Type
 │   │   ├── Strict
 │   │   └── Original
-│   └── CMP Output Mode
+│   ├── CMP Output Mode
+│   └── MGS C-Type Pointer Mode
 ├── Make Organizers
 └── Remaining options</pre>
 
@@ -529,6 +530,26 @@ $2012EF74 00441021
             <li>Inline <code>, by Author</code> text becomes a <code>%Credits:</code> line.</li>
             <li>CMP formatting is not applied to PNACH or PS2 MIPS output.</li>
         </ul>
+
+        <h3>8.3 MGS C-Type Pointer Mode</h3>
+        <p>
+            MGS C-Type Pointer Mode is for Metal Gear Solid CodeBreaker lists that use a custom
+            engine patch where type <code>C</code> acts like a pointer write instead of the normal
+            CodeBreaker C-type gate.
+        </p>
+
+<pre>CAAAAAAA OOOOVVVV</pre>
+
+        <p>When enabled for CodeBreaker-family input, the line is normalized after decryption into:</p>
+
+<pre>6AAAAAAA 0000VVVV
+00010001 0000OOOO</pre>
+
+        <p>
+            After normalization, the normal output selection controls the final result. For example,
+            GameShark output will receive the GameShark pointer-style equivalent instead of a
+            GameShark <code>C</code> code.
+        </p>
     </section>
 
     <section id="armax-options">
@@ -647,7 +668,7 @@ OmniConvertCS.exe -h</pre>
         </ul>
 
         <div class="note">
-            The active OmniConvertCS v1.06 application is the native C++17 project.
+            The active OmniConvertCS v1.06.02 application is the native C++17 project.
             Files under <code>~Legacy~/</code> are not part of the normal C++17 build.
         </div>
     </section>
@@ -668,7 +689,7 @@ OmniConvertCS.exe -h</pre>
 </main>
 
 <footer>
-    OmniConvertCS v1.06 — native C++17 help file. The former C# implementation is preserved under ~Legacy~/.
+    OmniConvertCS v1.06.02 — native C++17 help file. The former C# implementation is preserved under ~Legacy~/.
 </footer>
 </body>
 </html>

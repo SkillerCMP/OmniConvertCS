@@ -4,15 +4,44 @@
 #include "devices/action_replay/ar_crypto.hpp"
 #include "devices/armax/armax_crypto.hpp"
 #include "devices/armax/armax_options.hpp"
+#include "devices/codebreaker/cb_batch.hpp"
 #include "formats/text/text_cheat_parser.hpp"
 #include "tests/test_support.hpp"
 
 #include <cstdint>
+#include <iomanip>
+#include <initializer_list>
+#include <sstream>
 #include <string>
 #include <vector>
 
 namespace omni::tests {
 namespace {
+
+
+void require_block_words(const convert::Result& result,
+                         std::initializer_list<std::uint32_t> expected,
+                         const char* message) {
+    require(result.blocks.size() == 1U, message);
+    const auto& words = result.blocks.front().cheat.words;
+    require(words.size() == expected.size(), message);
+    std::size_t index = 0U;
+    for (const std::uint32_t value : expected) {
+        require(words[index] == value, message);
+        ++index;
+    }
+}
+
+std::string encrypted_cb7_text(std::vector<std::uint32_t> words) {
+    devices::codebreaker::encrypt_common_v7(words);
+    std::ostringstream output;
+    output << "MGS Pointer\n" << std::uppercase << std::hex << std::setfill('0');
+    for (std::size_t index = 0U; index + 1U < words.size(); index += 2U) {
+        output << std::setw(8) << words[index] << ' '
+               << std::setw(8) << words[index + 1U] << '\n';
+    }
+    return output.str();
+}
 
 void test_ar2_common_key_codes() {
     using namespace devices::action_replay;
@@ -200,6 +229,49 @@ void test_make_organizers_conversion_path() {
             "Following code was not linked to the converted organizer");
 }
 
+
+void test_mgs_c_type_pointer_mode() {
+    convert::Request cb_to_cb;
+    cb_to_cb.input_format = CodeFormat::codebreaker_raw;
+    cb_to_cb.output_format = CodeFormat::codebreaker_raw;
+    cb_to_cb.mgs_c_type_pointer_mode = true;
+    const convert::Result cb_result = convert::convert_text(
+        "MGS Pointer\nC00C0000 02B803E7\n", cb_to_cb);
+    require_block_words(cb_result, {
+        0x600C0000U, 0x000003E7U,
+        0x00010001U, 0x000002B8U,
+    }, "MGS C-type pointer did not normalize to CodeBreaker type 6");
+
+    convert::Request cb_to_gs = cb_to_cb;
+    cb_to_gs.output_format = CodeFormat::gameshark3_raw;
+    const convert::Result gs_result = convert::convert_text(
+        "MGS Pointer\nC00C0000 02B803E7\n", cb_to_gs);
+    require_block_words(gs_result, {
+        0x610C0000U, 0x00000000U,
+        0x000002B8U, 0x000003E7U,
+    }, "MGS C-type pointer did not translate to GameShark pointer format");
+
+    convert::Request encrypted;
+    encrypted.input_format = CodeFormat::codebreaker7_common;
+    encrypted.output_format = CodeFormat::codebreaker_raw;
+    encrypted.mgs_c_type_pointer_mode = true;
+    const convert::Result encrypted_result = convert::convert_text(
+        encrypted_cb7_text({0xC00C0000U, 0x02B803E7U}), encrypted);
+    require_block_words(encrypted_result, {
+        0x600C0000U, 0x000003E7U,
+        0x00010001U, 0x000002B8U,
+    }, "Encrypted CodeBreaker input was not normalized after decryption");
+
+    convert::Request disabled;
+    disabled.input_format = CodeFormat::codebreaker_raw;
+    disabled.output_format = CodeFormat::codebreaker_raw;
+    const convert::Result disabled_result = convert::convert_text(
+        "MGS Pointer\nC00C0000 02B803E7\n", disabled);
+    require_block_words(disabled_result, {
+        0xC00C0000U, 0x02B803E7U,
+    }, "MGS C-type pointer changed while the option was disabled");
+}
+
 } // namespace
 
 void run_option_tests() {
@@ -209,6 +281,7 @@ void run_option_tests() {
     test_armax_disc_hash_crc();
     test_armax_organizers_and_disc_hash();
     test_make_organizers_conversion_path();
+    test_mgs_c_type_pointer_mode();
 }
 
 } // namespace omni::tests

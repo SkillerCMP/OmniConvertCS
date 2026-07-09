@@ -3,4 +3,4 @@
 set(OMNI_PRODUCT_NAME "OmniConvertCS")
 set(OMNI_EXECUTABLE_NAME "OmniConvert")
 set(OMNI_INTERNAL_NAME "OmniConvertCpp.OmniConvert")
-set(OMNI_VERSION "1.06.0")
+set(OMNI_VERSION "1.06.02")

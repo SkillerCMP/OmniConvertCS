@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace omni::formats::pnach {
 namespace {
@@ -42,6 +43,21 @@ std::optional<std::pair<std::string, std::string>> split_author(std::string_view
     return std::make_pair(std::move(name), std::move(author));
 }
 
+std::string join_path(const std::vector<std::string>& groups,
+                      std::string header) {
+    std::string output;
+    for (const std::string& group : groups) {
+        if (group.empty()) continue;
+        if (!output.empty()) output += '\\';
+        output += group;
+    }
+    if (!header.empty()) {
+        if (!output.empty()) output += '\\';
+        output += std::move(header);
+    }
+    return output;
+}
+
 } // namespace
 
 std::string write_text(const std::vector<text::CheatBlock>& blocks,
@@ -57,16 +73,28 @@ std::string write_text(const std::vector<text::CheatBlock>& blocks,
     }
     output += '\n';
 
-    std::optional<std::string> current_group;
+    std::vector<std::string> current_groups;
     std::size_t code_number = 0U;
 
     for (const text::CheatBlock& block : blocks) {
         std::string header = block.label.value_or(block.cheat.name);
         header = strip_crypt_tag(header);
 
+        if (block.kind == text::TextBlockKind::cmp_group_close) {
+            if (!current_groups.empty()) current_groups.pop_back();
+            continue;
+        }
+
         if (block.cheat.empty()) {
-            if (trim(header).empty()) current_group.reset();
-            else current_group = trim(header);
+            const std::string group = trim(header);
+            if (group.empty()) {
+                current_groups.clear();
+            } else if (block.kind == text::TextBlockKind::cmp_group_open) {
+                current_groups.push_back(group);
+            } else {
+                current_groups.clear();
+                current_groups.push_back(group);
+            }
             continue;
         }
 
@@ -79,7 +107,7 @@ std::string write_text(const std::vector<text::CheatBlock>& blocks,
             author = split->second;
         }
 
-        const std::string final_name = current_group ? *current_group + "\\" + header : header;
+        const std::string final_name = join_path(current_groups, header);
         if (block.conversion_error) {
             output += "// [ERROR] " + final_name + "\n";
             std::size_t begin = 0U;

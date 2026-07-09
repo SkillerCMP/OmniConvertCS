@@ -55,6 +55,7 @@ void run_conversion(HWND window) {
         }
         request.transpose_mode = state->transpose_mode;
         request.cmp_output_mode = state->cmp_output_mode;
+        request.mgs_c_type_pointer_mode = state->mgs_c_type_pointer_mode;
         request.continue_on_error = true;
         request.armax_game_id = state->armax_game_id;
         const std::string ui_game_name =

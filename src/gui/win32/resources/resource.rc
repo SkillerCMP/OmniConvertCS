@@ -380,6 +380,7 @@ BEGIN
                 MENUITEM "Original",                ID_TRANSPOSE_ORIGINAL
             END
             MENUITEM "CMP Output Mode",             ID_OPTION_CMP_OUTPUT
+            MENUITEM "MGS C-Type Pointer Mode",     ID_OPTION_MGS_CTYPE_POINTER
         END
         MENUITEM SEPARATOR
         MENUITEM "Make Organizers",                 ID_OPTION_MAKEFOLDERS

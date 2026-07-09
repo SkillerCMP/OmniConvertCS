@@ -85,6 +85,23 @@ void run_copy_paste_cleanup_tests() {
         "20123458 00000002";
     require(clean_copy_paste_text(cmp) == expected_cmp,
             "CMP credits or escaped-label cleanup regressed");
+
+    const std::string nested_cmp =
+        "!City Codes:\n"
+        "!An Ding Codes:\n"
+        "+Max Current Defense\n"
+        "$20123456 00000001\n"
+        "!!\n"
+        "!!\n";
+    const std::string expected_nested_cmp =
+        "!City Codes:\r\n"
+        "!An Ding Codes:\r\n"
+        "Max Current Defense\r\n"
+        "20123456 00000001\r\n"
+        "!!\r\n"
+        "!!";
+    require(clean_copy_paste_text(nested_cmp) == expected_nested_cmp,
+            "CMP explicit subgroup markers were not preserved by paste/load cleanup");
 }
 
 } // namespace omni::tests

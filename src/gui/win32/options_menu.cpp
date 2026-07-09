@@ -18,6 +18,9 @@ void update_boolean_checks(HWND window) {
     CheckMenuItem(menu, ID_OPTION_CMP_OUTPUT,
                   MF_BYCOMMAND |
                       (state->cmp_output_mode ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem(menu, ID_OPTION_MGS_CTYPE_POINTER,
+                  MF_BYCOMMAND |
+                      (state->mgs_c_type_pointer_mode ? MF_CHECKED : MF_UNCHECKED));
     DrawMenuBar(window);
 }
 
@@ -39,6 +42,11 @@ bool handle_options_menu_command(HWND window, int command_id) {
             return true;
         case ID_OPTION_CMP_OUTPUT:
             state->cmp_output_mode = !state->cmp_output_mode;
+            update_boolean_checks(window);
+            save_app_settings(*state);
+            return true;
+        case ID_OPTION_MGS_CTYPE_POINTER:
+            state->mgs_c_type_pointer_mode = !state->mgs_c_type_pointer_mode;
             update_boolean_checks(window);
             save_app_settings(*state);
             return true;

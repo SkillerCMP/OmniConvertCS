@@ -43,6 +43,7 @@ struct AppState {
     std::string armax_disc_hash_elf_name;
     translate::TransposeMode transpose_mode{translate::TransposeMode::original};
     bool cmp_output_mode{};
+    bool mgs_c_type_pointer_mode{};
     bool pnach_crc_active{};
     std::optional<std::uint32_t> pnach_crc;
     std::string pnach_game_name;

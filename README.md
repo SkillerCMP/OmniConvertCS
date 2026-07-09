@@ -15,7 +15,7 @@ The former C# implementation is preserved in the [`~Legacy~/`](./~Legacy~/) fold
   </a>
 </p>
 
-> **Current release:** OmniConvertCS v1.06  
+> **Current release:** OmniConvertCS v1.06.02  
 > **Architecture:** Native C++17, Windows x64  
 > **Compatibility:** Windows 7 SP1 and newer
 
@@ -29,6 +29,7 @@ The former C# implementation is preserved in the [`~Legacy~/`](./~Legacy~/) fold
 - 🔎 Compute and save PCSX2 ELF CRC mappings
 - 🧠 Assemble and disassemble PS2 R5900/MIPS instructions
 - 🗂️ Format supported text output for the CMP Code Database
+- 🧬 Optional MGS C-Type Pointer Mode for Metal Gear Solid pointer-style CodeBreaker codes
 - 📦 Read and write ARMAX `.bin` codelists
 - 🎨 Native Win32 interface with persistent settings
 - 🪟 Windows 7 SP1 x64 compatibility
@@ -275,6 +276,31 @@ CMP Output Mode supports:
 
 CMP formatting is not applied to PNACH or PS2 MIPS output.
 
+### MGS C-Type Pointer Mode
+
+MGS C-Type Pointer Mode is available under:
+
+```text
+Options
+└── Omni Options
+    └── MGS C-Type Pointer Mode
+```
+
+When enabled, CodeBreaker-family input that contains Metal Gear Solid pointer-style `C` codes is normalized after decryption:
+
+```text
+CAAAAAAA OOOOVVVV
+```
+
+becomes:
+
+```text
+6AAAAAAA 0000VVVV
+00010001 0000OOOO
+```
+
+This allows the special MGS format to convert into normal CodeBreaker type `6` pointers, GameShark pointers, or other supported output formats.
+
 </details>
 
 <details>
@@ -470,7 +496,7 @@ OmniConvert and the tools surrounding it are the result of many years of public 
 
 ```text
 Product: OmniConvertCS
-Current Version: 1.06
+Current Version: 1.06.02
 Language: C++17
 Architecture: 64-bit x64
 Interface: Native Windows desktop (Win32 API)

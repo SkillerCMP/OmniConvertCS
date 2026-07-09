@@ -17,6 +17,8 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace omni::convert {
 namespace {
@@ -160,6 +162,43 @@ void remove_armax_verifier(CheatBlock& block) {
     block.cheat.words.erase(
         block.cheat.words.begin(),
         block.cheat.words.begin() + static_cast<std::ptrdiff_t>(words));
+}
+
+
+[[nodiscard]] bool is_mgs_c_type_pointer_source(Crypt crypt) noexcept {
+    return crypt == Crypt::codebreaker ||
+           crypt == Crypt::codebreaker7_common ||
+           crypt == Crypt::codebreaker_raw;
+}
+
+[[nodiscard]] std::size_t rewrite_mgs_c_type_pointers(CheatBlock& block) {
+    std::size_t rewritten = 0U;
+    std::vector<std::uint32_t> normalized;
+    normalized.reserve(block.cheat.words.size());
+
+    for (std::size_t index = 0U; index < block.cheat.words.size();) {
+        const std::uint32_t first = block.cheat.words[index];
+        if ((first >> 28U) == 0xCU && index + 1U < block.cheat.words.size()) {
+            const std::uint32_t second = block.cheat.words[index + 1U];
+            const std::uint32_t pointer_address = first & 0x01FFFFFFU;
+            const std::uint32_t offset = (second >> 16U) & 0xFFFFU;
+            const std::uint32_t value = second & 0xFFFFU;
+
+            normalized.push_back(0x60000000U | pointer_address);
+            normalized.push_back(value);
+            normalized.push_back(0x00010001U);
+            normalized.push_back(offset);
+            ++rewritten;
+            index += 2U;
+            continue;
+        }
+
+        normalized.push_back(first);
+        ++index;
+    }
+
+    if (rewritten != 0U) block.cheat.words = std::move(normalized);
+    return rewritten;
 }
 
 void append_translation_warnings(Result& result,
@@ -326,6 +365,25 @@ Result convert_text(std::string_view input, const Request& request) {
             if (metadata) {
                 result.detected_armax_game_id = metadata->game_id;
                 result.detected_armax_region = metadata->region;
+            }
+
+            if (request.mgs_c_type_pointer_mode &&
+                is_mgs_c_type_pointer_source(block_input_crypt)) {
+                stage = "normalize MGS C-type pointers";
+                const std::size_t rewritten = rewrite_mgs_c_type_pointers(block);
+                if (rewritten != 0U) {
+                    const std::string name = block.label.value_or("Unnamed Cheat");
+                    result.warnings.emplace_back(
+                        "MGS C-Type Pointer Mode converted " +
+                        std::to_string(rewritten) +
+                        " C-type pointer line(s) to CodeBreaker type 6 for \"" +
+                        name + "\".");
+                    if (!block.wildcards.empty()) {
+                        block.wildcards.clear();
+                        result.warnings.emplace_back(
+                            "Wildcard masks were removed because MGS C-Type Pointer Mode changed code-word positions.");
+                    }
+                }
             }
 
             bool translated = false;

@@ -16,7 +16,14 @@ struct WildcardMask {
     std::string value_mask;
 };
 
+enum class TextBlockKind {
+    normal,
+    cmp_group_open,
+    cmp_group_close,
+};
+
 struct CheatBlock {
+    TextBlockKind kind{TextBlockKind::normal};
     std::optional<std::string> label;
     Cheat cheat;
     std::vector<WildcardMask> wildcards;

@@ -96,28 +96,17 @@ bool label_needs_escape(std::string_view label) noexcept {
     return starts_with_case_insensitive(label, "%credits:");
 }
 
-bool original_line_equals(const CheatBlock& block,
-                          std::string_view marker) {
-    return std::any_of(block.original_lines.begin(), block.original_lines.end(),
-                       [marker](const std::string& line) {
-                           return trim_copy(line) == marker;
-                       });
+bool is_explicit_group_open(const CheatBlock& block) noexcept {
+    return block.kind == TextBlockKind::cmp_group_open;
 }
 
-bool is_explicit_group_close(const CheatBlock& block) {
-    return block.cheat.empty() && original_line_equals(block, "!!");
+bool is_explicit_group_close(const CheatBlock& block) noexcept {
+    return block.kind == TextBlockKind::cmp_group_close;
 }
 
-bool is_group_heading(const CheatBlock& block) {
-    if (!block.cheat.empty() || block.conversion_error || !block.label ||
-        block.label->empty()) {
-        return false;
-    }
-
-    // CMP group markers and ordinary name-only organizer sections share the
-    // same empty labeled block representation. In CMP Output Mode both are
-    // emitted as !Group: sections.
-    return true;
+bool is_plain_group_heading(const CheatBlock& block) {
+    return block.kind == TextBlockKind::normal && block.cheat.empty() &&
+           !block.conversion_error && block.label && !block.label->empty();
 }
 
 struct CmpLabel {
@@ -173,19 +162,28 @@ CmpLabel split_cmp_credits(std::string header) {
     return {std::move(name), std::move(author)};
 }
 
-void close_cmp_group(std::string& output, bool& group_open) {
-    if (!group_open) return;
+void close_one_cmp_group(std::string& output, std::size_t& group_depth) {
+    if (group_depth == 0U) return;
     output += "!!\n";
-    group_open = false;
+    --group_depth;
 }
 
-void write_cmp_group_heading(std::string& output, std::string header,
-                             bool& group_open) {
-    close_cmp_group(output, group_open);
+void close_all_cmp_groups(std::string& output, std::size_t& group_depth) {
+    while (group_depth > 0U) close_one_cmp_group(output, group_depth);
+}
+
+void write_cmp_group_open(std::string& output, std::string header,
+                          std::size_t& group_depth) {
     output += '!';
     output += trim_copy(header);
     output += ":\n";
-    group_open = true;
+    ++group_depth;
+}
+
+void write_plain_cmp_group_heading(std::string& output, std::string header,
+                                   std::size_t& group_depth) {
+    close_all_cmp_groups(output, group_depth);
+    write_cmp_group_open(output, std::move(header), group_depth);
 }
 
 } // namespace
@@ -193,7 +191,7 @@ void write_cmp_group_heading(std::string& output, std::string header,
 std::string write_text(const std::vector<CheatBlock>& blocks, Crypt output_crypt,
                        WriteOptions options) {
     std::string output;
-    bool cmp_group_open = false;
+    std::size_t cmp_group_depth = 0U;
 
     for (const CheatBlock& block : blocks) {
         std::string header = block.label.value_or(
@@ -219,13 +217,18 @@ std::string write_text(const std::vector<CheatBlock>& blocks, Crypt output_crypt
             continue;
         }
 
-        if (options.cmp_output_mode && is_explicit_group_close(block)) {
-            close_cmp_group(output, cmp_group_open);
+        if (is_explicit_group_close(block)) {
+            if (options.cmp_output_mode) close_one_cmp_group(output, cmp_group_depth);
             continue;
         }
 
-        if (options.cmp_output_mode && is_group_heading(block)) {
-            write_cmp_group_heading(output, std::move(header), cmp_group_open);
+        if (options.cmp_output_mode && is_explicit_group_open(block)) {
+            write_cmp_group_open(output, std::move(header), cmp_group_depth);
+            continue;
+        }
+
+        if (options.cmp_output_mode && is_plain_group_heading(block)) {
+            write_plain_cmp_group_heading(output, std::move(header), cmp_group_depth);
             continue;
         }
 
@@ -281,7 +284,7 @@ std::string write_text(const std::vector<CheatBlock>& blocks, Crypt output_crypt
         }
     }
 
-    if (options.cmp_output_mode) close_cmp_group(output, cmp_group_open);
+    if (options.cmp_output_mode) close_all_cmp_groups(output, cmp_group_depth);
     return output;
 }
 

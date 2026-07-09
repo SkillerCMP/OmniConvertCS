@@ -162,6 +162,9 @@ void load_app_settings(AppState& state) noexcept {
         if (const auto value = json_bool(json, "CmpOutputMode")) {
             state.cmp_output_mode = *value;
         }
+        if (const auto value = json_bool(json, "MgsCTypePointerMode")) {
+            state.mgs_c_type_pointer_mode = *value;
+        }
     } catch (...) {
         // Match the C# application: corrupt or inaccessible settings are ignored.
     }
@@ -214,7 +217,9 @@ void save_app_settings(const AppState& state) noexcept {
                << (state.transpose_mode == translate::TransposeMode::original
                        ? "ORIGINAL" : "STRICT") << "\",\n"
                << "  \"CmpOutputMode\": "
-               << (state.cmp_output_mode ? "true" : "false") << "\n"
+               << (state.cmp_output_mode ? "true" : "false") << ",\n"
+               << "  \"MgsCTypePointerMode\": "
+               << (state.mgs_c_type_pointer_mode ? "true" : "false") << "\n"
                << "}\n";
     } catch (...) {
         // Best effort only, matching the C# implementation.

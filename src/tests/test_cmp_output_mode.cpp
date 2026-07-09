@@ -1,6 +1,7 @@
 #include "tests/test_cmp_output_mode.hpp"
 
 #include "convert/conversion_service.hpp"
+#include "formats/text/copy_paste_cleaner.hpp"
 #include "tests/test_support.hpp"
 
 #include <sstream>
@@ -110,6 +111,84 @@ void test_cmp_explicit_close_ends_the_group_before_following_code() {
             "CMP !! did not close the preceding group exactly once");
 }
 
+void test_cmp_nested_groups_are_preserved() {
+    convert::Request request;
+    request.input_format = CodeFormat::standard_raw;
+    request.output_format = CodeFormat::standard_raw;
+    request.cmp_output_mode = true;
+
+    const std::string input =
+        "!City Codes:\n"
+        "!An Ding Codes:\n"
+        "+Max Current Defense by Code Master , CRYPT_RAW\n"
+        "$20123456 00000001\n"
+        "!!\n"
+        "!Bei Hai Codes:\n"
+        "+Max Current Defense by Code Master , CRYPT_RAW\n"
+        "$20123458 00000002\n"
+        "!!\n"
+        "!!\n"
+        "!Nature Modifier Codes:\n"
+        "+Always Blizzard by Code Master , CRYPT_RAW\n"
+        "$2012345C 00000003\n"
+        "!!\n";
+
+    const convert::Result result = convert::convert_text(input, request);
+    const std::string expected =
+        "!City Codes:\n"
+        "!An Ding Codes:\n"
+        "+Max Current Defense , CRYPT_RAW\n"
+        "%Credits: Code Master\n"
+        "$20123456 00000001\n"
+        "!!\n"
+        "!Bei Hai Codes:\n"
+        "+Max Current Defense , CRYPT_RAW\n"
+        "%Credits: Code Master\n"
+        "$20123458 00000002\n"
+        "!!\n"
+        "!!\n"
+        "!Nature Modifier Codes:\n"
+        "+Always Blizzard , CRYPT_RAW\n"
+        "%Credits: Code Master\n"
+        "$2012345C 00000003\n"
+        "!!\n";
+    require(result.output_text == expected,
+            "CMP nested !Group:/!! structure was not preserved");
+}
+
+void test_cmp_nested_groups_survive_paste_cleanup_then_convert() {
+    convert::Request request;
+    request.input_format = CodeFormat::standard_raw;
+    request.output_format = CodeFormat::standard_raw;
+    request.cmp_output_mode = true;
+
+    const std::string pasted =
+        "!City Codes:\n"
+        "!An Ding Codes:\n"
+        "+Max Current Defense by Code Master , CRYPT_RAW\n"
+        "$20123456 00000001\n"
+        "!!\n"
+        "!!\n";
+
+    const std::string cleaned = formats::text::clean_copy_paste_text(pasted);
+    require(cleaned.find("!City Codes:") != std::string::npos &&
+                cleaned.find("!An Ding Codes:") != std::string::npos &&
+                cleaned.find("!!") != std::string::npos,
+            "paste/load cleanup stripped explicit CMP subgroup markers");
+
+    const convert::Result result = convert::convert_text(cleaned, request);
+    const std::string expected =
+        "!City Codes:\n"
+        "!An Ding Codes:\n"
+        "+Max Current Defense , CRYPT_RAW\n"
+        "%Credits: Code Master\n"
+        "$20123456 00000001\n"
+        "!!\n"
+        "!!\n";
+    require(result.output_text == expected,
+            "CMP subgroup structure did not survive paste/load cleanup before conversion");
+}
+
 void test_cmp_next_group_closes_the_previous_group() {
     convert::Request request;
     request.input_format = CodeFormat::standard_raw;
@@ -176,6 +255,8 @@ void run_cmp_output_mode_tests() {
     test_cmp_markers_for_armax_text_output();
     test_cmp_group_sections_and_inline_credits();
     test_cmp_explicit_close_ends_the_group_before_following_code();
+    test_cmp_nested_groups_are_preserved();
+    test_cmp_nested_groups_survive_paste_cleanup_then_convert();
     test_cmp_next_group_closes_the_previous_group();
     test_normal_text_output_is_unchanged();
     test_pnach_ignores_cmp_mode();

@@ -192,6 +192,25 @@ std::string clean_copy_paste_text(std::string_view input) {
         if (trimmed.front() == '^') continue;
         if (trimmed == "$") continue;
 
+        // Preserve explicit CMP database group structure on paste/load.
+        // Older cleanup intentionally stripped the leading '!' for display,
+        // but that loses nested groups such as:
+        //   !City Codes:
+        //   !An Ding Codes:
+        //   ...
+        //   !!
+        //   !!
+        // Keeping these markers lets the parser/writer round-trip existing
+        // CMP subgroup files instead of flattening and rebuilding them.
+        if (trimmed == "!!") {
+            output.push_back("!!");
+            continue;
+        }
+        if (trimmed.front() == '!' && trimmed.back() == ':' && trimmed.size() > 2U) {
+            output.push_back(trimmed);
+            continue;
+        }
+
         if (starts_with_case_insensitive(trimmed, "%credits:")) {
             apply_credits_to_last_label(
                 output, pending_credits,

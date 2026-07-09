@@ -38,9 +38,11 @@ void test_format_identity() {
 
 void test_parse_groups_authors_and_wildcards() {
     const auto blocks = formats::pnach::parse_text(sample_pnach);
-    require(blocks.size() == 3U, "PNACH group/section block count is incorrect");
-    require(blocks[0].label && *blocks[0].label == "Player" && blocks[0].cheat.empty(),
-            "PNACH group was not represented as an organizer block");
+    require(blocks.size() == 4U, "PNACH group/section block count is incorrect");
+    require(blocks[0].kind == formats::text::TextBlockKind::cmp_group_open &&
+                blocks[0].label && *blocks[0].label == "Player" &&
+                blocks[0].cheat.empty(),
+            "PNACH group was not represented as an explicit organizer block");
     require(blocks[1].label && *blocks[1].label == "Infinite Health by Code Junkies",
             "PNACH author normalization did not match the C# behavior");
     require(blocks[1].cheat.words.size() == 4U,
@@ -53,6 +55,8 @@ void test_parse_groups_authors_and_wildcards() {
             "PNACH wildcard mask was not retained");
     require(blocks[2].label && *blocks[2].label == "Infinite Ammo",
             "PNACH second section name parsed incorrectly");
+    require(blocks[3].kind == formats::text::TextBlockKind::cmp_group_close,
+            "PNACH parser did not close the open group path");
 }
 
 void test_write_groups_authors_and_crc() {
@@ -78,7 +82,7 @@ void test_old_mac_line_endings() {
         "author=Skiller\r"
         "patch=1,EE,20123456,extended,DEADBEEF\r";
     const auto blocks = formats::pnach::parse_text(input);
-    require(blocks.size() == 2U && blocks[1].cheat.word_count() == 2U,
+    require(blocks.size() == 3U && blocks[1].cheat.word_count() == 2U,
             "standalone CR PNACH input collapsed into one line");
     require(blocks[1].label && *blocks[1].label == "Infinite Health by Skiller",
             "standalone CR PNACH metadata was not parsed");
@@ -106,6 +110,33 @@ void test_conversion_service_routing() {
             "Standard RAW did not become a PNACH patch row");
 }
 
+void test_pnach_paths_become_cmp_nested_groups() {
+    const std::string input =
+        "[Inventory Pointer Capture\\Have Camouflage Face Codes\\Infinity]\n"
+        "author=Code Master\n"
+        "description=Enable Code (Must Be On)\n"
+        "patch=1,EE,600C0000,extended,00000001\n"
+        "patch=1,EE,00010001,extended,00002FC8\n";
+
+    convert::Request request;
+    request.input_format = CodeFormat::pnach_raw;
+    request.output_format = CodeFormat::standard_raw;
+    request.cmp_output_mode = true;
+
+    const convert::Result result = convert::convert_text(input, request);
+    const std::string expected =
+        "!Inventory Pointer Capture:\n"
+        "!Have Camouflage Face Codes:\n"
+        "+Infinity\n"
+        "%Credits: Code Master\n"
+        "$600C0000 00000001\n"
+        "$00010001 00002FC8\n"
+        "!!\n"
+        "!!\n";
+    require(result.output_text == expected,
+            "PNACH backslash path was not converted to nested CMP groups");
+}
+
 } // namespace
 
 void run_pnach_tests() {
@@ -114,6 +145,7 @@ void run_pnach_tests() {
     test_write_groups_authors_and_crc();
     test_old_mac_line_endings();
     test_conversion_service_routing();
+    test_pnach_paths_become_cmp_nested_groups();
 }
 
 } // namespace omni::tests

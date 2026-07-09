@@ -35,6 +35,7 @@ struct Request {
     std::uint32_t armax_disc_hash{};
     translate::TransposeMode transpose_mode{translate::TransposeMode::original};
     bool cmp_output_mode{};
+    bool mgs_c_type_pointer_mode{};
     std::string game_name;
     bool pnach_include_crc{};
     std::optional<std::uint32_t> pnach_crc;
