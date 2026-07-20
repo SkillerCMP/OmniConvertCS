@@ -27,7 +27,8 @@ using formats::text::CheatBlock;
 
 std::optional<devices::armax::Metadata> decrypt_block(
     CheatBlock& block, Crypt crypt, std::uint32_t armax_key,
-    devices::action_replay::Context& ar2_context) {
+    devices::action_replay::Context& ar2_context,
+    bool ar2_raw_enable_input) {
     using namespace devices::action_replay;
 
     switch (crypt) {
@@ -35,7 +36,21 @@ std::optional<devices::armax::Metadata> decrypt_block(
             decrypt_ar1(block.cheat.words);
             break;
         case Crypt::ar2:
-            ar2_context.decrypt_ar2(block.cheat.words, true);
+            if (block.cheat.word_count() >= 2U &&
+                block.cheat.words[0] == ar2_raw_enable_address) {
+                const std::uint32_t displayed_key = block.cheat.words[1];
+                block.cheat.words.erase(block.cheat.words.begin(),
+                                        block.cheat.words.begin() + 2);
+
+                if (displayed_key != ar2_raw_enable_value) {
+                    ar2_context.set_seed(seed_from_displayed_key(displayed_key));
+                    ar2_context.decrypt_ar2(block.cheat.words, true);
+                }
+            } else if (ar2_raw_enable_input) {
+                remove_ar2_raw_enable_code(block.cheat.words);
+            } else {
+                ar2_context.decrypt_ar2(block.cheat.words, true);
+            }
             break;
         case Crypt::armax:
             return devices::armax::decrypt_full(block.cheat.words, armax_key);
@@ -64,7 +79,7 @@ std::optional<devices::armax::Metadata> decrypt_block(
 void encrypt_block(CheatBlock& block, Crypt crypt, std::uint32_t ar2_key,
                    std::uint8_t gs3_key, std::uint32_t armax_key,
                    devices::action_replay::Context& ar2_context,
-                   bool& ar2_key_emitted) {
+                   bool& ar2_key_emitted, bool ar2_raw_enable_output) {
     using namespace devices::action_replay;
 
     switch (crypt) {
@@ -72,11 +87,18 @@ void encrypt_block(CheatBlock& block, Crypt crypt, std::uint32_t ar2_key,
             encrypt_ar1(block.cheat.words);
             break;
         case Crypt::ar2:
-            if (!ar2_key_emitted) {
-                prepend_ar2_key_code(block.cheat.words, ar2_key);
-                ar2_key_emitted = true;
+            if (ar2_raw_enable_output) {
+                if (!ar2_key_emitted) {
+                    prepend_ar2_raw_enable_code(block.cheat.words);
+                    ar2_key_emitted = true;
+                }
+            } else {
+                if (!ar2_key_emitted) {
+                    prepend_ar2_key_code(block.cheat.words, ar2_key);
+                    ar2_key_emitted = true;
+                }
+                ar2_context.encrypt_ar2(block.cheat.words);
             }
-            ar2_context.encrypt_ar2(block.cheat.words);
             break;
         case Crypt::armax:
             devices::armax::encrypt_full(block.cheat.words, armax_key);
@@ -287,9 +309,23 @@ Result convert_text(std::string_view input, const Request& request) {
     }
     Result result;
 
-    devices::action_replay::Context ar2_input_context(request.ar2_key);
+    std::uint32_t input_ar2_key = request.input_ar2_key;
+    std::uint32_t output_ar2_key = request.output_ar2_key;
+    if (request.ar2_key != devices::action_replay::ar1_seed &&
+        input_ar2_key == devices::action_replay::ar1_seed &&
+        output_ar2_key == devices::action_replay::ar1_seed) {
+        input_ar2_key = request.ar2_key;
+        output_ar2_key = request.ar2_key;
+    }
+
+    const bool ar2_raw_enable_input =
+        devices::action_replay::is_raw_enable_seed(input_ar2_key);
+    const bool ar2_raw_enable_output =
+        devices::action_replay::is_raw_enable_seed(output_ar2_key);
+    devices::action_replay::Context ar2_input_context(input_ar2_key);
     devices::action_replay::Context ar2_output_context;
-    bool ar2_key_emitted = request.ar2_key == devices::action_replay::ar1_seed;
+    bool ar2_key_emitted = !ar2_raw_enable_output &&
+                           output_ar2_key == devices::action_replay::ar1_seed;
     std::uint32_t current_folder_id = 0U;
     std::uint32_t deterministic_nonce_offset = 0U;
     const auto next_armax_verifier_nonce = [&request, &deterministic_nonce_offset]() {
@@ -325,9 +361,10 @@ Result convert_text(std::string_view input, const Request& request) {
                                                request.armax_disc_hash,
                                                true, current_folder_id);
                 stage = "encrypt output";
-                encrypt_block(block, output_crypt, request.ar2_key,
+                encrypt_block(block, output_crypt, output_ar2_key,
                               request.gs3_key, request.armax_key,
-                              ar2_output_context, ar2_key_emitted);
+                              ar2_output_context, ar2_key_emitted,
+                              ar2_raw_enable_output);
                 continue;
             }
 
@@ -360,7 +397,8 @@ Result convert_text(std::string_view input, const Request& request) {
             stage = "decrypt input";
             const auto metadata = decrypt_block(block, block_input_crypt,
                                                 request.armax_key,
-                                                ar2_input_context);
+                                                ar2_input_context,
+                                                ar2_raw_enable_input);
             input_decrypted = true;
             if (metadata) {
                 result.detected_armax_game_id = metadata->game_id;
@@ -456,9 +494,10 @@ Result convert_text(std::string_view input, const Request& request) {
             }
 
             stage = "encrypt output";
-            encrypt_block(block, output_crypt, request.ar2_key,
+            encrypt_block(block, output_crypt, output_ar2_key,
                           request.gs3_key, request.armax_key,
-                          ar2_output_context, ar2_key_emitted);
+                          ar2_output_context, ar2_key_emitted,
+                          ar2_raw_enable_output);
 
             if (crypt_is_encrypted(block_input_crypt) ||
                 code_format_is_encrypted(request.output_format)) {

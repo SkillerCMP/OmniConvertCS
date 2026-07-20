@@ -22,6 +22,7 @@
 #define IDC_EDIT_AR2_CURRENT             1018
 #define IDC_EDIT_GAMEID_INPUT            1019
 #define IDC_EDIT_GAMEID_OUTPUT           1020
+#define IDC_AR2_OUTPUT_CURRENT           1021
 #define IDC_ARMAX_GAMEID                1201
 #define IDC_ARMAX_VERIFIER_AUTO         1202
 #define IDC_ARMAX_VERIFIER_MANUAL       1203
@@ -50,6 +51,7 @@
 #define ID_STATIC_AR2_CURRENT            20006
 #define ID_STATIC_GAMEID_INPUT           20007
 #define ID_STATIC_GAMEID_OUTPUT          20008
+#define ID_STATIC_AR2_OUTPUT_CURRENT      20009
 #define ID_FILE_LOADTEXT                40001
 #define ID_FILE_LOADCBC                 40020
 #define ID_FILE_LOADARMAXBIN            40021

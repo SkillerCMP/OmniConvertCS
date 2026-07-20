@@ -25,6 +25,8 @@ struct Request {
     CodeFormat input_format{CodeFormat::standard_raw};
     CodeFormat output_format{CodeFormat::standard_raw};
     std::uint32_t ar2_key{devices::action_replay::ar1_seed};
+    std::uint32_t input_ar2_key{devices::action_replay::ar1_seed};
+    std::uint32_t output_ar2_key{devices::action_replay::ar1_seed};
     std::uint8_t gs3_key{devices::gameshark::default_key};
     std::uint32_t armax_key{devices::armax::default_payload_key};
     std::uint32_t armax_game_id{};
@@ -52,7 +54,8 @@ struct Request {
             translate::TransposeMode mode = translate::TransposeMode::original,
             std::string pnach_game_name = {}, bool include_pnach_crc = false,
             std::optional<std::uint32_t> pnach_crc_value = std::nullopt)
-        : input_format(input), output_format(output), ar2_key(ar2), gs3_key(gs3),
+        : input_format(input), output_format(output), ar2_key(ar2),
+          input_ar2_key(ar2), output_ar2_key(ar2), gs3_key(gs3),
           armax_key(armax), armax_game_id(game_id), armax_region(region),
           armax_verifier_nonce(verifier_nonce), transpose_mode(mode),
           game_name(std::move(pnach_game_name)),

@@ -8,19 +8,77 @@
 #include "gui/win32/text_control.hpp"
 #include "util/hex.hpp"
 
+#include <array>
 #include <string>
 
 namespace omni::gui::win32 {
 namespace {
 
+constexpr std::array<const wchar_t*, 4> common_ar2_keys{{
+    L"1853E59E", L"1645EBB3", L"1746EAAD", L"1456E7A5"
+}};
+
 std::uint32_t displayed_ar2_key(std::uint32_t seed) noexcept {
-    return devices::action_replay::encrypt_word(seed, 0x05U, 0x18U);
+    return devices::action_replay::displayed_key_from_seed(seed);
 }
 
 void show(HWND window, int id, bool visible) noexcept {
     if (HWND control = GetDlgItem(window, id); control != nullptr) {
         ShowWindow(control, visible ? SW_SHOW : SW_HIDE);
     }
+}
+
+void fill_ar2_key_combo(HWND combo, std::uint32_t seed) noexcept {
+    if (combo == nullptr) return;
+
+    SendMessageW(combo, CB_RESETCONTENT, 0, 0);
+    const std::wstring current = utf8_to_utf16(hex::format_u32(displayed_ar2_key(seed)));
+    int selected = -1;
+
+    for (const wchar_t* key : common_ar2_keys) {
+        const LRESULT item = SendMessageW(combo, CB_ADDSTRING, 0,
+                                          reinterpret_cast<LPARAM>(key));
+        if (item >= 0 && current == key) selected = static_cast<int>(item);
+    }
+
+    if (selected < 0) {
+        const LRESULT item = SendMessageW(combo, CB_ADDSTRING, 0,
+                                          reinterpret_cast<LPARAM>(current.c_str()));
+        if (item >= 0) selected = static_cast<int>(item);
+    }
+
+    SendMessageW(combo, CB_SETCURSEL, selected, 0);
+}
+
+bool apply_ar2_combo_selection(HWND window, int combo_id) noexcept {
+    AppState* state = app_state(window);
+    if (state == nullptr) return true;
+
+    HWND combo = GetDlgItem(window, combo_id);
+    if (combo == nullptr) return true;
+
+    std::string key_text = read_window_text_utf8(combo);
+    if (key_text.empty()) {
+        const LRESULT selected = SendMessageW(combo, CB_GETCURSEL, 0, 0);
+        if (selected == CB_ERR) return true;
+
+        wchar_t text[32]{};
+        SendMessageW(combo, CB_GETLBTEXT, static_cast<WPARAM>(selected),
+                     reinterpret_cast<LPARAM>(text));
+        key_text = utf16_to_utf8(text);
+    }
+    if (key_text.size() != 8U) return true;
+    const auto displayed = hex::parse_u32(key_text);
+    if (!displayed) return true;
+
+    const std::uint32_t seed =
+        devices::action_replay::seed_from_displayed_key(*displayed);
+    if (combo_id == IDC_EDIT_AR2_CURRENT) {
+        state->ar2_input_key = seed;
+    } else if (combo_id == IDC_AR2_OUTPUT_CURRENT) {
+        state->ar2_output_key = seed;
+    }
+    return true;
 }
 
 } // namespace
@@ -44,14 +102,20 @@ void sync_game_id_controls(HWND window, const wchar_t* preferred_text) noexcept 
 void refresh_ar2_key_display(HWND window) noexcept {
     AppState* state = app_state(window);
     if (state == nullptr) return;
-    const bool visible = crypt_for_format(state->input_format) == Crypt::ar2;
-    show(window, ID_STATIC_AR2_CURRENT, visible);
-    show(window, IDC_EDIT_AR2_CURRENT, visible);
-    if (visible) {
-        SetDlgItemTextW(window, IDC_EDIT_AR2_CURRENT,
-                        utf8_to_utf16(hex::format_u32(displayed_ar2_key(state->ar2_key))).c_str());
-    } else {
-        SetDlgItemTextW(window, IDC_EDIT_AR2_CURRENT, L"");
+
+    const bool input_visible = crypt_for_format(state->input_format) == Crypt::ar2;
+    const bool output_visible = crypt_for_format(state->output_format) == Crypt::ar2;
+
+    show(window, ID_STATIC_AR2_CURRENT, input_visible);
+    show(window, IDC_EDIT_AR2_CURRENT, input_visible);
+    show(window, ID_STATIC_AR2_OUTPUT_CURRENT, output_visible);
+    show(window, IDC_AR2_OUTPUT_CURRENT, output_visible);
+
+    if (input_visible) {
+        fill_ar2_key_combo(GetDlgItem(window, IDC_EDIT_AR2_CURRENT), state->ar2_input_key);
+    }
+    if (output_visible) {
+        fill_ar2_key_combo(GetDlgItem(window, IDC_AR2_OUTPUT_CURRENT), state->ar2_output_key);
     }
 }
 
@@ -75,9 +139,6 @@ void initialize_context_controls(HWND window) noexcept {
             install_hex_edit_filter(edit);
         }
     }
-    if (HWND key = GetDlgItem(window, IDC_EDIT_AR2_CURRENT); key != nullptr) {
-        SendMessageW(key, EM_SETREADONLY, TRUE, 0);
-    }
     show(window, ID_STATIC_GAMEID, false);
     show(window, IDC_EDIT_GAMEID, false);
     sync_game_id_controls(window);
@@ -86,6 +147,13 @@ void initialize_context_controls(HWND window) noexcept {
 
 bool handle_context_control_command(HWND window, int command_id,
                                     int notification_code) noexcept {
+    if ((command_id == IDC_EDIT_AR2_CURRENT || command_id == IDC_AR2_OUTPUT_CURRENT) &&
+        (notification_code == CBN_SELCHANGE ||
+         notification_code == CBN_EDITCHANGE ||
+         notification_code == CBN_KILLFOCUS)) {
+        return apply_ar2_combo_selection(window, command_id);
+    }
+
     if (notification_code != EN_CHANGE) return false;
     if (command_id != IDC_EDIT_GAMEID && command_id != IDC_EDIT_GAMEID_INPUT &&
         command_id != IDC_EDIT_GAMEID_OUTPUT) return false;

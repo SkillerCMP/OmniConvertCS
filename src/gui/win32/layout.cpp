@@ -104,7 +104,7 @@ void layout_controls(HWND window, int client_width, int client_height) noexcept 
     constexpr int bottom_row_height = 25;
     constexpr int status_height = 18;
 
-    std::array<ControlPlacement, 18> placements{};
+    std::array<ControlPlacement, 20> placements{};
     std::size_t placement_count = 0;
     const auto place = [&](int id, int x, int y, int width, int height) noexcept {
         add_placement(placements, placement_count, window, id, x, y, width, height);
@@ -127,14 +127,17 @@ void layout_controls(HWND window, int client_width, int client_height) noexcept 
     place(ID_BTN_CLEAR_IN, margin + pane_width - button_width, margin,
           button_width, 20);
 
-    const int output_aux_x = right_x + pane_width - button_width - crc_width - aux_width - 8;
+    // Keep the active output-side auxiliary control beside Clear, matching
+    // the input side. AR2 key, ARMAX Game ID, and PNACH CRC are mutually
+    // exclusive by output format, so they can share this right-side slot.
+    const int output_aux_x = right_x + pane_width - button_width - aux_width - 8;
     place(ID_STATIC_OUTPUT, right_x, margin + 2,
           std::max(output_aux_x - right_x - 4, 40), 16);
+    place(ID_STATIC_AR2_OUTPUT_CURRENT, output_aux_x, margin + 2, 44, 16);
+    place(IDC_AR2_OUTPUT_CURRENT, output_aux_x + 44, margin, 68, 20);
     place(ID_STATIC_GAMEID_OUTPUT, output_aux_x, margin + 2, 42, 16);
     place(IDC_EDIT_GAMEID_OUTPUT, output_aux_x + 44, margin, 48, 20);
-    place(IDC_CHECK_PNACH_CRC,
-          right_x + pane_width - button_width - crc_width - 4,
-          margin, crc_width, 20);
+    place(IDC_CHECK_PNACH_CRC, output_aux_x + 44, margin, crc_width, 20);
     place(ID_BTN_CLEAR_OUT, right_x + pane_width - button_width, margin,
           button_width, 20);
 

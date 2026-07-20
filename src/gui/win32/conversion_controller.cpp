@@ -30,7 +30,8 @@ void run_conversion(HWND window) {
         convert::Request request;
         request.input_format = state->input_format;
         request.output_format = state->output_format;
-        request.ar2_key = state->ar2_key;
+        request.input_ar2_key = state->ar2_input_key;
+        request.output_ar2_key = state->ar2_output_key;
         request.gs3_key = state->gs3_key;
         request.armax_key = state->armax_key;
         request.armax_region = state->armax_region;
@@ -78,7 +79,7 @@ void run_conversion(HWND window) {
             state->armax_region = *result.detected_armax_region;
         }
         if (result.active_ar2_seed) {
-            state->ar2_key = *result.active_ar2_seed;
+            state->ar2_input_key = *result.active_ar2_seed;
             refresh_ar2_key_display(window);
         }
         save_app_settings(*state);

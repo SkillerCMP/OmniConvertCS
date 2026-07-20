@@ -29,7 +29,8 @@ struct AppState {
     HWND window{};
     CodeFormat input_format{CodeFormat::standard_raw};
     CodeFormat output_format{CodeFormat::standard_raw};
-    std::uint32_t ar2_key{devices::action_replay::ar1_seed};
+    std::uint32_t ar2_input_key{devices::action_replay::ar1_seed};
+    std::uint32_t ar2_output_key{devices::action_replay::ar1_seed};
     std::uint8_t gs3_key{devices::gameshark::default_key};
     std::uint32_t armax_key{devices::armax::default_payload_key};
     std::uint32_t armax_game_id{0x0357U};

@@ -26,5 +26,7 @@ void decrypt_ar1(std::vector<std::uint32_t>& words);
 void encrypt_ar1(std::vector<std::uint32_t>& words);
 
 void prepend_ar2_key_code(std::vector<std::uint32_t>& words, std::uint32_t key);
+void prepend_ar2_raw_enable_code(std::vector<std::uint32_t>& words);
+void remove_ar2_raw_enable_code(std::vector<std::uint32_t>& words);
 
 } // namespace omni::devices::action_replay

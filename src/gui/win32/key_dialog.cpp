@@ -14,20 +14,16 @@
 namespace omni::gui::win32 {
 namespace {
 
-constexpr std::uint8_t ar2_key_type = 0x05U;
-constexpr std::uint8_t ar2_key_seed = 0x18U;
-constexpr std::array<const wchar_t*, 3> common_keys{{
-    L"1853E59E", L"1645EBB3", L"1746EAAD"
+constexpr std::array<const wchar_t*, 4> common_keys{{
+    L"1853E59E", L"1645EBB3", L"1746EAAD", L"1456E7A5"
 }};
 
 std::uint32_t displayed_key(std::uint32_t seed) noexcept {
-    return devices::action_replay::encrypt_word(seed, ar2_key_type,
-                                                 ar2_key_seed);
+    return devices::action_replay::displayed_key_from_seed(seed);
 }
 
 std::uint32_t stored_seed(std::uint32_t key) noexcept {
-    return devices::action_replay::decrypt_word(key, ar2_key_type,
-                                                 ar2_key_seed);
+    return devices::action_replay::seed_from_displayed_key(key);
 }
 
 void set_key_text(HWND dialog, std::uint32_t key) {
@@ -63,7 +59,7 @@ INT_PTR CALLBACK key_dialog_proc(HWND dialog, UINT message, WPARAM wparam,
             SendDlgItemMessageW(dialog, IDC_EDIT_AR2, EM_SETLIMITTEXT, 8, 0);
             install_hex_edit_filter(GetDlgItem(dialog, IDC_EDIT_AR2));
             if (state != nullptr) {
-                const std::uint32_t key = displayed_key(state->ar2_key);
+                const std::uint32_t key = displayed_key(state->ar2_input_key);
                 set_key_text(dialog, key);
                 initialize_common_keys(dialog, key);
             }
@@ -87,7 +83,7 @@ INT_PTR CALLBACK key_dialog_proc(HWND dialog, UINT message, WPARAM wparam,
             switch (LOWORD(wparam)) {
                 case ID_BTN_RESET:
                     if (state != nullptr) {
-                        state->ar2_key = devices::action_replay::ar1_seed;
+                        state->ar2_input_key = devices::action_replay::ar1_seed;
                     }
                     EndDialog(dialog, IDOK);
                     return TRUE;
@@ -105,7 +101,7 @@ INT_PTR CALLBACK key_dialog_proc(HWND dialog, UINT message, WPARAM wparam,
                         SendDlgItemMessageW(dialog, IDC_EDIT_AR2, EM_SETSEL, 0, -1);
                         return TRUE;
                     }
-                    state->ar2_key = stored_seed(*value);
+                    state->ar2_input_key = stored_seed(*value);
                     EndDialog(dialog, IDOK);
                     return TRUE;
                 }

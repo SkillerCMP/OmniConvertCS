@@ -55,6 +55,18 @@ std::uint32_t seed_key(const std::array<std::uint8_t, 4>& bytes) noexcept {
            static_cast<std::uint32_t>(bytes[3]);
 }
 
+std::uint32_t displayed_key_from_seed(std::uint32_t seed) noexcept {
+    return encrypt_word(seed, ar2_key_type, ar2_key_seed);
+}
+
+std::uint32_t seed_from_displayed_key(std::uint32_t key) noexcept {
+    return decrypt_word(key, ar2_key_type, ar2_key_seed);
+}
+
+bool is_raw_enable_seed(std::uint32_t seed) noexcept {
+    return displayed_key_from_seed(seed) == ar2_raw_enable_value;
+}
+
 std::uint32_t decrypt_word(std::uint32_t code, std::uint8_t type, std::uint8_t seed) noexcept {
     if (type == 7U) {
         if ((seed & 1U) != 0U) {

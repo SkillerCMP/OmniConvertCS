@@ -139,6 +139,16 @@ void load_app_settings(AppState& state) noexcept {
             !state.armax_manual_disc_hash) {
             state.armax_disc_hash_source = ArmaxDiscHashSource::none;
         }
+        if (const auto value = json_uint(json, "Ar2Key")) {
+            state.ar2_input_key = *value;
+            state.ar2_output_key = *value;
+        }
+        if (const auto value = json_uint(json, "Ar2InputKey")) {
+            state.ar2_input_key = *value;
+        }
+        if (const auto value = json_uint(json, "Ar2OutputKey")) {
+            state.ar2_output_key = *value;
+        }
         if (const auto value = json_uint(json, "Gs3Key"); value && *value <= 4U) {
             state.gs3_key = static_cast<std::uint8_t>(*value);
         }
@@ -208,6 +218,8 @@ void save_app_settings(const AppState& state) noexcept {
                << disc_hash_game_name << "\",\n"
                << "  \"DiscHashElfName\": \""
                << disc_hash_elf_name << "\",\n"
+               << "  \"Ar2InputKey\": " << state.ar2_input_key << ",\n"
+               << "  \"Ar2OutputKey\": " << state.ar2_output_key << ",\n"
                << "  \"Gs3Key\": " << static_cast<unsigned>(state.gs3_key) << ",\n"
                << "  \"CbcSaveVersion\": "
                << (state.cbc_version == formats::binary::CbcVersion::v8 ? 8 : 7)

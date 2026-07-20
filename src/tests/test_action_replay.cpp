@@ -22,6 +22,7 @@ using devices::action_replay::ar1_seed;
 using devices::action_replay::decrypt_ar1;
 using devices::action_replay::encrypt_ar1;
 using devices::action_replay::prepend_ar2_key_code;
+using devices::action_replay::seed_from_displayed_key;
 
 const std::filesystem::path vector_root{OMNI_TEST_VECTOR_DIR};
 
@@ -107,6 +108,61 @@ void test_ar2_key_is_emitted_once_across_text_blocks() {
             "AR2 encryption did not retain one key context across named cheat blocks");
 }
 
+void test_ar2_raw_enable_output_skips_encryption() {
+    convert::Request request;
+    request.input_format = CodeFormat::ar12_raw;
+    request.output_format = CodeFormat::action_replay2;
+    request.output_ar2_key = seed_from_displayed_key(0x1456E7A5U);
+
+    const convert::Result result = convert::convert_text(
+        "20123456 00000000\n", request);
+    const auto actual = flatten(crypto_vectors::parse_hex_pairs(result.output_text));
+    const std::vector<std::uint32_t> expected{
+        0x0E3C7DF2U, 0x1456E7A5U,
+        0x20123456U, 0x00000000U
+    };
+    require(actual == expected,
+            "AR2 RAW-enable output should prepend 0E3C7DF2 1456E7A5 and skip encryption");
+}
+
+
+void test_ar2_displayed_header_is_not_converted_when_input_key_selected() {
+    convert::Request request;
+    request.input_format = CodeFormat::action_replay2;
+    request.output_format = CodeFormat::action_replay2;
+    request.input_ar2_key = seed_from_displayed_key(0x1853E59EU);
+    request.output_ar2_key = seed_from_displayed_key(0x1456E7A5U);
+
+    const convert::Result result = convert::convert_text(
+        "!Master Codes:\n"
+        "(M) Must Be On by Codejunkies\n"
+        "0E3C7DF2 1853E59E\n"
+        "EE8CDC1A BCBBBD2A\n"
+        "!!\n",
+        request);
+    const auto actual = flatten(crypto_vectors::parse_hex_pairs(result.output_text));
+    const std::vector<std::uint32_t> expected{
+        0x0E3C7DF2U, 0x1456E7A5U,
+        0xF01222A4U, 0x001222A7U
+    };
+    require(actual == expected,
+            "AR2 displayed key header should be consumed as metadata, not converted as a code row");
+}
+
+void test_ar2_raw_enable_input_skips_decryption() {
+    convert::Request request;
+    request.input_format = CodeFormat::action_replay2;
+    request.output_format = CodeFormat::ar12_raw;
+    request.input_ar2_key = seed_from_displayed_key(0x1456E7A5U);
+
+    const convert::Result result = convert::convert_text(
+        "0E3C7DF2 1456E7A5\n20123456 00000000\n", request);
+    const auto actual = flatten(crypto_vectors::parse_hex_pairs(result.output_text));
+    const std::vector<std::uint32_t> expected{0x20123456U, 0x00000000U};
+    require(actual == expected,
+            "AR2 RAW-enable input should remove the enable marker and skip decryption");
+}
+
 } // namespace
 
 void run_action_replay_tests() {
@@ -114,6 +170,9 @@ void run_action_replay_tests() {
     test_ar2_keyed_full_vectors();
     test_ar2_key_persists_across_text_blocks();
     test_ar2_key_is_emitted_once_across_text_blocks();
+    test_ar2_raw_enable_output_skips_encryption();
+    test_ar2_raw_enable_input_skips_decryption();
+    test_ar2_displayed_header_is_not_converted_when_input_key_selected();
 }
 
 } // namespace omni::tests

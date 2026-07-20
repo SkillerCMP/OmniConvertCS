@@ -81,4 +81,17 @@ void prepend_ar2_key_code(std::vector<std::uint32_t>& words, std::uint32_t key) 
     words.insert(words.begin(), {ar2_key_address, key});
 }
 
+void prepend_ar2_raw_enable_code(std::vector<std::uint32_t>& words) {
+    require_pairs(words);
+    words.insert(words.begin(), {ar2_raw_enable_address, ar2_raw_enable_value});
+}
+
+void remove_ar2_raw_enable_code(std::vector<std::uint32_t>& words) {
+    require_pairs(words);
+    if (words.size() >= 2U && words[0] == ar2_raw_enable_address &&
+        words[1] == ar2_raw_enable_value) {
+        words.erase(words.begin(), words.begin() + 2);
+    }
+}
+
 } // namespace omni::devices::action_replay
